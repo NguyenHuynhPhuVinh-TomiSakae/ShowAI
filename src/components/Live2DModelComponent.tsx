@@ -50,8 +50,8 @@ const Live2DModelComponent = () => {
             const model = await Live2DModel.from(window.localStorage.getItem('model') || '/live2d/live2d.model3.json', { motionPreload: MotionPreloadStrategy.IDLE });
             const pixiModel = model as unknown as PIXI.Container;
             app.stage.addChild(pixiModel);
-            pixiModel.position.set(350, 0);
-            pixiModel.scale.set(0.5);
+            pixiModel.position.set(-110, -125);
+            pixiModel.scale.set(0.6);
             pixiModel.interactive = true;
             pixiModel.trackedPointers = {};
             setIsModelLoaded(true);
@@ -67,8 +67,8 @@ const Live2DModelComponent = () => {
         if (canvas) {
             const screenWidth = window.innerWidth;
             const baseWidth = 1600;
-            const baseRightPercentage = -14;
-            const adjustmentFactor = Math.max(1, 73 - (baseWidth - screenWidth) / 15);
+            const baseRightPercentage = -24;
+            const adjustmentFactor = Math.max(1, 80 - (baseWidth - screenWidth) / 15);
             const rightPercentage = baseRightPercentage + (baseWidth - screenWidth) / (adjustmentFactor * 1.2);
 
             canvas.style.position = 'fixed';
@@ -146,7 +146,7 @@ const Live2DModelComponent = () => {
                 </div>
             )}
             {isModelLoaded && (
-                <div className="fixed right-[1%] bottom-[35%] bg-white p-2.5 rounded-lg max-w-[200px] z-[1001]">
+                <div className="fixed right-[1%] bottom-[40%] bg-white p-2.5 rounded-lg max-w-[200px] z-[1001]">
                     <div className="absolute bottom-[-8px] right-[10px] w-0 h-0 border-l-[10px] border-l-transparent border-t-[10px] border-t-white border-r-[10px] border-r-transparent"></div>
                     <p className="m-0 text-sm text-black">
                         {chatMessage}
