@@ -42,11 +42,11 @@ export default function RootLayout({
         </NavFooter>
         <div id="modal-root"></div>
         <Script
-          src="https://tomisakae.id.vn/live2d/core/live2dcubismcore.min.js"
+          src="/live2d/core/live2dcubismcore.min.js"
           strategy="beforeInteractive"
         />
         <Script
-          src="https://tomisakae.id.vn/live2d/core/live2d.min.js"
+          src="/live2d/core/live2d.min.js"
           strategy="beforeInteractive"
         />
       </body>

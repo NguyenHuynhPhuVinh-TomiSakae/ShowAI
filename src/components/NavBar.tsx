@@ -70,7 +70,7 @@ const NavBar = () => {
             <div className="container md:mx-4 flex justify-between items-center">
                 <Link href="/" className="text-3xl font-bold">
                     <Image
-                        src="https://tomisakae.github.io/ShowAI/logo.jpg"
+                        src="/logo.jpg"
                         alt="ShowAI Logo"
                         className='rounded-full'
                         width={60}

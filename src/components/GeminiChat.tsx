@@ -158,7 +158,7 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose }) => {
 
         try {
             const aiWebsitesContext = aiWebsites.map(website =>
-                `Name: ${website.name}\nDescription: ${website.description.join(' ')}\nTags: ${website.tags.join(', ')}\nLink: ${website.link}\nKey Features: ${website.keyFeatures.join(', ')}\nInfo Page: https://tomisakae.github.io/ShowAI/show?id=${website.id}`
+                `Name: ${website.name}\nDescription: ${website.description.join(' ')}\nTags: ${website.tags.join(', ')}\nLink: ${website.link}\nKey Features: ${website.keyFeatures.join(', ')}\nInfo Page: https://showai.vercel.app/show?id=${website.id}`
             ).join('\n\n');
 
             const chatSession = model.startChat({
@@ -248,7 +248,7 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose }) => {
 
         try {
             const aiWebsitesContext = aiWebsites.map(website =>
-                `Name: ${website.name}\nDescription: ${website.description.join(' ')}\nTags: ${website.tags.join(', ')}\nLink: ${website.link}\nKey Features: ${website.keyFeatures.join(', ')}\nInfo Page: https://tomisakae.github.io/ShowAI/show?id=${website.id}`
+                `Name: ${website.name}\nDescription: ${website.description.join(' ')}\nTags: ${website.tags.join(', ')}\nLink: ${website.link}\nKey Features: ${website.keyFeatures.join(', ')}\nInfo Page: https://showai.vercel.app/show?id=${website.id}`
             ).join('\n\n');
 
             const chatSession = model.startChat({
