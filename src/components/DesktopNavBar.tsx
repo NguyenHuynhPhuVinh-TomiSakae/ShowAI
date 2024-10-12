@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
-import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import { IoMdChatbubbles } from 'react-icons/io';
+import { MdCompareArrows } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -55,6 +57,7 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                         <button
                             className="text-white px-4 py-2 rounded mx-2 bg-[#1E293B] hover:bg-[#2D3748] transition-colors duration-300 w-auto mb-0 flex items-center justify-between"
                         >
+                            <FaTools className="mr-2" />
                             Công Cụ AI
                             {isAIToolsDropdownOpen ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />}
                         </button>
@@ -85,7 +88,7 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                             }}
                                             className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
                                         >
-                                            <FaTools className="mr-3" />
+                                            <IoMdChatbubbles className="mr-3" />
                                             AI Hỗ Trợ
                                         </button>
                                         <button
@@ -95,7 +98,7 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                             }}
                                             className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
                                         >
-                                            <FaTools className="mr-3" />
+                                            <MdCompareArrows className="mr-3" />
                                             AI So Sánh
                                         </button>
                                     </div>
@@ -134,6 +137,7 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                             onClick={() => !user && router.push('/login')}
                             className="flex items-center bg-[#1E293B] text-white px-4 py-2 rounded mx-2 hover:bg-[#2D3748] transition-colors duration-300 w-auto"
                         >
+                            <FaUserCircle className="mr-2" />
                             {user ? user.username : 'Đăng Nhập'}
                             {user && (isUserDropdownOpen ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />)}
                         </button>

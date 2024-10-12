@@ -1,5 +1,5 @@
 import { IoClose, IoMenu } from 'react-icons/io5';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -31,6 +31,11 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     handleLogout
 }) => {
     const router = useRouter();
+
+    const handleLoginClick = () => {
+        router.push('/login');
+        toggleSidebar(); // Tắt thanh bên khi nhấn đăng nhập
+    };
 
     return (
         <div className="md:hidden">
@@ -140,9 +145,10 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                     </div>
                                 ) : (
                                     <button
-                                        onClick={() => router.push('/login')}
-                                        className="flex items-center w-full text-white py-2 px-3 bg-[#1E293B] hover:bg-[#4B5563] rounded-lg transition-colors duration-300"
+                                        onClick={handleLoginClick}
+                                        className="flex items-center w-full text-white py-3 px-4 bg-[#1E293B] hover:bg-[#4B5563] rounded-md transition-colors duration-300 text-lg font-semibold"
                                     >
+                                        <FaUserCircle className="mr-4 text-xl" />
                                         Đăng Nhập
                                     </button>
                                 )}
