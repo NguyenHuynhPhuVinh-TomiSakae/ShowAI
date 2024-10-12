@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaEye, FaHeart } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 
@@ -13,6 +13,7 @@ interface AIWebsite {
     link: string;
     keyFeatures: string[];
     view?: number;
+    heart?: number;
 }
 
 interface WebsiteListProps {
@@ -124,12 +125,20 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                     <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center space-x-2">
                             <h2 className={`font-semibold text-blue-300 ${isSidebar ? 'text-lg' : 'text-xl'}`}>{website.name}</h2>
-                            {website.view !== undefined && (
-                                <div className="flex items-center text-gray-400 text-sm">
-                                    <FaEye className="mr-1" />
-                                    <span>{website.view}</span>
-                                </div>
-                            )}
+                            <div className="flex items-center space-x-2 text-gray-400 text-sm">
+                                {website.view !== undefined && (
+                                    <div className="flex items-center">
+                                        <FaEye className="mr-1" />
+                                        <span>{website.view}</span>
+                                    </div>
+                                )}
+                                {website.heart !== undefined && (
+                                    <div className="flex items-center">
+                                        <FaHeart className="mr-1 text-red-500" />
+                                        <span>{website.heart}</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <a
                             href={website.link}

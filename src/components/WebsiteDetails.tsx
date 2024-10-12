@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FaStar, FaEye } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import { FaStar, FaEye, FaHeart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import AdditionalInfoButton from './AdditionalInfoButton';
+import { useFirebase } from './FirebaseConfig';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 interface AIWebsite {
     _id: string;
@@ -14,6 +18,7 @@ interface AIWebsite {
     link: string;
     keyFeatures: string[];
     view?: number;
+    heart?: number;
 }
 
 interface WebsiteDetailsProps {
@@ -26,14 +31,105 @@ interface WebsiteDetailsProps {
 const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onStarClick, onTagClick }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [viewCount] = useState(website.view || 0);
+    const [isHearted, setIsHearted] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const { auth, db } = useFirebase();
+    const [heartCount, setHeartCount] = useState(website.heart || 0);
+    const [canHeart, setCanHeart] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         setIsVisible(true);
-    }, []);
+        const unsubscribe = auth?.onAuthStateChanged((currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                checkHeartStatus(currentUser.uid, website.id);
+            }
+        });
+
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [auth, website.id]);
+
+    const checkHeartStatus = async (userId: string, websiteId: string) => {
+        if (!db) return;
+        const userDoc = doc(db, 'users', userId);
+        const userSnapshot = await getDoc(userDoc);
+        if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            setIsHearted(userData.heartedWebsites?.includes(websiteId) || false);
+            setCanHeart(true);
+        }
+    };
+
+    const handleHeartClick = async () => {
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
+        if (!db || !canHeart) return;
+
+        // Immediately update UI
+        setIsHearted(!isHearted);
+        setHeartCount(prevCount => isHearted ? prevCount - 1 : prevCount + 1);
+
+        // Perform background operations
+        try {
+            const userDoc = doc(db, 'users', user.uid);
+            const userSnapshot = await getDoc(userDoc);
+
+            if (userSnapshot.exists()) {
+                if (!isHearted) {
+                    // Add to hearted websites
+                    updateDoc(userDoc, {
+                        heartedWebsites: arrayUnion(website.id)
+                    });
+                } else {
+                    // Remove from hearted websites
+                    updateDoc(userDoc, {
+                        heartedWebsites: arrayRemove(website.id)
+                    });
+                }
+
+                // Update heart count in the API
+                updateHeartCount(website.id, !isHearted);
+            }
+        } catch (error) {
+            console.error('Error handling heart click:', error);
+            // Revert UI changes if there's an error
+            setIsHearted(!isHearted);
+            setHeartCount(prevCount => isHearted ? prevCount + 1 : prevCount - 1);
+        }
+    };
 
     const containerVariants = {
         hidden: { opacity: 0, y: 50 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+    };
+
+    const updateHeartCount = async (websiteId: string, increment: boolean) => {
+        try {
+            const response = await fetch('/api/updateHeart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: websiteId, increment }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update heart count');
+            }
+            const data = await response.json();
+            return data.newHeartCount;
+        } catch (error) {
+            console.error('Error updating heart count:', error);
+            throw error;
+        }
     };
 
     return (
@@ -51,9 +147,16 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                         <span>{viewCount}</span>
                     </div>
                     <FaStar
-                        className={`mb-2 cursor-pointer text-2xl ${isStarred ? 'text-yellow-400' : 'text-gray-400'}`}
+                        className={`mb-2 cursor-pointer text-2xl mr-2 ${isStarred ? 'text-yellow-400' : 'text-gray-400'}`}
                         onClick={onStarClick}
                     />
+                    <div className="flex items-center mb-2 mr-2">
+                        <FaHeart
+                            className={`text-2xl mr-1 ${isHearted ? 'text-red-500' : 'text-gray-400 cursor-pointer'}`}
+                            onClick={handleHeartClick}
+                        />
+                        <span className="text-gray-400">{heartCount}</span>
+                    </div>
                 </div>
                 <Link
                     href={website.link}
