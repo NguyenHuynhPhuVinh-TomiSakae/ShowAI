@@ -37,6 +37,11 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
         toggleSidebar(); // Tắt thanh bên khi nhấn đăng nhập
     };
 
+    const handleLogoutClick = () => {
+        handleLogout();
+        toggleSidebar(); // Tắt thanh bên khi đăng xuất
+    };
+
     return (
         <div className="md:hidden">
             <button onClick={toggleSidebar} className="text-white">
@@ -133,7 +138,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                     className="mt-2"
                                                 >
                                                     <button
-                                                        onClick={handleLogout}
+                                                        onClick={handleLogoutClick}
                                                         className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
                                                     >
                                                         <FaSignOutAlt className="mr-3" />

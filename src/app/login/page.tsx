@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useFirebase } from '@/components/FirebaseConfig';
 import { FaGoogle } from 'react-icons/fa';
@@ -15,10 +15,22 @@ const LoginPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState('');
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     const { auth } = useFirebase();
     const { addUserToFirestore } = useFirestoreOperations();
     const router = useRouter();
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -165,8 +177,8 @@ const LoginPage = () => {
                 </p>
             </div>
             {showSuccessPopup && (
-                <div className="fixed top-0 left-0 right-0 flex justify-center z-50">
-                    <div className="bg-green-500 text-white p-4 rounded-b-md shadow-lg mt-0">
+                <div className={`fixed ${isMobile ? 'bottom-4' : 'top-0'} left-0 right-0 flex justify-center z-50`}>
+                    <div className="bg-green-500 text-white p-4 rounded-md shadow-lg">
                         Đăng ký thành công!
                     </div>
                 </div>
