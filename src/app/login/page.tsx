@@ -32,6 +32,20 @@ const LoginPage = () => {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+    useEffect(() => {
+        const checkAuthState = () => {
+            if (auth) {
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        router.push('/');
+                    }
+                });
+            }
+        };
+
+        checkAuthState();
+    }, [auth, router]);
+
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
