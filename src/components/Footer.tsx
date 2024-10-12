@@ -1,10 +1,11 @@
 'use client'
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FaFacebook, FaGithub } from 'react-icons/fa';
 import { SiZalo } from 'react-icons/si';
 
 const Footer = () => {
+    const router = useRouter();
     const [footerStyles, setFooterStyles] = useState({
         bgColor: 'bg-[#3E52E8]',
         textColor: 'text-white',
@@ -33,12 +34,12 @@ const Footer = () => {
                         <h3 className="text-xl font-bold mb-4">Liên kết nhanh</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <ul className="space-y-2">
-                                <li><Link href="/" className="hover:text-gray-300">Trang chủ</Link></li>
-                                <li><Link href="/about" className="hover:text-gray-300">Giới thiệu</Link></li>
+                                <li><span onClick={() => router.push('/')} className="hover:text-gray-300 cursor-pointer">Trang chủ</span></li>
+                                <li><span onClick={() => router.push('/about')} className="hover:text-gray-300 cursor-pointer">Giới thiệu</span></li>
                             </ul>
                             <ul className="space-y-2">
-                                <li><Link href="/contact" className="hover:text-gray-300">Liên hệ</Link></li>
-                                <li><Link href="/privacy-policy" className="hover:text-gray-300">Chính sách bảo mật</Link></li>
+                                <li><span onClick={() => router.push('/contact')} className="hover:text-gray-300 cursor-pointer">Liên hệ</span></li>
+                                <li><span onClick={() => router.push('/privacy-policy')} className="hover:text-gray-300 cursor-pointer">Chính sách bảo mật</span></li>
                             </ul>
                         </div>
                     </div>
