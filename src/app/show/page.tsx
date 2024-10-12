@@ -222,7 +222,7 @@ function ShowContent() {
                     {!isMobile && (
                         <div className="hidden lg:block">
                             <h2 className="text-xl font-bold text-blue-300 mb-4">Danh sách các trang nổi bật</h2>
-                            <div className="h-[calc(100vh-40px)] overflow-y-auto">
+                            <div className="h-[100vh] overflow-y-auto">
                                 {isStarredLoading ? (
                                     <div>
                                         <FaSpinner className="inline-block animate-spin mr-2" /> Đang tải...
