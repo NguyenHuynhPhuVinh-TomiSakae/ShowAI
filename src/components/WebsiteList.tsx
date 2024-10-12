@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaExternalLinkAlt } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 
@@ -12,6 +12,7 @@ interface AIWebsite {
     tags: string[];
     link: string;
     keyFeatures: string[];
+    view?: number;
 }
 
 interface WebsiteListProps {
@@ -35,8 +36,25 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    const handleWebsiteClick = (id: string) => {
-        router.push(`/show?id=${id}`);
+    const handleWebsiteClick = async (id: string) => {
+        try {
+            const response = await fetch('/api/incrementView', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id }),
+            });
+            if (response.ok) {
+                router.push(`/show?id=${id}`);
+            } else {
+                console.error('Failed to increment view count');
+                router.push(`/show?id=${id}`);
+            }
+        } catch (error) {
+            console.error('Error incrementing view count:', error);
+            router.push(`/show?id=${id}`);
+        }
     };
 
     const handleMouseEnter = (id: string, index: number) => {
@@ -104,7 +122,15 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                     className={`border border-gray-700 rounded-lg p-5 transition-all duration-300 flex flex-col bg-gray-800 cursor-pointer ${isSidebar ? 'h-auto' : 'h-full'}`}
                 >
                     <div className="flex justify-between items-start mb-2">
-                        <h2 className={`font-semibold text-blue-300 ${isSidebar ? 'text-lg' : 'text-xl'}`}>{website.name}</h2>
+                        <div className="flex items-center space-x-2">
+                            <h2 className={`font-semibold text-blue-300 ${isSidebar ? 'text-lg' : 'text-xl'}`}>{website.name}</h2>
+                            {website.view !== undefined && (
+                                <div className="flex items-center text-gray-400 text-sm">
+                                    <FaEye className="mr-1" />
+                                    <span>{website.view}</span>
+                                </div>
+                            )}
+                        </div>
                         <a
                             href={website.link}
                             target="_blank"

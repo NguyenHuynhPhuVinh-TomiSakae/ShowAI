@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaEye } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import AdditionalInfoButton from './AdditionalInfoButton';
@@ -13,6 +13,7 @@ interface AIWebsite {
     tags: string[];
     link: string;
     keyFeatures: string[];
+    view?: number;
 }
 
 interface WebsiteDetailsProps {
@@ -24,6 +25,7 @@ interface WebsiteDetailsProps {
 
 const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onStarClick, onTagClick }) => {
     const [isVisible, setIsVisible] = useState(false);
+    const [viewCount] = useState(website.view || 0);
 
     useEffect(() => {
         setIsVisible(true);
@@ -44,6 +46,10 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
             <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
                 <div className="flex items-center">
                     <h2 className="text-xl sm:text-2xl font-bold text-blue-300 mb-2 mr-2">{website.name}</h2>
+                    <div className="flex items-center text-gray-400 text-sm mb-2 mr-2">
+                        <FaEye className="mr-1" />
+                        <span>{viewCount}</span>
+                    </div>
                     <FaStar
                         className={`mb-2 cursor-pointer text-2xl ${isStarred ? 'text-yellow-400' : 'text-gray-400'}`}
                         onClick={onStarClick}
