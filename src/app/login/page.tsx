@@ -100,7 +100,7 @@ const LoginPage = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#0F172A]">
-            <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-96 mx-2">
+            <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-96 mx-4">
                 <h2 className="text-3xl font-bold mb-6 text-center text-blue-300">
                     {isLogin ? 'Đăng nhập' : 'Đăng ký'}
                 </h2>
