@@ -2,6 +2,7 @@ import { IoClose, IoMenu } from 'react-icons/io5';
 import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
 interface MobileNavBarProps {
     isSidebarOpen: boolean;
@@ -31,6 +32,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     handleLogout
 }) => {
     const router = useRouter();
+    const sidebarRef = useRef<HTMLDivElement>(null);
 
     const handleLoginClick = () => {
         router.push('/login');
@@ -42,6 +44,19 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
         toggleSidebar(); // Tắt thanh bên khi đăng xuất
     };
 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node) && isSidebarOpen) {
+                toggleSidebar();
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isSidebarOpen, toggleSidebar]);
+
     return (
         <div className="md:hidden">
             <button onClick={toggleSidebar} className="text-white">
@@ -50,6 +65,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
             <AnimatePresence>
                 {isSidebarOpen && (
                     <motion.div
+                        ref={sidebarRef}
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
