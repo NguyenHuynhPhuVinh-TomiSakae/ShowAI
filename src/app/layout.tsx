@@ -19,6 +19,9 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "ShowAI",
   description: "Giới thiệu các trang web AI nhằm hỗ trợ việc tìm kiếm AI phục vụ cho công việc hằng ngày.",
+  verification: {
+    google: "A3b1gdpqs1J6C0eaFwp9BcA9_e5mVfUjqLTAgo25ztc",
+  },
 };
 
 export default function RootLayout({
