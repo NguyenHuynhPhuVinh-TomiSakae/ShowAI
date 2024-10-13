@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -6,6 +7,7 @@ import WebsiteList from '@/components/WebsiteList';
 import SearchBar from '@/components/SearchBar';
 import ModalPortal from '@/components/ModalPortal';
 import WebsiteDetails from '@/components/WebsiteDetails';
+import { useStarredWebsites } from '@/hooks/useStarredWebsites';
 
 interface AIWebsite {
     _id: string;
@@ -25,21 +27,17 @@ function ShowContent() {
     const [error, setError] = useState<string | null>(null);
     const [randomWebsites, setRandomWebsites] = useState<AIWebsite[]>([]);
     const [isRandomLoading, setIsRandomLoading] = useState(false);
-    const [isStarred, setIsStarred] = useState(false);
-    const [starredWebsites, setStarredWebsites] = useState<AIWebsite[]>([]);
-    const [isStarredLoading, setIsStarredLoading] = useState(true);
-    const [showStarredModal, setShowStarredModal] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [allTags, setAllTags] = useState<string[]>([]);
+    const [showStarredModal, setShowStarredModal] = useState(false);
+    const { starredWebsites, isStarredLoading, toggleStar, isStarred } = useStarredWebsites();
 
     useEffect(() => {
         const id = searchParams.get('id');
         if (id) {
             fetchWebsiteDetails(id);
-            checkIfStarred(id);
         }
         fetchRandomWebsites();
-        fetchStarredWebsites();
 
         const checkIfMobile = () => {
             setIsMobile(window.innerWidth < 768);
@@ -51,6 +49,7 @@ function ShowContent() {
         return () => {
             window.removeEventListener('resize', checkIfMobile);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
 
     const fetchWebsiteDetails = async (id: string) => {
@@ -96,52 +95,13 @@ function ShowContent() {
         }
     };
 
-    const fetchStarredWebsites = async () => {
-        setIsStarredLoading(true);
-        const starredIds = JSON.parse(localStorage.getItem('starredIds') || '[]');
-        if (starredIds.length === 0) {
-            setStarredWebsites([]);
-            setIsStarredLoading(false);
-            return;
-        }
-        try {
-            const starIdsQuery = starredIds.join(',');
-            const response = await fetch(`https://vercel-api-five-nu.vercel.app/api/showai?star=${starIdsQuery}`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data && data.data) {
-                    setStarredWebsites(data.data);
-                    setAllTags(data.tags);
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching starred websites:', error);
-        } finally {
-            setIsStarredLoading(false);
-        }
-    };
-
     const handleTagClick = (tag: string) => {
         router.push(`/search?tag=${encodeURIComponent(tag)}`);
     };
 
-    const checkIfStarred = (id: string) => {
-        const starredIds = JSON.parse(localStorage.getItem('starredIds') || '[]');
-        setIsStarred(starredIds.includes(id));
-    };
-
-    const handleStarClick = () => {
+    const handleStarClick = async () => {
         if (website) {
-            const starredIds = JSON.parse(localStorage.getItem('starredIds') || '[]');
-            if (isStarred) {
-                const updatedIds = starredIds.filter((id: string) => id !== website.id);
-                localStorage.setItem('starredIds', JSON.stringify(updatedIds));
-            } else {
-                starredIds.push(website.id);
-                localStorage.setItem('starredIds', JSON.stringify(starredIds));
-            }
-            setIsStarred(!isStarred);
-            fetchStarredWebsites();
+            await toggleStar(website.id);
         }
     };
 
@@ -168,7 +128,7 @@ function ShowContent() {
                         {!isLoading && !error && website && (
                             <WebsiteDetails
                                 website={website}
-                                isStarred={isStarred}
+                                isStarred={isStarred(website.id)}
                                 onStarClick={handleStarClick}
                                 onTagClick={handleTagClick}
                             />
@@ -184,7 +144,7 @@ function ShowContent() {
                         ) : randomWebsites.length > 0 ? (
                             <div className="mt-8">
                                 <h3 className="text-xl text-center font-bold text-blue-300 mb-4">Đề xuất trang web AI ngẫu nhiên</h3>
-                                <WebsiteList websites={randomWebsites} onTagClick={handleTagClick} />
+                                <WebsiteList websites={randomWebsites} onTagClick={handleTagClick} isRandom={true} />
                             </div>
                         ) : (
                             <p className="text-center mt-8">Không có đề xuất nào để hiển thị.</p>

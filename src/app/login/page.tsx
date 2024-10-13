@@ -18,7 +18,7 @@ const LoginPage = () => {
     const [isMobile, setIsMobile] = useState(false);
 
     const { auth } = useFirebase();
-    const { addUserToFirestore } = useFirestoreOperations();
+    const { addUserToFirestore, updateUserInFirestore, getUserFromFirestore } = useFirestoreOperations();
     const router = useRouter();
 
     useEffect(() => {
@@ -37,6 +37,7 @@ const LoginPage = () => {
             if (auth) {
                 auth.onAuthStateChanged((user) => {
                     if (user) {
+                        syncStarredWithFirestore(user.uid);
                         router.push('/');
                     }
                 });
@@ -44,7 +45,31 @@ const LoginPage = () => {
         };
 
         checkAuthState();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [auth, router]);
+
+    const syncStarredWithFirestore = async (userId: string) => {
+        const starredIds = JSON.parse(localStorage.getItem('starredIds') || '[]');
+        if (starredIds.length > 0) {
+            await handleStarredData(userId, starredIds);
+        }
+    };
+
+    const handleStarredData = async (userId: string, starredIds: string[]) => {
+        // Check if the user document exists in Firestore
+        const userDoc = await getUserFromFirestore(userId); // Assume this function retrieves the user document
+        if (!userDoc) {
+            // If the user document does not exist, create it with starred data
+            await addUserToFirestore(userId, {
+                starredWebsites: starredIds // Tạo trường dữ liệu mới cho starred
+            });
+        } else {
+            // If it exists, update the starredData
+            await updateUserInFirestore(userId, {
+                starredWebsites: starredIds // Cập nhật trường dữ liệu mới cho starred
+            });
+        }
+    };
 
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();

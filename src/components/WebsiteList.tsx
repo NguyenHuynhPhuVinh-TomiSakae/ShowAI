@@ -20,9 +20,10 @@ interface WebsiteListProps {
     websites: AIWebsite[];
     onTagClick: (tag: string) => void;
     isSidebar?: boolean;
+    isRandom?: boolean; // New prop to indicate if the websites are random
 }
 
-const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSidebar = false }) => {
+const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSidebar = false, isRandom = false }) => {
     const router = useRouter();
     const [hoveredWebsite, setHoveredWebsite] = useState<string | null>(null);
     const [isMobile, setIsMobile] = useState(false);
@@ -53,27 +54,23 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
     };
 
     const handleMouseEnter = (id: string, index: number) => {
-        if (!isSidebar && !isMobile) {
-            setHoveredWebsite(id);
-            gsap.to(websiteRefs.current[index], {
-                scale: 1.05,
-                boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)',
-                duration: 0.3,
-                ease: 'power2.out'
-            });
-        }
+        setHoveredWebsite(id);
+        gsap.to(websiteRefs.current[index], {
+            scale: (!isSidebar && !isRandom && !isMobile) ? 1.05 : 1,
+            boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)',
+            duration: (!isSidebar && !isRandom && !isMobile) ? 0.3 : 0,
+            ease: 'power2.out'
+        });
     };
 
     const handleMouseLeave = (index: number) => {
-        if (!isSidebar && !isMobile) {
-            setHoveredWebsite(null);
-            gsap.to(websiteRefs.current[index], {
-                scale: 1,
-                boxShadow: 'none',
-                duration: 0.3,
-                ease: 'power2.out'
-            });
-        }
+        setHoveredWebsite(null);
+        gsap.to(websiteRefs.current[index], {
+            scale: 1,
+            boxShadow: 'none',
+            duration: 0.3,
+            ease: 'power2.out'
+        });
     };
 
     const containerVariants = {
@@ -145,7 +142,7 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                         </a>
                     </div>
                     <AnimatePresence>
-                        {!isSidebar && !isMobile && hoveredWebsite === website.id ? (
+                        {!isSidebar && !isMobile && hoveredWebsite === website.id && !isRandom ? (
                             <motion.div
                                 className="text-gray-300 mb-4 flex-grow overflow-hidden"
                                 initial={{ opacity: 0, height: 0 }}
