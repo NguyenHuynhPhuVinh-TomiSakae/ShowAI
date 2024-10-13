@@ -57,7 +57,7 @@ export function useStarredWebsites() {
             }
 
             const starIdsQuery = starredIds.join(',');
-            const response = await fetch(`https://vercel-api-five-nu.vercel.app/api/showai?star=${starIdsQuery}`);
+            const response = await fetch(`https://vercel-api-five-nu.vercel.app/api/showai?list=${starIdsQuery}`);
             if (response.ok) {
                 const data = await response.json();
                 if (data && data.data) {

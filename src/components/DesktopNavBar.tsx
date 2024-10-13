@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt, FaUserCircle, FaUser } from 'react-icons/fa';
 import { IoMdChatbubbles } from 'react-icons/io';
 import { MdCompareArrows } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -150,7 +150,17 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                     transition={{ duration: 0.2 }}
                                     className="absolute top-full right-0 w-64 bg-[#1E293B] rounded-md shadow-lg z-10"
                                 >
-                                    <div className="p-4">
+                                    <div className="p-4 space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                router.push('/account');
+                                                setIsUserDropdownOpen(false);
+                                            }}
+                                            className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
+                                        >
+                                            <FaUser className="mr-3" />
+                                            Tài Khoản
+                                        </button>
                                         <button
                                             onClick={() => {
                                                 handleLogout();

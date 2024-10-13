@@ -180,9 +180,9 @@ function ShowContent() {
 
                     {/* Starred Websites (for desktop) */}
                     {!isMobile && (
-                        <div className="hidden lg:block">
+                        <div className="lg:block sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto">
                             <h2 className="text-xl font-bold text-blue-300 mb-4">Danh sách các trang nổi bật</h2>
-                            <div className="h-[100vh] overflow-y-auto">
+                            <div className="overflow-y-auto">
                                 {isStarredLoading ? (
                                     <div>
                                         <FaSpinner className="inline-block animate-spin mr-2" /> Đang tải...

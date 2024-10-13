@@ -1,5 +1,5 @@
 import { IoClose, IoMenu } from 'react-icons/io5';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
@@ -42,6 +42,11 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     const handleLogoutClick = () => {
         handleLogout();
         toggleSidebar(); // Tắt thanh bên khi đăng xuất
+    };
+
+    const handleAccountClick = () => {
+        router.push('/account');
+        toggleSidebar();
     };
 
     useEffect(() => {
@@ -153,6 +158,13 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                     transition={{ duration: 0.3 }}
                                                     className="mt-2"
                                                 >
+                                                    <button
+                                                        onClick={handleAccountClick}
+                                                        className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
+                                                    >
+                                                        <FaUser className="mr-3" />
+                                                        Tài Khoản
+                                                    </button>
                                                     <button
                                                         onClick={handleLogoutClick}
                                                         className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"

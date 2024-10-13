@@ -14,23 +14,10 @@ const LoginPage = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState('');
-    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
 
     const { auth } = useFirebase();
     const { addUserToFirestore, updateUserInFirestore, getUserFromFirestore } = useFirestoreOperations();
     const router = useRouter();
-
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
 
     useEffect(() => {
         const checkAuthState = () => {
@@ -98,16 +85,15 @@ const LoginPage = () => {
             } else {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
+                // Get the current user count from Firestore
+                const displayName = `User${Date.now()}`;
                 await addUserToFirestore(user.uid, {
                     email: user.email,
-                    username: username
+                    username: username,
+                    displayName: displayName
                 });
-                setShowSuccessPopup(true);
                 setIsLogin(true);
-                setTimeout(() => {
-                    setShowSuccessPopup(false);
-                    router.push('/');
-                }, 2000);
+                router.push('/');
             }
         } catch (error: any) {
             console.error('Authentication error:', error);
@@ -134,10 +120,14 @@ const LoginPage = () => {
 
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
-            await addUserToFirestore(user.uid, {
-                email: user.email,
-                username: user.displayName
-            });
+            const userDoc = await getUserFromFirestore(user.uid);
+            if (!userDoc) {
+                await addUserToFirestore(user.uid, {
+                    email: user.email,
+                    username: user.displayName,
+                    displayName: user.displayName || `User${Date.now()}`
+                });
+            }
             router.push('/');
         } catch (error: any) {
             console.error('Google auth error:', error);
@@ -215,13 +205,6 @@ const LoginPage = () => {
                     </button>
                 </p>
             </div>
-            {showSuccessPopup && (
-                <div className={`fixed ${isMobile ? 'bottom-4' : 'top-0'} left-0 right-0 flex justify-center z-50`}>
-                    <div className="bg-green-500 text-white p-4 rounded-md shadow-lg">
-                        Đăng ký thành công!
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
