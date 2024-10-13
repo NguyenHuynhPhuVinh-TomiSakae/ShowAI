@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { FaSpinner, FaStar, FaTimes } from 'react-icons/fa';
 import WebsiteList from '@/components/WebsiteList';
@@ -8,6 +8,7 @@ import SearchBar from '@/components/SearchBar';
 import ModalPortal from '@/components/ModalPortal';
 import WebsiteDetails from '@/components/WebsiteDetails';
 import { useStarredWebsites } from '@/hooks/useStarredWebsites';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AIWebsite {
     _id: string;
@@ -31,6 +32,7 @@ function ShowContent() {
     const [allTags, setAllTags] = useState<string[]>([]);
     const [showStarredModal, setShowStarredModal] = useState(false);
     const { starredWebsites, isStarredLoading, toggleStar, isStarred } = useStarredWebsites();
+    const [isScrollButtonVisible, setIsScrollButtonVisible] = useState(false);
 
     useEffect(() => {
         const id = searchParams.get('id');
@@ -108,6 +110,21 @@ function ShowContent() {
     const toggleStarredModal = () => {
         setShowStarredModal(!showStarredModal);
     };
+
+    const handleScroll = useCallback(() => {
+        const currentScrollY = window.scrollY;
+        if (currentScrollY > 300) {
+            setIsScrollButtonVisible(true);
+        } else {
+            setIsScrollButtonVisible(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [handleScroll]);
 
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
@@ -199,12 +216,20 @@ function ShowContent() {
             </div>
             {isMobile && (
                 <ModalPortal>
-                    <button
-                        className="fixed bottom-4 right-4 bg-blue-500 text-white p-3 rounded-full"
-                        onClick={toggleStarredModal}
-                    >
-                        <FaStar />
-                    </button>
+                    <AnimatePresence>
+                        <motion.button
+                            initial={{ y: 0, opacity: 1 }}
+                            animate={{
+                                y: isScrollButtonVisible ? -60 : 0,
+                                opacity: 1
+                            }}
+                            transition={{ duration: 0.3 }}
+                            className="fixed bottom-5 right-5 bg-blue-500 text-white p-3 rounded-full"
+                            onClick={toggleStarredModal}
+                        >
+                            <FaStar />
+                        </motion.button>
+                    </AnimatePresence>
                 </ModalPortal>
             )}
         </div>

@@ -122,40 +122,6 @@ const LeaderboardPage = () => {
         }
     };
 
-    const renderMobileTabControls = () => (
-        <div className="flex flex-col items-center mb-8">
-            <div className="flex justify-between items-center w-full mb-4">
-                <FaChevronLeft
-                    className="text-2xl text-gray-400 cursor-pointer"
-                    onClick={() => changeTab('prev')}
-                />
-                <button
-                    className={`px-4 py-2 rounded-lg ${activeTab === 'view' ? 'bg-blue-500' :
-                        activeTab === 'heart' ? 'bg-red-500' : 'bg-yellow-500'
-                        }`}
-                >
-                    {activeTab === 'view' && <FaEye className="inline mr-2" />}
-                    {activeTab === 'heart' && <FaHeart className="inline mr-2" />}
-                    {activeTab === 'star' && <FaStar className="inline mr-2" />}
-                    {activeTab === 'view' ? 'Lượt Xem' :
-                        activeTab === 'heart' ? 'Yêu Thích' : 'Phổ Biến'}
-                </button>
-                <FaChevronRight
-                    className="text-2xl text-gray-400 cursor-pointer"
-                    onClick={() => changeTab('next')}
-                />
-            </div>
-            <div className="flex justify-center w-full">
-                {tabs.map((tab) => (
-                    <div
-                        key={tab}
-                        className={`w-1/3 h-1 ${activeTab === tab ? 'bg-blue-500' : 'bg-gray-700'}`}
-                    />
-                ))}
-            </div>
-        </div>
-    );
-
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
             <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
@@ -175,7 +141,29 @@ const LeaderboardPage = () => {
                     </div>
                 ) : (
                     <>
-                        {isMobile ? renderMobileTabControls() : (
+                        {isMobile ? (
+                            <div className="flex justify-between items-center mb-8">
+                                <FaChevronLeft
+                                    className="text-2xl text-gray-400 cursor-pointer"
+                                    onClick={() => changeTab('prev')}
+                                />
+                                <button
+                                    className={`px-4 py-2 rounded-lg ${activeTab === 'view' ? 'bg-blue-500' :
+                                        activeTab === 'heart' ? 'bg-red-500' : 'bg-yellow-500'
+                                        }`}
+                                >
+                                    {activeTab === 'view' && <FaEye className="inline mr-2" />}
+                                    {activeTab === 'heart' && <FaHeart className="inline mr-2" />}
+                                    {activeTab === 'star' && <FaStar className="inline mr-2" />}
+                                    {activeTab === 'view' ? 'Lượt Xem' :
+                                        activeTab === 'heart' ? 'Yêu Thích' : 'Phổ Biến'}
+                                </button>
+                                <FaChevronRight
+                                    className="text-2xl text-gray-400 cursor-pointer"
+                                    onClick={() => changeTab('next')}
+                                />
+                            </div>
+                        ) : (
                             <div className="flex justify-center mb-8">
                                 <button
                                     className={`px-4 py-2 mx-2 rounded-lg ${activeTab === 'view' ? 'bg-blue-500' : 'bg-gray-700'}`}
@@ -197,7 +185,7 @@ const LeaderboardPage = () => {
                                 </button>
                             </div>
                         )}
-                        <div {...handlers} className='pb-6'>
+                        <div {...handlers}>
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={activeTab}
@@ -210,7 +198,6 @@ const LeaderboardPage = () => {
                                 </motion.div>
                             </AnimatePresence>
                         </div>
-                        {isMobile && renderMobileTabControls()}
                     </>
                 )}
             </div>

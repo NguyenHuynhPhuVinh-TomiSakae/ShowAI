@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
 import NavFooter from "@/components/NavFooter";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -40,6 +41,7 @@ export default function RootLayout({
             </div>
           </div>
         </NavFooter>
+        <ScrollToTopButton />
         <div id="modal-root"></div>
         <Script
           src="/live2d/core/live2dcubismcore.min.js"
