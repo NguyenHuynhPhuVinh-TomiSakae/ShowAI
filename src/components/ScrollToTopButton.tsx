@@ -13,9 +13,9 @@ const ScrollToTopButton = () => {
     const [imageSize, setImageSize] = useState(100);
     const [isPressed, setIsPressed] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [isTouched, setIsTouched] = useState(false);
     const [isLive2DLoaded, setIsLive2DLoaded] = useState(false);
     const [isLive2DVisible, setIsLive2DVisible] = useState(false);
+    const [isMobilePressed, setIsMobilePressed] = useState(false);
 
     useEffect(() => {
         const toggleVisibility = () => {
@@ -66,6 +66,9 @@ const ScrollToTopButton = () => {
 
     const scrollToTop = useCallback(() => {
         setIsPressed(true);
+        if (isMobile) {
+            setIsMobilePressed(true);
+        }
         setIsVisible(false);
         setIsScrolling(true);
         setIsScrollComplete(false);
@@ -110,8 +113,11 @@ const ScrollToTopButton = () => {
                 }
             }, 50);
             setIsPressed(false);
+            if (isMobile) {
+                setIsMobilePressed(false);
+            }
         };
-    }, []);
+    }, [isMobile]);
 
     // Hàm easing mới để tạo chuyển động nhanh hơn
     const easeOutQuint = (t: number): number => {
@@ -121,14 +127,14 @@ const ScrollToTopButton = () => {
     const handleTouchStart = () => {
         setIsPressed(true);
         if (isMobile) {
-            setIsTouched(true);
+            setIsMobilePressed(true);
         }
     };
 
     const handleTouchEnd = () => {
         setIsPressed(false);
         if (isMobile) {
-            setIsTouched(false);
+            // Don't reset isMobilePressed here, it will be reset after scrolling
         }
     };
 
@@ -150,14 +156,16 @@ const ScrollToTopButton = () => {
                         aria-label="Cuộn lên đầu trang"
                     >
                         <Image
-                            src={!isMobile && (isHovered || isPressed) && isScrollComplete ? '/Top2.png' : '/Top1.png'}
+                            src={
+                                isMobile
+                                    ? (isMobilePressed ? '/Top2.png' : '/Top1.png')
+                                    : (!isMobile && (isHovered || isPressed) && isScrollComplete ? '/Top2.png' : '/Top1.png')
+                            }
                             alt="Cuộn lên đầu trang"
                             width={imageSize}
                             height={imageSize}
                             style={{
-                                opacity: isMobile
-                                    ? (isTouched ? 1 : 0.5)
-                                    : ((isHovered || isPressed) ? 1 : 0.5)
+                                opacity: isMobile ? 0.5 : ((isHovered || isPressed) ? 1 : 0.5)
                             }}
                         />
                     </motion.button>
