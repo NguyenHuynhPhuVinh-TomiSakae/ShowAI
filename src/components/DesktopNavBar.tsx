@@ -44,6 +44,13 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
         setDropdown(false);
     };
 
+    const handleLive2DToggle = () => {
+        toggleLive2DModal();
+        if (isLive2DModalOpen) {
+            window.dispatchEvent(new Event('live2dModelClosed'));
+        }
+    };
+
     return (
         <div className="hidden md:flex md:items-center">
             <div className="md:relative md:w-auto md:bg-transparent md:flex md:items-center">
@@ -107,7 +114,7 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                         </AnimatePresence>
                     </div>
                     <motion.button
-                        onClick={toggleLive2DModal}
+                        onClick={handleLive2DToggle}
                         className={`hidden md:flex items-center bg-[#1E293B] text-[#93C5FD] px-4 py-2 rounded mx-2 hover:bg-[#2D3748] hover:text-white transition-colors duration-300 ${isLive2DModalOpen ? 'box-live' : ''}`}
                     >
                         <FaCircle className={`mr-2 ${isLive2DModalOpen ? 'text-green-500' : 'text-[#93C5FD]'}`} size={12} />

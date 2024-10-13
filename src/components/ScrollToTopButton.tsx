@@ -12,6 +12,10 @@ const ScrollToTopButton = () => {
     const [top3Opacity, setTop3Opacity] = useState(1);
     const [imageSize, setImageSize] = useState(100);
     const [isPressed, setIsPressed] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [isTouched, setIsTouched] = useState(false);
+    const [isLive2DLoaded, setIsLive2DLoaded] = useState(false);
+    const [isLive2DVisible, setIsLive2DVisible] = useState(false);
 
     useEffect(() => {
         const toggleVisibility = () => {
@@ -30,13 +34,34 @@ const ScrollToTopButton = () => {
 
     useEffect(() => {
         const handleResize = () => {
-            setImageSize(window.innerWidth < 768 ? 75 : 100);
+            const mobile = window.innerWidth < 768;
+            setImageSize(mobile ? 75 : 100);
+            setIsMobile(mobile);
         };
 
-        handleResize(); // Set initial size
+        handleResize(); // Set initial size and mobile state
         window.addEventListener('resize', handleResize);
 
         return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        const handleLive2DLoaded = () => {
+            setIsLive2DLoaded(true);
+            setIsLive2DVisible(true);
+        };
+
+        const handleLive2DClosed = () => {
+            setIsLive2DVisible(false);
+        };
+
+        window.addEventListener('live2dModelLoaded', handleLive2DLoaded);
+        window.addEventListener('live2dModelClosed', handleLive2DClosed);
+
+        return () => {
+            window.removeEventListener('live2dModelLoaded', handleLive2DLoaded);
+            window.removeEventListener('live2dModelClosed', handleLive2DClosed);
+        };
     }, []);
 
     const scrollToTop = useCallback(() => {
@@ -93,10 +118,24 @@ const ScrollToTopButton = () => {
         return 1 - Math.pow(1 - t, 5);
     };
 
+    const handleTouchStart = () => {
+        setIsPressed(true);
+        if (isMobile) {
+            setIsTouched(true);
+        }
+    };
+
+    const handleTouchEnd = () => {
+        setIsPressed(false);
+        if (isMobile) {
+            setIsTouched(false);
+        }
+    };
+
     return (
         <>
             <AnimatePresence>
-                {isVisible && (
+                {isVisible && (!isLive2DLoaded || !isLive2DVisible) && (
                     <motion.button
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
@@ -105,22 +144,26 @@ const ScrollToTopButton = () => {
                         onClick={scrollToTop}
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
-                        onTouchStart={() => setIsPressed(true)}
-                        onTouchEnd={() => setIsPressed(false)}
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
                         className="fixed bottom-5 right-0 bg-transparent p-0 shadow-none"
                         aria-label="Cuộn lên đầu trang"
                     >
                         <Image
-                            src={(isHovered || isPressed) && isScrollComplete ? '/Top2.png' : '/Top1.png'}
+                            src={!isMobile && (isHovered || isPressed) && isScrollComplete ? '/Top2.png' : '/Top1.png'}
                             alt="Cuộn lên đầu trang"
                             width={imageSize}
                             height={imageSize}
-                            style={{ opacity: isHovered || isPressed ? 1 : 0.5 }}
+                            style={{
+                                opacity: isMobile
+                                    ? (isTouched ? 1 : 0.5)
+                                    : ((isHovered || isPressed) ? 1 : 0.5)
+                            }}
                         />
                     </motion.button>
                 )}
             </AnimatePresence>
-            {showTop3 && (
+            {showTop3 && (!isLive2DLoaded || !isLive2DVisible) && (
                 <div className="fixed bottom-0 right-0 bg-transparent p-0 shadow-none">
                     <Image
                         src="/Top3.png"

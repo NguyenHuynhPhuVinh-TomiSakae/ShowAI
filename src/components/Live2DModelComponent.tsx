@@ -1,7 +1,7 @@
 // components/Live2DModel.tsx
 'use client'
 import Script from 'next/script';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import * as PIXI from 'pixi.js';
 
 declare global {
@@ -22,6 +22,14 @@ const Live2DModelComponent = () => {
     const [chatMessage, setChatMessage] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const typewriterRef = useRef<NodeJS.Timeout | null>(null);
+    const [showScrollPrompt, setShowScrollPrompt] = useState(false);
+    const [isScrollPromptActive, setIsScrollPromptActive] = useState(false);
+    const [defaultMessage] = useState('Hãy dí chuột vào các thành phần trên web và mình sẽ nói cho bạn thông tin về chức năng của nó!');
+
+    const notifyModelLoaded = useCallback(() => {
+        const event = new CustomEvent('live2dModelLoaded');
+        window.dispatchEvent(event);
+    }, []);
 
     useEffect(() => {
         window.PIXI = PIXI;
@@ -53,8 +61,16 @@ const Live2DModelComponent = () => {
             pixiModel.position.set(-110, -125);
             pixiModel.scale.set(0.6);
             pixiModel.interactive = true;
+            pixiModel.buttonMode = true;
             pixiModel.trackedPointers = {};
+
+            // Thêm sự kiện cho pixiModel
+            pixiModel.on('mouseover', handleModelHover);
+            pixiModel.on('mouseout', handleModelLeave);
+            pixiModel.on('click', handleModelClick);
+
             setIsModelLoaded(true);
+            notifyModelLoaded();
             typeText('Hãy dí chuột vào các thành phần trên web và mình sẽ nói cho bạn thông tin về chức năng của nó!');
         };
 
@@ -85,19 +101,57 @@ const Live2DModelComponent = () => {
         };
 
         const handleLogoLeave = () => {
-            typeText('Hãy dí chuột vào các thành phần trên web và mình sẽ nói cho bạn thông tin về chức năng của nó!');
+            if (!isScrollPromptActive) {
+                typeText('Hãy dí chuột vào các thành phần trên web và mình sẽ nói cho bạn thông tin về chức năng của nó!');
+            }
         };
 
         window.addEventListener('logoHover', handleLogoHover as EventListener);
         window.addEventListener('logoLeave', handleLogoLeave);
 
+        // Di chuyển các hàm xử lý sự kiện vào trong useEffect
+        const handleModelHover = () => {
+            if (window.scrollY > 300) {
+                setShowScrollPrompt(true);
+                setIsScrollPromptActive(true);
+                typeText('Bạn có muốn mình cuộn tới đầu trang không?');
+            } else {
+                setIsScrollPromptActive(false);
+                typeText('Bạn đang cần gì ở mình à?');
+            }
+        };
+
+        const handleModelLeave = () => {
+            if (!isScrollPromptActive) {
+                typeText(defaultMessage);
+            }
+        };
+
+        const handleModelClick = () => {
+            if (showScrollPrompt) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setShowScrollPrompt(false);
+                typeText('Đã cuộn lên đầu trang cho bạn!');
+            } else {
+                typeText('H-huh? Bạn vừa chạm vào mình à?');
+            }
+        };
+
         return () => {
             window.removeEventListener('logoHover', handleLogoHover as EventListener);
             window.removeEventListener('logoLeave', handleLogoLeave);
+            if (appRef.current) {
+                const pixiModel = appRef.current.stage.children[0] as PIXI.Container;
+                if (pixiModel) {
+                    pixiModel.off('mouseover', handleModelHover);
+                    pixiModel.off('mouseout', handleModelLeave);
+                    pixiModel.off('click', handleModelClick);
+                }
+            }
         };
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isLive2DScriptLoaded]);
+    }, [isLive2DScriptLoaded, notifyModelLoaded, showScrollPrompt, isScrollPromptActive, defaultMessage]);
 
     const typeWriter = (text: string, index: number = 0) => {
         if (index < text.length) {
