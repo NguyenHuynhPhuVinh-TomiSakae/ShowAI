@@ -10,6 +10,8 @@ const ScrollToTopButton = () => {
     const [isScrollComplete, setIsScrollComplete] = useState(true);
     const [showTop3, setShowTop3] = useState(false);
     const [top3Opacity, setTop3Opacity] = useState(1);
+    const [imageSize, setImageSize] = useState(100);
+    const [isPressed, setIsPressed] = useState(false);
 
     useEffect(() => {
         const toggleVisibility = () => {
@@ -26,7 +28,19 @@ const ScrollToTopButton = () => {
         return () => window.removeEventListener('scroll', toggleVisibility);
     }, [isScrolling]);
 
+    useEffect(() => {
+        const handleResize = () => {
+            setImageSize(window.innerWidth < 768 ? 75 : 100);
+        };
+
+        handleResize(); // Set initial size
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const scrollToTop = useCallback(() => {
+        setIsPressed(true);
         setIsVisible(false);
         setIsScrolling(true);
         setIsScrollComplete(false);
@@ -70,6 +84,7 @@ const ScrollToTopButton = () => {
                     setShowTop3(false);
                 }
             }, 50);
+            setIsPressed(false);
         };
     }, []);
 
@@ -90,15 +105,17 @@ const ScrollToTopButton = () => {
                         onClick={scrollToTop}
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
+                        onTouchStart={() => setIsPressed(true)}
+                        onTouchEnd={() => setIsPressed(false)}
                         className="fixed bottom-5 right-0 bg-transparent p-0 shadow-none"
                         aria-label="Cuộn lên đầu trang"
                     >
                         <Image
-                            src={(isHovered && isScrollComplete) ? '/Top2.png' : '/Top1.png'}
+                            src={(isHovered || isPressed) && isScrollComplete ? '/Top2.png' : '/Top1.png'}
                             alt="Cuộn lên đầu trang"
-                            width={100}
-                            height={100}
-                            style={{ opacity: isHovered ? 1 : 0.5 }}
+                            width={imageSize}
+                            height={imageSize}
+                            style={{ opacity: isHovered || isPressed ? 1 : 0.5 }}
                         />
                     </motion.button>
                 )}
@@ -108,8 +125,8 @@ const ScrollToTopButton = () => {
                     <Image
                         src="/Top3.png"
                         alt="Đang cuộn lên đầu trang"
-                        width={100}
-                        height={100}
+                        width={imageSize}
+                        height={imageSize}
                         style={{ opacity: top3Opacity }}
                     />
                 </div>
