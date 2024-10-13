@@ -37,25 +37,19 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    const handleWebsiteClick = async (id: string) => {
-        try {
-            const response = await fetch('/api/incrementView', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id }),
-            });
-            if (response.ok) {
-                router.push(`/show?id=${id}`);
-            } else {
-                console.error('Failed to increment view count');
-                router.push(`/show?id=${id}`);
-            }
-        } catch (error) {
+    const handleWebsiteClick = (id: string) => {
+        router.push(`/show?id=${id}`);
+
+        // Increment view count in the background
+        fetch('/api/incrementView', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id }),
+        }).catch(error => {
             console.error('Error incrementing view count:', error);
-            router.push(`/show?id=${id}`);
-        }
+        });
     };
 
     const handleMouseEnter = (id: string, index: number) => {
