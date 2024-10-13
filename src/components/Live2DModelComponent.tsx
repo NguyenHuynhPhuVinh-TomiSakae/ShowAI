@@ -22,8 +22,6 @@ const Live2DModelComponent = () => {
     const [chatMessage, setChatMessage] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const typewriterRef = useRef<NodeJS.Timeout | null>(null);
-    const [showScrollPrompt, setShowScrollPrompt] = useState(false);
-    const [isScrollPromptActive, setIsScrollPromptActive] = useState(false);
     const [defaultMessage] = useState('Hãy dí chuột vào các thành phần trên web và mình sẽ nói cho bạn thông tin về chức năng của nó!');
 
     const notifyModelLoaded = useCallback(() => {
@@ -64,14 +62,9 @@ const Live2DModelComponent = () => {
             pixiModel.buttonMode = true;
             pixiModel.trackedPointers = {};
 
-            // Thêm sự kiện cho pixiModel
-            pixiModel.on('mouseover', handleModelHover);
-            pixiModel.on('mouseout', handleModelLeave);
-            pixiModel.on('click', handleModelClick);
-
             setIsModelLoaded(true);
             notifyModelLoaded();
-            typeText('Hãy dí chuột vào các thành phần trên web và mình sẽ nói cho bạn thông tin về chức năng của nó!');
+            typeText(defaultMessage);
         };
 
         if (isLive2DScriptLoaded) {
@@ -101,57 +94,19 @@ const Live2DModelComponent = () => {
         };
 
         const handleLogoLeave = () => {
-            if (!isScrollPromptActive) {
-                typeText('Hãy dí chuột vào các thành phần trên web và mình sẽ nói cho bạn thông tin về chức năng của nó!');
-            }
+            typeText('Hãy dí chuột vào các thành phần trên web và mình sẽ nói cho bạn thông tin về chức năng của nó!');
         };
 
         window.addEventListener('logoHover', handleLogoHover as EventListener);
         window.addEventListener('logoLeave', handleLogoLeave);
 
-        // Di chuyển các hàm xử lý sự kiện vào trong useEffect
-        const handleModelHover = () => {
-            if (window.scrollY > 300) {
-                setShowScrollPrompt(true);
-                setIsScrollPromptActive(true);
-                typeText('Bạn có muốn mình cuộn tới đầu trang không?');
-            } else {
-                setIsScrollPromptActive(false);
-                typeText('Bạn đang cần gì ở mình à?');
-            }
-        };
-
-        const handleModelLeave = () => {
-            if (!isScrollPromptActive) {
-                typeText(defaultMessage);
-            }
-        };
-
-        const handleModelClick = () => {
-            if (showScrollPrompt) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                setShowScrollPrompt(false);
-                typeText('Đã cuộn lên đầu trang cho bạn!');
-            } else {
-                typeText('H-huh? Bạn vừa chạm vào mình à?');
-            }
-        };
-
         return () => {
             window.removeEventListener('logoHover', handleLogoHover as EventListener);
             window.removeEventListener('logoLeave', handleLogoLeave);
-            if (appRef.current) {
-                const pixiModel = appRef.current.stage.children[0] as PIXI.Container;
-                if (pixiModel) {
-                    pixiModel.off('mouseover', handleModelHover);
-                    pixiModel.off('mouseout', handleModelLeave);
-                    pixiModel.off('click', handleModelClick);
-                }
-            }
         };
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isLive2DScriptLoaded, notifyModelLoaded, showScrollPrompt, isScrollPromptActive, defaultMessage]);
+    }, [isLive2DScriptLoaded, notifyModelLoaded, defaultMessage]);
 
     const typeWriter = (text: string, index: number = 0) => {
         if (index < text.length) {
@@ -178,6 +133,27 @@ const Live2DModelComponent = () => {
         }
     };
 
+    const handleModelClick = () => {
+        if (window.scrollY > 300) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            typeText("Đã cuộn lên đầu trang cho bạn!");
+        } else {
+            typeText("H-huh? Đừng có chạm lung tung vào người ta chứ! B-bạn muốn gì?");
+        }
+    };
+
+    const handleModelMouseEnter = () => {
+        if (window.scrollY > 300) {
+            typeText("Bạn có muốn mình cuộn lên đầu trang không?");
+        } else {
+            typeText("Bạn cần gì ở mình à?");
+        }
+    };
+
+    const handleModelMouseLeave = () => {
+        typeText(defaultMessage);
+    };
+
     return (
         <>
             {!isLive2DScriptLoaded && (
@@ -200,13 +176,23 @@ const Live2DModelComponent = () => {
                 </div>
             )}
             {isModelLoaded && (
-                <div className="fixed right-[1%] bottom-[40%] bg-white p-2.5 rounded-lg max-w-[200px] z-[1001]">
-                    <div className="absolute bottom-[-8px] right-[10px] w-0 h-0 border-l-[10px] border-l-transparent border-t-[10px] border-t-white border-r-[10px] border-r-transparent"></div>
-                    <p className="m-0 text-sm text-black">
-                        {chatMessage}
-                        {isTyping && <span className="animate-pulse">|</span>}
-                    </p>
-                </div>
+                <>
+                    <div
+                        className="fixed right-[1%] bottom-[40%] bg-white p-2.5 rounded-lg max-w-[200px] z-[1001]"
+                    >
+                        <div className="absolute bottom-[-8px] right-[10px] w-0 h-0 border-l-[10px] border-l-transparent border-t-[10px] border-t-white border-r-[10px] border-r-transparent"></div>
+                        <p className="m-0 text-sm text-black">
+                            {chatMessage}
+                            {isTyping && <span className="animate-pulse">|</span>}
+                        </p>
+                    </div>
+                    <div
+                        className="fixed right-[1%] bottom-0 w-[10%] h-[40%] z-[1002] cursor-pointer"
+                        onClick={handleModelClick}
+                        onMouseEnter={handleModelMouseEnter}
+                        onMouseLeave={handleModelMouseLeave}
+                    />
+                </>
             )}
         </>
     );

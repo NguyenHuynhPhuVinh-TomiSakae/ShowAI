@@ -165,7 +165,9 @@ const ScrollToTopButton = () => {
                             width={imageSize}
                             height={imageSize}
                             style={{
-                                opacity: isMobile ? 0.5 : ((isHovered || isPressed) ? 1 : 0.5)
+                                opacity: isMobile
+                                    ? (isMobilePressed ? 1 : 0.5)
+                                    : ((isHovered || isPressed) ? 1 : 0.5)
                             }}
                         />
                     </motion.button>
