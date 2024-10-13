@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirebase } from '@/components/FirebaseConfig';
-import { FaUser, FaHeart, FaSpinner, FaEdit } from 'react-icons/fa';
+import { FaUser, FaHeart, FaSpinner, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import WebsiteList from '@/components/WebsiteList';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -117,6 +117,11 @@ const AccountPage = () => {
         }
     };
 
+    const handleCancelEdit = () => {
+        setNewDisplayName(user?.displayName || '');
+        setIsEditingName(false);
+    };
+
     if (isLoading || isHeartedLoading) {
         return (
             <div className="flex justify-center items-center h-screen bg-[#0F172A]">
@@ -169,32 +174,41 @@ const AccountPage = () => {
                             className="bg-gray-800 p-6 rounded-lg shadow-md"
                         >
                             <h2 className="text-xl font-semibold mb-4 text-blue-300">Thông tin cá nhân</h2>
-                            <div className="flex items-center mb-4">
-                                <strong className="mr-2">Tên người dùng:</strong>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center mb-4">
+                                <strong className="mr-2 mb-2 sm:mb-0">Tên người dùng:</strong>
                                 {isEditingName ? (
-                                    <input
-                                        type="text"
-                                        value={newDisplayName}
-                                        onChange={(e) => setNewDisplayName(e.target.value)}
-                                        className="bg-gray-700 text-white px-2 py-1 rounded"
-                                    />
+                                    <div className="flex flex-col sm:flex-row w-full sm:w-auto">
+                                        <input
+                                            type="text"
+                                            value={newDisplayName}
+                                            onChange={(e) => setNewDisplayName(e.target.value)}
+                                            className="bg-gray-700 text-white px-2 py-1 rounded mb-2 sm:mb-0 sm:mr-2 w-full sm:w-auto"
+                                        />
+                                        <div className="flex">
+                                            <button
+                                                onClick={handleSaveName}
+                                                className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 mr-2 flex items-center"
+                                            >
+                                                <FaSave className="mr-1" /> Lưu
+                                            </button>
+                                            <button
+                                                onClick={handleCancelEdit}
+                                                className="bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600 flex items-center"
+                                            >
+                                                <FaTimes className="mr-1" /> Hủy
+                                            </button>
+                                        </div>
+                                    </div>
                                 ) : (
-                                    <span>{user.displayName || 'Chưa cập nhật'}</span>
-                                )}
-                                {isEditingName ? (
-                                    <button
-                                        onClick={handleSaveName}
-                                        className="ml-2 bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                                    >
-                                        Lưu
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={handleEditName}
-                                        className="ml-2 text-blue-300 hover:text-blue-400"
-                                    >
-                                        <FaEdit />
-                                    </button>
+                                    <div className="flex items-center">
+                                        <span>{user.displayName || 'Chưa cập nhật'}</span>
+                                        <button
+                                            onClick={handleEditName}
+                                            className="ml-2 text-blue-300 hover:text-blue-400"
+                                        >
+                                            <FaEdit />
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </motion.div>

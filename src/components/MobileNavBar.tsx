@@ -1,5 +1,5 @@
 import { IoClose, IoMenu } from 'react-icons/io5';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
@@ -46,6 +46,11 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
 
     const handleAccountClick = () => {
         router.push('/account');
+        toggleSidebar();
+    };
+
+    const handleLeaderboardClick = () => {
+        router.push('/leaderboard');
         toggleSidebar();
     };
 
@@ -140,6 +145,13 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                         )}
                                     </AnimatePresence>
                                 </div>
+                                <button
+                                    onClick={handleLeaderboardClick}
+                                    className="flex items-center w-full text-white py-3 px-4 bg-[#1E293B] hover:bg-[#4B5563] rounded-md transition-colors duration-300 text-lg font-semibold"
+                                >
+                                    <FaTrophy className="mr-4 text-xl" />
+                                    Bảng Xếp Hạng
+                                </button>
                                 {user ? (
                                     <div className="bg-[#1E293B] rounded-lg p-2">
                                         <button

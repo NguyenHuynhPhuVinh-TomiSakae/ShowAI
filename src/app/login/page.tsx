@@ -86,7 +86,7 @@ const LoginPage = () => {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 // Get the current user count from Firestore
-                const displayName = `User${Date.now()}`;
+                const displayName = `User${user.uid}`;
                 await addUserToFirestore(user.uid, {
                     email: user.email,
                     username: username,

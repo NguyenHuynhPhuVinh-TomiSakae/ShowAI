@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt, FaUserCircle, FaUser } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
 import { IoMdChatbubbles } from 'react-icons/io';
 import { MdCompareArrows } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -127,6 +127,13 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                             </motion.span>
                         ))}
                     </motion.button>
+                    <button
+                        onClick={() => router.push('/leaderboard')}
+                        className="flex items-center bg-[#1E293B] text-white px-4 py-2 rounded mx-2 hover:bg-[#2D3748] transition-colors duration-300 w-auto"
+                    >
+                        <FaTrophy className="mr-2" />
+                        Bảng Xếp Hạng
+                    </button>
                     <div
                         className="relative group"
                         ref={userDropdownRef}

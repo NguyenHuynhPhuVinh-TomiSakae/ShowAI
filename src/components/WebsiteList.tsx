@@ -14,6 +14,9 @@ interface AIWebsite {
     keyFeatures: string[];
     view?: number;
     heart?: number;
+    label?: string;
+    labelColor?: string;
+    labelIcon?: React.ReactNode;
 }
 
 interface WebsiteListProps {
@@ -111,8 +114,14 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                     onClick={() => handleWebsiteClick(website.id)}
                     onMouseEnter={() => handleMouseEnter(website.id, index)}
                     onMouseLeave={() => handleMouseLeave(index)}
-                    className={`border border-gray-700 rounded-lg p-5 transition-all duration-300 flex flex-col bg-gray-800 cursor-pointer ${isSidebar ? 'h-auto' : 'h-full'}`}
+                    className={`border border-gray-700 rounded-lg p-5 transition-all duration-300 flex flex-col bg-gray-800 cursor-pointer ${isSidebar ? 'h-auto' : 'h-full'} relative`}
                 >
+                    {website.label && (
+                        <div className={`absolute top-0 left-0 m-2 flex items-center ${website.labelColor || 'text-blue-500'}`}>
+                            {website.labelIcon}
+                            <span className="text-xs font-bold">{website.label}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center space-x-2">
                             <h2 className={`font-semibold text-blue-300 ${isSidebar ? 'text-lg' : 'text-xl'}`}>{website.name}</h2>
