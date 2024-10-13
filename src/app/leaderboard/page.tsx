@@ -1,8 +1,10 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { FaSpinner, FaEye, FaHeart, FaStar, FaTrophy } from 'react-icons/fa';
+import { FaSpinner, FaEye, FaHeart, FaStar, FaTrophy, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import WebsiteList from '@/components/WebsiteList';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useSwipeable } from 'react-swipeable';
 
 interface AIWebsite {
     _id: string;
@@ -24,9 +26,17 @@ const LeaderboardPage = () => {
     const [starWebsites, setStarWebsites] = useState<AIWebsite[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState('view');
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         fetchLeaderboardData();
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
     const fetchLeaderboardData = async () => {
@@ -57,9 +67,94 @@ const LeaderboardPage = () => {
     };
 
     const handleTagClick = (tag: string) => {
-        // Chuyển hướng đến trang tìm kiếm với tag được chọn
         router.push(`/search?tag=${encodeURIComponent(tag)}`);
     };
+
+    const tabs = ['view', 'heart', 'star'];
+    const changeTab = (direction: 'next' | 'prev') => {
+        const currentIndex = tabs.indexOf(activeTab);
+        let newIndex;
+        if (direction === 'next') {
+            newIndex = (currentIndex + 1) % tabs.length;
+        } else {
+            newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+        }
+        setActiveTab(tabs[newIndex]);
+    };
+
+    const handlers = useSwipeable({
+        onSwipedLeft: () => changeTab('next'),
+        onSwipedRight: () => changeTab('prev'),
+        trackMouse: true
+    });
+
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'view':
+                return (
+                    <LeaderboardSection
+                        title="Bảng Lượt Xem"
+                        icon={<FaEye className="text-blue-500" />}
+                        websites={viewWebsites}
+                        onTagClick={handleTagClick}
+                    />
+                );
+            case 'heart':
+                return (
+                    <LeaderboardSection
+                        title="Bảng Yêu Thích"
+                        icon={<FaHeart className="text-red-500" />}
+                        websites={heartWebsites}
+                        onTagClick={handleTagClick}
+                    />
+                );
+            case 'star':
+                return (
+                    <LeaderboardSection
+                        title="Bảng Phổ Biến"
+                        icon={<FaStar className="text-yellow-500" />}
+                        websites={starWebsites}
+                        onTagClick={handleTagClick}
+                    />
+                );
+            default:
+                return null;
+        }
+    };
+
+    const renderMobileTabControls = () => (
+        <div className="flex flex-col items-center mb-8">
+            <div className="flex justify-between items-center w-full mb-4">
+                <FaChevronLeft
+                    className="text-2xl text-gray-400 cursor-pointer"
+                    onClick={() => changeTab('prev')}
+                />
+                <button
+                    className={`px-4 py-2 rounded-lg ${activeTab === 'view' ? 'bg-blue-500' :
+                        activeTab === 'heart' ? 'bg-red-500' : 'bg-yellow-500'
+                        }`}
+                >
+                    {activeTab === 'view' && <FaEye className="inline mr-2" />}
+                    {activeTab === 'heart' && <FaHeart className="inline mr-2" />}
+                    {activeTab === 'star' && <FaStar className="inline mr-2" />}
+                    {activeTab === 'view' ? 'Lượt Xem' :
+                        activeTab === 'heart' ? 'Yêu Thích' : 'Phổ Biến'}
+                </button>
+                <FaChevronRight
+                    className="text-2xl text-gray-400 cursor-pointer"
+                    onClick={() => changeTab('next')}
+                />
+            </div>
+            <div className="flex justify-center w-full">
+                {tabs.map((tab) => (
+                    <div
+                        key={tab}
+                        className={`w-1/3 h-1 ${activeTab === tab ? 'bg-blue-500' : 'bg-gray-700'}`}
+                    />
+                ))}
+            </div>
+        </div>
+    );
 
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
@@ -79,26 +174,44 @@ const LeaderboardPage = () => {
                         {error}
                     </div>
                 ) : (
-                    <div className="flex flex-col space-y-8">
-                        <LeaderboardSection
-                            title="Bảng Lượt Xem"
-                            icon={<FaEye className="text-blue-500" />}
-                            websites={viewWebsites}
-                            onTagClick={handleTagClick}
-                        />
-                        <LeaderboardSection
-                            title="Bảng Yêu Thích"
-                            icon={<FaHeart className="text-red-500" />}
-                            websites={heartWebsites}
-                            onTagClick={handleTagClick}
-                        />
-                        <LeaderboardSection
-                            title="Bảng Phổ Biến"
-                            icon={<FaStar className="text-yellow-500" />}
-                            websites={starWebsites}
-                            onTagClick={handleTagClick}
-                        />
-                    </div>
+                    <>
+                        {isMobile ? renderMobileTabControls() : (
+                            <div className="flex justify-center mb-8">
+                                <button
+                                    className={`px-4 py-2 mx-2 rounded-lg ${activeTab === 'view' ? 'bg-blue-500' : 'bg-gray-700'}`}
+                                    onClick={() => setActiveTab('view')}
+                                >
+                                    <FaEye className="inline mr-2" /> Lượt Xem
+                                </button>
+                                <button
+                                    className={`px-4 py-2 mx-2 rounded-lg ${activeTab === 'heart' ? 'bg-red-500' : 'bg-gray-700'}`}
+                                    onClick={() => setActiveTab('heart')}
+                                >
+                                    <FaHeart className="inline mr-2" /> Yêu Thích
+                                </button>
+                                <button
+                                    className={`px-4 py-2 mx-2 rounded-lg ${activeTab === 'star' ? 'bg-yellow-500' : 'bg-gray-700'}`}
+                                    onClick={() => setActiveTab('star')}
+                                >
+                                    <FaStar className="inline mr-2" /> Phổ Biến
+                                </button>
+                            </div>
+                        )}
+                        <div {...handlers} className='pb-6'>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={activeTab}
+                                    initial={{ opacity: 0, x: isMobile ? 100 : 0, y: isMobile ? 0 : 20 }}
+                                    animate={{ opacity: 1, x: 0, y: 0 }}
+                                    exit={{ opacity: 0, x: isMobile ? -100 : 0, y: isMobile ? 0 : -20 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    {renderTabContent()}
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                        {isMobile && renderMobileTabControls()}
+                    </>
                 )}
             </div>
         </div>
