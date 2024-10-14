@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
-import { FaEdit, FaTrash, FaReply } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import { useFirebase } from './FirebaseConfig';
-import { doc, updateDoc, arrayUnion, arrayRemove, Timestamp } from 'firebase/firestore';
 
 interface Comment {
     id: string;
@@ -10,7 +8,6 @@ interface Comment {
     user: string;
     text: string;
     date: string;
-    replies?: Comment[];
 }
 
 interface CommentsProps {
@@ -22,18 +19,22 @@ interface CommentsProps {
     } | null;
 }
 
-const Comments: React.FC<CommentsProps> = ({ websiteId, comments, user }) => {
+const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComments, user }) => {
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [newComment, setNewComment] = useState('');
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editedCommentText, setEditedCommentText] = useState('');
-    const [replyingToId, setReplyingToId] = useState<string | null>(null);
-    const [replyText, setReplyText] = useState('');
     const router = useRouter();
-    const { db } = useFirebase();
+
+    useEffect(() => {
+        setComments(initialComments || []);
+        setIsLoading(false);
+    }, [initialComments]);
 
     const handleCommentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user || !db) {
+        if (!user) {
             router.push('/login');
             return;
         }
@@ -43,21 +44,28 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments, user }) => {
             uid: user.uid,
             user: user.displayName || 'Anonymous',
             text: newComment,
-            date: Timestamp.now().toDate().toISOString(),
+            date: new Date().toISOString(),
         };
 
+        // Cập nhật state ngay lập tức
+        setComments(prevComments => [newCommentObj, ...(prevComments || [])]);
+        setNewComment('');
+
         try {
-            const websiteRef = doc(db, 'websites', websiteId);
-            await updateDoc(websiteRef, {
-                comments: arrayUnion(newCommentObj)
+            const response = await fetch('/api/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ websiteId, comment: newCommentObj }),
             });
 
-            // Update local state or trigger a refetch of comments
-            // This depends on how you're managing state in the parent component
-
-            setNewComment('');
+            if (!response.ok) {
+                throw new Error('Lỗi khi thêm bình luận');
+            }
         } catch (error) {
-            console.error('Error adding comment:', error);
+            console.error('Lỗi khi thêm bình luận:', error);
+            // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
         }
     };
 
@@ -67,81 +75,55 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments, user }) => {
     };
 
     const handleSaveEdit = async (commentId: string) => {
-        if (!db) return;
+        // Cập nhật state ngay lập tức
+        setComments(prevComments => prevComments.map(comment =>
+            comment.id === commentId ? { ...comment, text: editedCommentText } : comment
+        ));
+        setEditingCommentId(null);
+        setEditedCommentText('');
 
         try {
-            const websiteRef = doc(db, 'websites', websiteId);
-            const updatedComments = comments.map(comment =>
-                comment.id === commentId ? { ...comment, text: editedCommentText } : comment
-            );
+            const response = await fetch('/api/comments', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ websiteId, commentId, text: editedCommentText }),
+            });
 
-            await updateDoc(websiteRef, { comments: updatedComments });
-
-            // Update local state or trigger a refetch of comments
-
-            setEditingCommentId(null);
-            setEditedCommentText('');
+            if (!response.ok) {
+                throw new Error('Lỗi khi chỉnh sửa bình luận');
+            }
         } catch (error) {
-            console.error('Error editing comment:', error);
+            console.error('Lỗi khi chỉnh sửa bình luận:', error);
+            // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
         }
     };
 
     const handleDeleteComment = async (commentId: string) => {
-        if (!db) return;
+        // Cập nhật state ngay lập tức
+        setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
 
         try {
-            const websiteRef = doc(db, 'websites', websiteId);
-            await updateDoc(websiteRef, {
-                comments: arrayRemove(comments.find(comment => comment.id === commentId))
+            const response = await fetch('/api/comments', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ websiteId, commentId }),
             });
 
-            // Update local state or trigger a refetch of comments
-
+            if (!response.ok) {
+                throw new Error('Lỗi khi xóa bình luận');
+            }
         } catch (error) {
-            console.error('Error deleting comment:', error);
+            console.error('Lỗi khi xóa bình luận:', error);
+            // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
         }
     };
 
-    const handleReply = (commentId: string) => {
-        setReplyingToId(commentId);
-        setReplyText('');
-    };
-
-    const handleSubmitReply = async (parentCommentId: string) => {
-        if (!user || !db) {
-            router.push('/login');
-            return;
-        }
-
-        const newReply = {
-            id: Date.now().toString(),
-            uid: user.uid,
-            user: user.displayName || 'Anonymous',
-            text: replyText,
-            date: Timestamp.now().toDate().toISOString(),
-        };
-
-        try {
-            const websiteRef = doc(db, 'websites', websiteId);
-            const updatedComments = comments.map(comment =>
-                comment.id === parentCommentId
-                    ? { ...comment, replies: [...(comment.replies || []), newReply] }
-                    : comment
-            );
-
-            await updateDoc(websiteRef, { comments: updatedComments });
-
-            // Update local state or trigger a refetch of comments
-
-            setReplyingToId(null);
-            setReplyText('');
-        } catch (error) {
-            console.error('Error adding reply:', error);
-        }
-    };
-
-    const renderComment = (comment: Comment, depth = 0) => (
-        <div key={comment.id} className={`mt-4 ${depth > 0 ? 'ml-8' : ''}`}>
+    const renderComment = (comment: Comment) => (
+        <div key={comment.id} className="mt-4">
             <div className="bg-gray-700 p-4 rounded">
                 <div className="flex justify-between items-start">
                     <div>
@@ -173,45 +155,36 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments, user }) => {
                 ) : (
                     <p className="text-gray-300 mt-2">{comment.text}</p>
                 )}
-                {user && replyingToId !== comment.id && (
-                    <button onClick={() => handleReply(comment.id)} className="text-blue-400 mt-2">
-                        <FaReply className="inline mr-1" /> Trả lời
-                    </button>
-                )}
-                {replyingToId === comment.id && (
-                    <div className="mt-2">
-                        <textarea
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            className="w-full p-2 bg-gray-600 text-white rounded"
-                            placeholder="Nhập trả lời của bạn..."
-                        />
-                        <button onClick={() => handleSubmitReply(comment.id)} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-                            Gửi trả lời
-                        </button>
-                    </div>
-                )}
             </div>
-            {comment.replies && comment.replies.map(reply => renderComment(reply, depth + 1))}
         </div>
     );
 
     return (
         <div className="mt-4">
             <h3 className="text-lg font-semibold text-blue-300 mb-2">Bình luận</h3>
-            {comments.map(comment => renderComment(comment))}
-            {user ? (
-                <form onSubmit={handleCommentSubmit} className="mt-4">
-                    <textarea
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        className="w-full p-2 bg-gray-700 text-white rounded"
-                        placeholder="Thêm bình luận của bạn..."
-                    />
-                    <button type="submit" className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">Gửi</button>
-                </form>
+            {isLoading ? (
+                <p>Đang tải bình luận...</p>
             ) : (
-                <p className="text-gray-400 mt-4">Đăng nhập để bình luận</p>
+                <>
+                    {comments.length > 0 ? (
+                        comments.map(comment => renderComment(comment))
+                    ) : (
+                        <p className="text-gray-400">Chưa có bình luận nào.</p>
+                    )}
+                    {user ? (
+                        <form onSubmit={handleCommentSubmit} className="mt-4">
+                            <textarea
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                className="w-full p-2 bg-gray-700 text-white rounded"
+                                placeholder="Thêm bình luận của bạn..."
+                            />
+                            <button type="submit" className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">Gửi</button>
+                        </form>
+                    ) : (
+                        <p className="text-gray-400 mt-4">Đăng nhập để bình luận</p>
+                    )}
+                </>
             )}
         </div>
     );

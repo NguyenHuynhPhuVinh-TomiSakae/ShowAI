@@ -6,6 +6,7 @@ import { FaStar, FaEye, FaHeart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import AdditionalInfoButton from './AdditionalInfoButton';
+import { FaSpinner } from 'react-icons/fa';
 import { useFirebase } from './FirebaseConfig';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import Rating from './Rating';
@@ -227,7 +228,10 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
             <AdditionalInfoButton websiteData={JSON.stringify(website)} />
 
             {isRating ? (
-                <p className="text-gray-400 mt-2">Đang phản hồi...</p>
+                <p className="text-gray-400 mt-2 flex items-center">
+                    <FaSpinner className="animate-spin mr-2" />
+                    Đang phản hồi...
+                </p>
             ) : (
                 <Rating
                     websiteId={website.id}
