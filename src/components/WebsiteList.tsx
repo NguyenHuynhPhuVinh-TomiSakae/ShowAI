@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaExternalLinkAlt, FaEye, FaHeart } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaEye, FaHeart, FaStar } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 
@@ -14,6 +14,7 @@ interface AIWebsite {
     keyFeatures: string[];
     view?: number;
     heart?: number;
+    evaluation?: number;
     label?: string;
     labelColor?: string;
     labelIcon?: React.ReactNode;
@@ -23,7 +24,7 @@ interface WebsiteListProps {
     websites: AIWebsite[];
     onTagClick: (tag: string) => void;
     isSidebar?: boolean;
-    isRandom?: boolean; // New prop to indicate if the websites are random
+    isRandom?: boolean;
 }
 
 const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSidebar = false, isRandom = false }) => {
@@ -44,7 +45,6 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
     const handleWebsiteClick = (id: string) => {
         router.push(`/show?id=${id}`);
 
-        // Increment view count in the background
         fetch('/api/incrementView', {
             method: 'POST',
             headers: {
@@ -52,7 +52,7 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
             },
             body: JSON.stringify({ id }),
         }).catch(error => {
-            console.error('Error incrementing view count:', error);
+            console.error('Lỗi khi tăng số lượt xem:', error);
         });
     };
 
@@ -136,6 +136,12 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                                     <div className="flex items-center">
                                         <FaHeart className="mr-1 text-red-500" />
                                         <span>{website.heart}</span>
+                                    </div>
+                                )}
+                                {website.evaluation !== undefined && (
+                                    <div className="flex items-center">
+                                        <FaStar className="mr-1 text-yellow-400" />
+                                        <span>{website.evaluation.toFixed(1)}</span>
                                     </div>
                                 )}
                             </div>

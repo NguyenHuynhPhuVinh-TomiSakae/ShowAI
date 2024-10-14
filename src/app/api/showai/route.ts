@@ -82,6 +82,8 @@ export async function GET(request: Request) {
             sortOption = { view: -1 };
         } else if (sort === 'star') {
             sortOption = { star: -1 };
+        } else if (sort === 'evaluation') {
+            sortOption = { evaluation: -1 };
         }
 
         if (random) {

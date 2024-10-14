@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaEdit, FaTrash, FaReply, FaSave } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaReply, FaSave, FaSpinner } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import useInputValidation from '@/hooks/useInputValidation';
 
 interface Comment {
     id: string;
@@ -31,6 +32,8 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [replyText, setReplyText] = useState('');
     const router = useRouter();
+    const { validateInput, isValidating } = useInputValidation();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
         setComments(initialComments || []);
@@ -41,6 +44,20 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         e.preventDefault();
         if (!user) {
             router.push('/login');
+            return;
+        }
+
+        setIsLoading(true);
+        setErrorMessage(null);
+        const isValid = await validateInput(newComment, {
+            instruction: "Kiểm tra xem bình luận này có phù hợp và không chứa nội dung xúc phạm hay không. Chỉ trả lời true hoặc false.",
+            validResponse: "true",
+            invalidResponse: "false"
+        });
+
+        if (!isValid) {
+            setErrorMessage("Bình luận của bạn không phù hợp. Vui lòng kiểm tra lại nội dung.");
+            setIsLoading(false);
             return;
         }
 
@@ -71,6 +88,8 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         } catch (error) {
             console.error('Lỗi khi thêm bình luận:', error);
             // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -133,6 +152,20 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
             return;
         }
 
+        setIsLoading(true);
+        setErrorMessage(null);
+        const isValid = await validateInput(replyText, {
+            instruction: "Kiểm tra xem câu trả lời này có phù hợp và không chứa nội dung xúc phạm hay không. Chỉ trả lời true hoặc false.",
+            validResponse: "true",
+            invalidResponse: "false"
+        });
+
+        if (!isValid) {
+            setErrorMessage("Câu trả lời của bạn không phù hợp. Vui lòng kiểm tra lại nội dung.");
+            setIsLoading(false);
+            return;
+        }
+
         const newReply = {
             id: Date.now().toString(),
             uid: user.uid,
@@ -163,6 +196,8 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         } catch (error) {
             console.error('Lỗi khi thêm trả lời:', error);
             // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -309,11 +344,15 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
                             className="w-full p-2 bg-gray-600 text-white rounded"
                             placeholder="Nhập câu trả lời của bạn..."
                         />
+                        {errorMessage && (
+                            <p className="text-red-500 mt-2">{errorMessage}</p>
+                        )}
                         <button
                             onClick={() => handleReplySubmit(comment.id)}
                             className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+                            disabled={isValidating || isLoading}
                         >
-                            <FaReply className="inline mr-2" /> Gửi trả lời
+                            {isValidating ? 'Đang kiểm tra...' : isLoading ? 'Đang gửi...' : 'Gửi trả lời'}
                         </button>
                     </div>
                 )}
@@ -361,9 +400,15 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         <div className="mt-4">
             <h3 className="text-lg font-semibold text-blue-300 mb-2">Bình luận</h3>
             {isLoading ? (
-                <p>Đang tải bình luận...</p>
+                <p className="flex items-center">
+                    <FaSpinner className="animate-spin mr-2" />
+                    Đang kiểm tra bình luận...
+                </p>
             ) : (
                 <>
+                    {errorMessage && (
+                        <p className="text-red-500 mb-2">{errorMessage}</p>
+                    )}
                     {comments.length > 0 ? (
                         comments.map(comment => renderCommentWithReplies(comment))
                     ) : (
@@ -377,7 +422,13 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
                                 className="w-full p-2 bg-gray-700 text-white rounded"
                                 placeholder="Thêm bình luận của bạn..."
                             />
-                            <button type="submit" className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">Gửi</button>
+                            <button
+                                type="submit"
+                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+                                disabled={isValidating || isLoading}
+                            >
+                                {isValidating ? 'Đang kiểm tra...' : isLoading ? 'Đang gửi...' : 'Gửi'}
+                            </button>
                         </form>
                     ) : (
                         <p className="text-gray-400 mt-4">Đăng nhập để bình luận</p>

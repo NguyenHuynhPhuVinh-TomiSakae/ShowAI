@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { FaSpinner, FaEye, FaHeart, FaStar, FaTrophy, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaSpinner, FaEye, FaHeart, FaTrophy, FaChevronLeft, FaChevronRight, FaFire, FaThumbsUp } from 'react-icons/fa';
 import WebsiteList from '@/components/WebsiteList';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,6 +17,7 @@ interface AIWebsite {
     view?: number;
     heart?: number;
     star?: number;
+    evaluation?: number;
 }
 
 const LeaderboardPage = () => {
@@ -24,6 +25,7 @@ const LeaderboardPage = () => {
     const [viewWebsites, setViewWebsites] = useState<AIWebsite[]>([]);
     const [heartWebsites, setHeartWebsites] = useState<AIWebsite[]>([]);
     const [starWebsites, setStarWebsites] = useState<AIWebsite[]>([]);
+    const [evaluationWebsites, setEvaluationWebsites] = useState<AIWebsite[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('view');
@@ -46,18 +48,21 @@ const LeaderboardPage = () => {
             const viewResponse = await fetch('/api/showai?sort=view&limit=9');
             const heartResponse = await fetch('/api/showai?sort=heart&limit=9');
             const starResponse = await fetch('/api/showai?sort=star&limit=9');
+            const evaluationResponse = await fetch('/api/showai?sort=evaluation&limit=9');
 
-            if (!viewResponse.ok || !heartResponse.ok || !starResponse.ok) {
+            if (!viewResponse.ok || !heartResponse.ok || !starResponse.ok || !evaluationResponse.ok) {
                 throw new Error('Lỗi khi tải dữ liệu bảng xếp hạng');
             }
 
             const viewData = await viewResponse.json();
             const heartData = await heartResponse.json();
             const starData = await starResponse.json();
+            const evaluationData = await evaluationResponse.json();
 
             setViewWebsites(viewData.data);
             setHeartWebsites(heartData.data);
             setStarWebsites(starData.data);
+            setEvaluationWebsites(evaluationData.data);
         } catch (error) {
             console.error('Error fetching leaderboard data:', error);
             setError('Không thể tải dữ liệu bảng xếp hạng');
@@ -70,7 +75,7 @@ const LeaderboardPage = () => {
         router.push(`/search?tag=${encodeURIComponent(tag)}`);
     };
 
-    const tabs = ['view', 'heart', 'star'];
+    const tabs = ['view', 'heart', 'star', 'evaluation'];
     const changeTab = (direction: 'next' | 'prev') => {
         const currentIndex = tabs.indexOf(activeTab);
         let newIndex;
@@ -112,8 +117,17 @@ const LeaderboardPage = () => {
                 return (
                     <LeaderboardSection
                         title="Bảng Phổ Biến"
-                        icon={<FaStar className="text-yellow-500" />}
+                        icon={<FaFire className="text-orange-500" />}
                         websites={starWebsites}
+                        onTagClick={handleTagClick}
+                    />
+                );
+            case 'evaluation':
+                return (
+                    <LeaderboardSection
+                        title="Bảng Đánh Giá"
+                        icon={<FaThumbsUp className="text-green-500" />}
+                        websites={evaluationWebsites}
                         onTagClick={handleTagClick}
                     />
                 );
@@ -149,14 +163,18 @@ const LeaderboardPage = () => {
                                 />
                                 <button
                                     className={`px-4 py-2 rounded-lg ${activeTab === 'view' ? 'bg-blue-500' :
-                                        activeTab === 'heart' ? 'bg-red-500' : 'bg-yellow-500'
+                                        activeTab === 'heart' ? 'bg-red-500' :
+                                            activeTab === 'star' ? 'bg-orange-500' :
+                                                'bg-green-500'
                                         }`}
                                 >
                                     {activeTab === 'view' && <FaEye className="inline mr-2" />}
                                     {activeTab === 'heart' && <FaHeart className="inline mr-2" />}
-                                    {activeTab === 'star' && <FaStar className="inline mr-2" />}
+                                    {activeTab === 'star' && <FaFire className="inline mr-2" />}
+                                    {activeTab === 'evaluation' && <FaThumbsUp className="inline mr-2" />}
                                     {activeTab === 'view' ? 'Lượt Xem' :
-                                        activeTab === 'heart' ? 'Yêu Thích' : 'Phổ Biến'}
+                                        activeTab === 'heart' ? 'Yêu Thích' :
+                                            activeTab === 'star' ? 'Phổ Biến' : 'Đánh Giá'}
                                 </button>
                                 <FaChevronRight
                                     className="text-2xl text-gray-400 cursor-pointer"
@@ -178,10 +196,16 @@ const LeaderboardPage = () => {
                                     <FaHeart className="inline mr-2" /> Yêu Thích
                                 </button>
                                 <button
-                                    className={`px-4 py-2 mx-2 rounded-lg ${activeTab === 'star' ? 'bg-yellow-500' : 'bg-gray-700'}`}
+                                    className={`px-4 py-2 mx-2 rounded-lg ${activeTab === 'star' ? 'bg-orange-500' : 'bg-gray-700'}`}
                                     onClick={() => setActiveTab('star')}
                                 >
-                                    <FaStar className="inline mr-2" /> Phổ Biến
+                                    <FaFire className="inline mr-2" /> Phổ Biến
+                                </button>
+                                <button
+                                    className={`px-4 py-2 mx-2 rounded-lg ${activeTab === 'evaluation' ? 'bg-green-500' : 'bg-gray-700'}`}
+                                    onClick={() => setActiveTab('evaluation')}
+                                >
+                                    <FaThumbsUp className="inline mr-2" /> Đánh Giá
                                 </button>
                             </div>
                         )}
