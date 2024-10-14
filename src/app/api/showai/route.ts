@@ -151,7 +151,9 @@ export async function POST(request: Request) {
             ...data,
             heart: 0,
             star: 0,
-            view: 0
+            view: 0,
+            evaluation: 0,
+            comments: []
         };
 
         const result = await collection.insertOne(newData);

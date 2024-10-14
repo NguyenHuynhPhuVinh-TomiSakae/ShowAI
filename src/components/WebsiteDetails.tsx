@@ -8,6 +8,8 @@ import { TypeAnimation } from 'react-type-animation';
 import AdditionalInfoButton from './AdditionalInfoButton';
 import { useFirebase } from './FirebaseConfig';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import Rating from './Rating';
+import Comments from './Comments';
 
 interface AIWebsite {
     _id: string;
@@ -19,6 +21,8 @@ interface AIWebsite {
     keyFeatures: string[];
     view?: number;
     heart?: number;
+    evaluation?: number;
+    comments?: Array<{ id: string; uid: string; user: string; text: string; date: string }>;
 }
 
 interface WebsiteDetailsProps {
@@ -37,6 +41,8 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
     const [heartCount, setHeartCount] = useState(website.heart || 0);
     const [canHeart, setCanHeart] = useState(true);
     const router = useRouter();
+    const [websiteRating, setWebsiteRating] = useState(website.evaluation || 0);
+    const [isRating, setIsRating] = useState(false);
 
     useEffect(() => {
         setIsVisible(true);
@@ -132,6 +138,15 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
         }
     };
 
+    const handleRatingStart = () => {
+        setIsRating(true);
+    };
+
+    const handleRatingUpdate = (newRating: number) => {
+        setWebsiteRating(newRating);
+        setIsRating(false);
+    };
+
     return (
         <motion.div
             className="bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg"
@@ -210,6 +225,24 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                 </div>
             )}
             <AdditionalInfoButton websiteData={JSON.stringify(website)} />
+
+            {isRating ? (
+                <p className="text-gray-400 mt-2">Đang phản hồi...</p>
+            ) : (
+                <Rating
+                    websiteId={website.id}
+                    initialRating={websiteRating}
+                    user={user}
+                    onRatingUpdate={handleRatingUpdate}
+                    onRatingStart={handleRatingStart}
+                />
+            )}
+
+            <Comments
+                websiteId={website.id}
+                comments={website.comments || []}
+                user={user}
+            />
         </motion.div>
     );
 };
