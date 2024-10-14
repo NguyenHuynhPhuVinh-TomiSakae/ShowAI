@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirebase } from '@/components/FirebaseConfig';
-import { FaUser, FaHeart, FaSpinner, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
+import { FaUser, FaHeart, FaSpinner } from 'react-icons/fa';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import WebsiteList from '@/components/WebsiteList';
 import { motion, AnimatePresence } from 'framer-motion';
+import DisplayNameEditor from '@/components/DisplayNameEditor';
 
 const AccountPage = () => {
     const [activeTab, setActiveTab] = useState('info');
@@ -14,8 +15,6 @@ const AccountPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [heartedWebsites, setHeartedWebsites] = useState<any[]>([]);
     const [isHeartedLoading, setIsHeartedLoading] = useState(true);
-    const [isEditingName, setIsEditingName] = useState(false);
-    const [newDisplayName, setNewDisplayName] = useState('');
     const { auth, db } = useFirebase();
     const router = useRouter();
 
@@ -26,7 +25,6 @@ const AccountPage = () => {
                     displayName: currentUser.displayName,
                     uid: currentUser.uid
                 });
-                setNewDisplayName(currentUser.displayName || '');
                 fetchUserData(currentUser.uid);
                 fetchHeartedWebsites(currentUser.uid);
             } else {
@@ -55,7 +53,6 @@ const AccountPage = () => {
                         displayName: userData.displayName || null,
                         uid: prevUser?.uid || null
                     }));
-                    setNewDisplayName(userData.displayName || '');
                 }
             }
             setIsLoading(false);
@@ -100,26 +97,16 @@ const AccountPage = () => {
         router.push(`/search?tag=${encodeURIComponent(tag)}`);
     };
 
-    const handleEditName = () => {
-        setIsEditingName(true);
-    };
-
-    const handleSaveName = async () => {
+    const handleSaveName = async (newName: string) => {
         if (user && user.uid && db) {
             try {
                 const userDoc = doc(db, 'users', user.uid);
-                await updateDoc(userDoc, { displayName: newDisplayName });
-                setUser({ ...user, displayName: newDisplayName });
-                setIsEditingName(false);
+                await updateDoc(userDoc, { displayName: newName });
+                setUser({ ...user, displayName: newName });
             } catch (error) {
-                console.error('Error updating display name:', error);
+                console.error('Lỗi khi cập nhật tên hiển thị:', error);
             }
         }
-    };
-
-    const handleCancelEdit = () => {
-        setNewDisplayName(user?.displayName || '');
-        setIsEditingName(false);
     };
 
     if (isLoading || isHeartedLoading) {
@@ -174,43 +161,10 @@ const AccountPage = () => {
                             className="bg-gray-800 p-6 rounded-lg shadow-md"
                         >
                             <h2 className="text-xl font-semibold mb-4 text-blue-300">Thông tin cá nhân</h2>
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center mb-4">
-                                <strong className="mr-2 mb-2 sm:mb-0">Tên người dùng:</strong>
-                                {isEditingName ? (
-                                    <div className="flex flex-col sm:flex-row w-full sm:w-auto">
-                                        <input
-                                            type="text"
-                                            value={newDisplayName}
-                                            onChange={(e) => setNewDisplayName(e.target.value)}
-                                            className="bg-gray-700 text-white px-2 py-1 rounded mb-2 sm:mb-0 sm:mr-2 w-full sm:w-auto"
-                                        />
-                                        <div className="flex">
-                                            <button
-                                                onClick={handleSaveName}
-                                                className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 mr-2 flex items-center"
-                                            >
-                                                <FaSave className="mr-1" /> Lưu
-                                            </button>
-                                            <button
-                                                onClick={handleCancelEdit}
-                                                className="bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600 flex items-center"
-                                            >
-                                                <FaTimes className="mr-1" /> Hủy
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center">
-                                        <span>{user.displayName || 'Chưa cập nhật'}</span>
-                                        <button
-                                            onClick={handleEditName}
-                                            className="ml-2 text-blue-300 hover:text-blue-400"
-                                        >
-                                            <FaEdit />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
+                            <DisplayNameEditor
+                                initialName={user.displayName || ''}
+                                onSave={handleSaveName}
+                            />
                         </motion.div>
                     )}
 
