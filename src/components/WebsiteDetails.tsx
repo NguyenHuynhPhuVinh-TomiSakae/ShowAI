@@ -148,6 +148,11 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
         setIsRating(false);
     };
 
+    // Thêm hàm sắp xếp comments
+    const sortComments = (comments: Array<{ id: string; uid: string; user: string; text: string; date: string }>) => {
+        return [...comments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    };
+
     return (
         <motion.div
             className="bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg"
@@ -155,35 +160,57 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
             animate={isVisible ? "visible" : "hidden"}
             variants={containerVariants}
         >
-            <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
-                <div className="flex items-center">
-                    <h2 className="text-xl sm:text-2xl font-bold text-blue-300 mb-2 mr-2">{website.name}</h2>
-                    <div className="flex items-center text-gray-400 text-sm mb-2 mr-2">
-                        <FaEye className="mr-1" />
-                        <span>{viewCount}</span>
-                    </div>
-                    <FaStar
-                        className={`mb-2 cursor-pointer text-2xl mr-2 ${isStarred ? 'text-yellow-400' : 'text-gray-400'}`}
-                        onClick={onStarClick}
-                    />
-                    <div className="flex items-center mb-2 mr-2">
-                        <FaHeart
-                            className={`text-2xl mr-1 ${isHearted ? 'text-red-500' : 'text-gray-400 cursor-pointer'}`}
-                            onClick={handleHeartClick}
-                        />
-                        <span className="text-gray-400">{heartCount}</span>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center mb-2 sm:mb-0">
+                    <h2 className="text-2xl font-bold text-blue-300 mr-4">{website.name}</h2>
+                    <div className="flex items-center space-x-6 mt-2 sm:mt-0">
+                        <div className="flex items-center text-gray-400">
+                            <FaEye className="text-2xl mr-1" />
+                            <span>{viewCount}</span>
+                        </div>
+                        <div className="flex items-center">
+                            <FaHeart
+                                className={`text-2xl mr-1 ${isHearted ? 'text-red-500' : 'text-gray-400 cursor-pointer'}`}
+                                onClick={handleHeartClick}
+                            />
+                            <span className="text-gray-400">{heartCount}</span>
+                        </div>
+                        <div className="flex items-center">
+                            <FaStar
+                                className={`cursor-pointer text-3xl mr-1 ${isStarred ? 'text-yellow-400' : 'text-gray-400'}`}
+                                onClick={onStarClick}
+                            />
+                        </div>
                     </div>
                 </div>
                 <Link
                     href={website.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block bg-[#6366F1] hover:bg-[#93C5FD] text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 mt-4 sm:mt-0"
+                    className="inline-block bg-[#6366F1] hover:bg-[#93C5FD] text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 mt-2 sm:mt-0"
                 >
                     Truy cập trang web
                 </Link>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2 mb-4">
+
+            <div className="mb-4">
+                {isRating ? (
+                    <p className="text-gray-400 flex items-center">
+                        <FaSpinner className="animate-spin mr-2" />
+                        Đang phản hồi...
+                    </p>
+                ) : (
+                    <Rating
+                        websiteId={website.id}
+                        initialRating={websiteRating}
+                        user={user}
+                        onRatingUpdate={handleRatingUpdate}
+                        onRatingStart={handleRatingStart}
+                    />
+                )}
+            </div>
+
+            <div className="flex flex-wrap gap-2 mb-4">
                 {website.tags && website.tags.map((tag, index) => (
                     <span
                         key={index}
@@ -194,6 +221,7 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                     </span>
                 ))}
             </div>
+
             <TypeAnimation
                 sequence={[
                     Array.isArray(website.description)
@@ -206,6 +234,7 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                 className="text-gray-300 mb-4 whitespace-pre-wrap"
                 cursor={false}
             />
+
             {website.keyFeatures && website.keyFeatures.length > 0 && (
                 <div>
                     <strong className="text-blue-300">Tính năng chính:</strong>
@@ -225,26 +254,12 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                     </ul>
                 </div>
             )}
-            <AdditionalInfoButton websiteData={JSON.stringify(website)} />
 
-            {isRating ? (
-                <p className="text-gray-400 mt-2 flex items-center">
-                    <FaSpinner className="animate-spin mr-2" />
-                    Đang phản hồi...
-                </p>
-            ) : (
-                <Rating
-                    websiteId={website.id}
-                    initialRating={websiteRating}
-                    user={user}
-                    onRatingUpdate={handleRatingUpdate}
-                    onRatingStart={handleRatingStart}
-                />
-            )}
+            <AdditionalInfoButton websiteData={JSON.stringify(website)} />
 
             <Comments
                 websiteId={website.id}
-                comments={website.comments || []}
+                comments={sortComments(website.comments || [])}
                 user={user}
             />
         </motion.div>

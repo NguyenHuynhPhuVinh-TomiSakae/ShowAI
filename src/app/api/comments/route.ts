@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import { MongoClient, Db, ObjectId, PullOperator } from 'mongodb';
+import { MongoClient, Db, ObjectId } from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
 if (!uri) {
@@ -66,13 +67,26 @@ export async function POST(request: Request) {
             date: new Date().toISOString()
         };
 
-        const result = await collection.updateOne(
-            { id: websiteId },
-            { $push: { comments: newComment } }
-        );
+        if (comment.parentId) {
+            // Nếu là câu trả lời, thêm vào mảng replies của bình luận cha
+            const result = await collection.updateOne(
+                { id: websiteId, "comments.id": comment.parentId },
+                { $push: { "comments.$.replies": newComment } }
+            );
 
-        if (result.matchedCount === 0) {
-            return createCorsResponse({ error: 'Không tìm thấy website' }, 404);
+            if (result.matchedCount === 0) {
+                return createCorsResponse({ error: 'Không tìm thấy bình luận cha' }, 404);
+            }
+        } else {
+            // Nếu là bình luận gốc, thêm vào mảng comments
+            const result = await collection.updateOne(
+                { id: websiteId },
+                { $push: { comments: newComment } }
+            );
+
+            if (result.matchedCount === 0) {
+                return createCorsResponse({ error: 'Không tìm thấy website' }, 404);
+            }
         }
 
         return createCorsResponse({ success: true, comment: newComment });
@@ -83,59 +97,76 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-    const { websiteId, commentId, text } = await request.json();
+    const { websiteId, commentId, parentId, replyId, text } = await request.json();
 
-    if (!websiteId || !commentId || !text) {
-        return createCorsResponse({ error: 'websiteId, commentId và text là bắt buộc' }, 400);
+    if (!websiteId || !text || (!commentId && (!parentId || !replyId))) {
+        return createCorsResponse({ error: 'Thiếu thông tin cần thiết' }, 400);
     }
 
     try {
         const db = await connectToDatabase();
         const collection = db.collection('data_web_ai');
 
-        const result = await collection.updateOne(
-            { id: websiteId, "comments.id": commentId },
-            { $set: { "comments.$.text": text, "comments.$.editedAt": new Date().toISOString() } }
-        );
+        let result;
+        if (commentId) {
+            // Cập nhật bình luận gốc
+            result = await collection.updateOne(
+                { id: websiteId, "comments.id": commentId },
+                { $set: { "comments.$.text": text, "comments.$.editedAt": new Date().toISOString() } }
+            );
+        } else {
+            // Cập nhật câu trả lời
+            result = await collection.updateOne(
+                { id: websiteId, "comments.id": parentId, "comments.replies.id": replyId },
+                { $set: { "comments.$[comment].replies.$[reply].text": text, "comments.$[comment].replies.$[reply].editedAt": new Date().toISOString() } },
+                { arrayFilters: [{ "comment.id": parentId }, { "reply.id": replyId }] }
+            );
+        }
 
         if (result.matchedCount === 0) {
-            return createCorsResponse({ error: 'Không tìm thấy website hoặc bình luận' }, 404);
+            return createCorsResponse({ error: 'Không tìm thấy bình luận hoặc câu trả lời' }, 404);
         }
 
         return createCorsResponse({ success: true });
     } catch (error) {
-        console.error('Lỗi khi cập nhật bình luận:', error);
+        console.error('Lỗi khi cập nhật bình luận hoặc câu trả lời:', error);
         return createCorsResponse({ error: 'Lỗi server' }, 500);
     }
 }
 
 export async function DELETE(request: Request) {
-    const { websiteId, commentId } = await request.json();
+    const { websiteId, commentId, parentId, replyId } = await request.json();
 
-    if (!websiteId || !commentId) {
-        return createCorsResponse({ error: 'websiteId và commentId là bắt buộc' }, 400);
+    if (!websiteId || (!commentId && (!parentId || !replyId))) {
+        return createCorsResponse({ error: 'Thiếu thông tin cần thiết' }, 400);
     }
 
     try {
         const db = await connectToDatabase();
         const collection = db.collection('data_web_ai');
 
-        const pullOperation: PullOperator<Document> = {
-            $pull: { comments: { id: commentId } }
-        };
-
-        const result = await collection.updateOne(
-            { id: websiteId },
-            pullOperation
-        );
+        let result;
+        if (commentId) {
+            // Xóa bình luận gốc
+            result = await collection.updateOne(
+                { id: websiteId },
+                { $pull: { comments: { id: commentId } } } as any
+            );
+        } else {
+            // Xóa câu trả lời
+            result = await collection.updateOne(
+                { id: websiteId, "comments.id": parentId },
+                { $pull: { "comments.$.replies": { id: replyId } } } as any
+            );
+        }
 
         if (result.matchedCount === 0) {
-            return createCorsResponse({ error: 'Không tìm thấy website' }, 404);
+            return createCorsResponse({ error: 'Không tìm thấy bình luận hoặc câu trả lời' }, 404);
         }
 
         return createCorsResponse({ success: true });
     } catch (error) {
-        console.error('Lỗi khi xóa bình luận:', error);
+        console.error('Lỗi khi xóa bình luận hoặc câu trả lời:', error);
         return createCorsResponse({ error: 'Lỗi server' }, 500);
     }
 }

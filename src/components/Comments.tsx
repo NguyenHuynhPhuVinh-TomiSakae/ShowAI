@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaReply, FaSave } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 
 interface Comment {
@@ -8,6 +8,9 @@ interface Comment {
     user: string;
     text: string;
     date: string;
+    replies?: Comment[];
+    parentId?: string;
+    replyToId?: string; // Thêm trường này
 }
 
 interface CommentsProps {
@@ -25,6 +28,8 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
     const [newComment, setNewComment] = useState('');
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editedCommentText, setEditedCommentText] = useState('');
+    const [replyingTo, setReplyingTo] = useState<string | null>(null);
+    const [replyText, setReplyText] = useState('');
     const router = useRouter();
 
     useEffect(() => {
@@ -122,7 +127,140 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         }
     };
 
-    const renderComment = (comment: Comment) => (
+    const handleReplySubmit = async (parentId: string, replyToId?: string) => {
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
+        const newReply = {
+            id: Date.now().toString(),
+            uid: user.uid,
+            user: user.displayName || 'Anonymous',
+            text: replyText,
+            date: new Date().toISOString(),
+            parentId: parentId,
+            replyToId: replyToId, // Thêm trường này
+        };
+
+        // Cập nhật state ngay lập tức
+        setComments(prevComments => addReplyToComments(prevComments, parentId, replyToId, newReply));
+        setReplyText('');
+        setReplyingTo(null);
+
+        try {
+            const response = await fetch('/api/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ websiteId, comment: newReply }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Lỗi khi thêm trả lời');
+            }
+        } catch (error) {
+            console.error('Lỗi khi thêm trả lời:', error);
+            // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
+        }
+    };
+
+    const addReplyToComments = (comments: Comment[], parentId: string, replyToId: string | undefined, newReply: Comment): Comment[] => {
+        return comments.map(comment => {
+            if (comment.id === parentId) {
+                if (replyToId) {
+                    // Nếu có replyToId, tìm và thêm vào replies của reply đó
+                    return {
+                        ...comment,
+                        replies: comment.replies?.map(reply =>
+                            reply.id === replyToId
+                                ? { ...reply, replies: [...(reply.replies || []), newReply] }
+                                : reply
+                        ) || [],
+                    };
+                } else {
+                    // Nếu không có replyToId, thêm vào replies của comment cha
+                    return {
+                        ...comment,
+                        replies: [...(comment.replies || []), newReply],
+                    };
+                }
+            } else if (comment.replies) {
+                return {
+                    ...comment,
+                    replies: addReplyToComments(comment.replies, parentId, replyToId, newReply),
+                };
+            }
+            return comment;
+        });
+    };
+
+    const handleDeleteReply = async (parentId: string, replyId: string) => {
+        // Cập nhật state ngay lập tức
+        setComments(prevComments => prevComments.map(comment => {
+            if (comment.id === parentId) {
+                return {
+                    ...comment,
+                    replies: comment.replies?.filter(reply => reply.id !== replyId)
+                };
+            }
+            return comment;
+        }));
+
+        try {
+            const response = await fetch('/api/comments', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ websiteId, parentId, replyId }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Lỗi khi xóa câu trả lời');
+            }
+        } catch (error) {
+            console.error('Lỗi khi xóa câu trả lời:', error);
+            // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
+        }
+    };
+
+    const handleEditReply = async (parentId: string, replyId: string, newText: string) => {
+        // Cập nhật state ngay lập tức
+        setComments(prevComments => prevComments.map(comment => {
+            if (comment.id === parentId) {
+                return {
+                    ...comment,
+                    replies: comment.replies?.map(reply =>
+                        reply.id === replyId ? { ...reply, text: newText } : reply
+                    )
+                };
+            }
+            return comment;
+        }));
+        setEditingCommentId(null);
+        setEditedCommentText('');
+
+        try {
+            const response = await fetch('/api/comments', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ websiteId, parentId, replyId, text: newText }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Lỗi khi chỉnh sửa câu trả lời');
+            }
+        } catch (error) {
+            console.error('Lỗi khi chỉnh sửa câu trả lời:', error);
+            // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
+        }
+    };
+
+    const renderCommentWithReplies = (comment: Comment) => (
         <div key={comment.id} className="mt-4">
             <div className="bg-gray-700 p-4 rounded">
                 <div className="flex justify-between items-start">
@@ -142,20 +280,80 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
                     )}
                 </div>
                 {editingCommentId === comment.id ? (
-                    <div className="mt-2">
+                    <div>
                         <textarea
                             value={editedCommentText}
                             onChange={(e) => setEditedCommentText(e.target.value)}
-                            className="w-full p-2 bg-gray-600 text-white rounded"
+                            className="w-full p-2 bg-gray-600 text-white rounded mt-2"
                         />
                         <button onClick={() => handleSaveEdit(comment.id)} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-                            Lưu
+                            <FaSave className="inline mr-2" /> Lưu
                         </button>
                     </div>
                 ) : (
                     <p className="text-gray-300 mt-2">{comment.text}</p>
                 )}
+                {user && (
+                    <button
+                        onClick={() => setReplyingTo(comment.id)}
+                        className="text-blue-400 mt-2"
+                    >
+                        <FaReply className="inline mr-2" /> Trả lời
+                    </button>
+                )}
+                {replyingTo === comment.id && (
+                    <div className="mt-2">
+                        <textarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            className="w-full p-2 bg-gray-600 text-white rounded"
+                            placeholder="Nhập câu trả lời của bạn..."
+                        />
+                        <button
+                            onClick={() => handleReplySubmit(comment.id)}
+                            className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+                        >
+                            <FaReply className="inline mr-2" /> Gửi trả lời
+                        </button>
+                    </div>
+                )}
             </div>
+            {comment.replies && comment.replies.map(reply => (
+                <div key={reply.id} className="ml-8 mt-2">
+                    <div className="bg-gray-700 p-4 rounded">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <span className="font-bold text-blue-300">{reply.user}</span>
+                                <span className="text-gray-400 ml-2 text-sm">{new Date(reply.date).toLocaleString()}</span>
+                            </div>
+                            {user && user.uid === reply.uid && (
+                                <div>
+                                    <button onClick={() => handleEditComment(reply.id, reply.text)} className="text-blue-400 mr-2">
+                                        <FaEdit />
+                                    </button>
+                                    <button onClick={() => handleDeleteReply(comment.id, reply.id)} className="text-red-400">
+                                        <FaTrash />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        {editingCommentId === reply.id ? (
+                            <div>
+                                <textarea
+                                    value={editedCommentText}
+                                    onChange={(e) => setEditedCommentText(e.target.value)}
+                                    className="w-full p-2 bg-gray-600 text-white rounded mt-2"
+                                />
+                                <button onClick={() => handleEditReply(comment.id, reply.id, editedCommentText)} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
+                                    <FaSave className="inline mr-2" /> Lưu
+                                </button>
+                            </div>
+                        ) : (
+                            <p className="text-gray-300 mt-2">{reply.text}</p>
+                        )}
+                    </div>
+                </div>
+            ))}
         </div>
     );
 
@@ -167,7 +365,7 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
             ) : (
                 <>
                     {comments.length > 0 ? (
-                        comments.map(comment => renderComment(comment))
+                        comments.map(comment => renderCommentWithReplies(comment))
                     ) : (
                         <p className="text-gray-400">Chưa có bình luận nào.</p>
                     )}
