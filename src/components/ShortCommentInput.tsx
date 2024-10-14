@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { FaCommentAlt, FaSpinner } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
 import useInputValidation from '../hooks/useInputValidation';
@@ -11,7 +11,7 @@ interface ShortCommentInputProps {
     user: any;
 }
 
-const ShortCommentInput: React.FC<ShortCommentInputProps> = ({ onCommentAdded, user }) => {
+const ShortCommentInputContent: React.FC<ShortCommentInputProps> = ({ onCommentAdded, user }) => {
     const searchParams = useSearchParams();
     const websiteId = searchParams.get('id');
 
@@ -270,6 +270,14 @@ const ShortCommentInput: React.FC<ShortCommentInputProps> = ({ onCommentAdded, u
                 </ModalPortal>
             </form>
         </div>
+    );
+};
+
+const ShortCommentInput: React.FC<ShortCommentInputProps> = (props) => {
+    return (
+        <Suspense fallback={<div>Đang tải...</div>}>
+            <ShortCommentInputContent {...props} />
+        </Suspense>
     );
 };
 
