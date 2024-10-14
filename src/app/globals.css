@@ -27,3 +27,13 @@
     initial-value: 0deg;
     inherits: false;
 }
+
+@keyframes moveLeft {
+    from {
+        right: -100%;
+    }
+
+    to {
+        right: 100%;
+    }
+}

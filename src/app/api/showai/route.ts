@@ -155,7 +155,8 @@ export async function POST(request: Request) {
             star: 0,
             view: 0,
             evaluation: 0,
-            comments: []
+            comments: [],
+            shortComments: []
         };
 
         const result = await collection.insertOne(newData);

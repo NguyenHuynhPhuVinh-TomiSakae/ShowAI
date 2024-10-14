@@ -11,6 +11,7 @@ import { useFirebase } from './FirebaseConfig';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import Rating from './Rating';
 import Comments from './Comments';
+import ShortCommentInput from './ShortCommentInput';
 
 interface AIWebsite {
     _id: string;
@@ -153,6 +154,11 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
         return [...comments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     };
 
+    const handleCommentAdded = () => {
+        // Cập nhật danh sách bình luận ngắn
+        // Bạn có thể gọi API để lấy danh sách bình luận mới nhất
+    };
+
     return (
         <motion.div
             className="bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg"
@@ -256,6 +262,12 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
             )}
 
             <AdditionalInfoButton websiteData={JSON.stringify(website)} />
+
+            <ShortCommentInput
+                websiteId=''
+                onCommentAdded={handleCommentAdded}
+                user={user}
+            />
 
             <Comments
                 websiteId={website.id}
