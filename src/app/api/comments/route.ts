@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { MongoClient, Db, ObjectId } from 'mongodb';
+import { MongoClient, Db, ObjectId, PullOperator } from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
 if (!uri) {
@@ -120,9 +120,13 @@ export async function DELETE(request: Request) {
         const db = await connectToDatabase();
         const collection = db.collection('data_web_ai');
 
+        const pullOperation: PullOperator<Document> = {
+            $pull: { comments: { id: commentId } }
+        };
+
         const result = await collection.updateOne(
             { id: websiteId },
-            { $pull: { comments: { id: commentId } } }
+            pullOperation
         );
 
         if (result.matchedCount === 0) {
