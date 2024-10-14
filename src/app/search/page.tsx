@@ -59,7 +59,7 @@ function SearchContent() {
         setDisplayTerm(term);
         setSearchTerm(''); // Clear the input after search
         try {
-            const response = await fetch(`https://vercel-api-five-nu.vercel.app/api/showai?${type}=${encodeURIComponent(term)}`);
+            const response = await fetch(`/api/showai?${type}=${encodeURIComponent(term)}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

@@ -43,9 +43,9 @@ const LeaderboardPage = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const viewResponse = await fetch('https://vercel-api-five-nu.vercel.app/api/showai?sort=view&show=9');
-            const heartResponse = await fetch('https://vercel-api-five-nu.vercel.app/api/showai?sort=heart&show=9');
-            const starResponse = await fetch('https://vercel-api-five-nu.vercel.app/api/showai?sort=star&show=9');
+            const viewResponse = await fetch('/api/showai?sort=view&limit=9');
+            const heartResponse = await fetch('/api/showai?sort=heart&limit=9');
+            const starResponse = await fetch('/api/showai?sort=star&limit=9');
 
             if (!viewResponse.ok || !heartResponse.ok || !starResponse.ok) {
                 throw new Error('Lỗi khi tải dữ liệu bảng xếp hạng');

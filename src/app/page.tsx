@@ -54,7 +54,7 @@ export default function Home() {
 
     try {
       setIsLoading(true);
-      const response = await fetch(`https://vercel-api-five-nu.vercel.app/api/showai?page=${page}`, {
+      const response = await fetch(`/api/showai?page=${page}`, {
         signal: abortControllerRef.current.signal
       });
       if (!response.ok) {

@@ -80,7 +80,7 @@ const AccountPage = () => {
                     }
 
                     const heartIdsQuery = heartedIds.join(',');
-                    const response = await fetch(`https://vercel-api-five-nu.vercel.app/api/showai?list=${heartIdsQuery}`);
+                    const response = await fetch(`/api/showai?list=${heartIdsQuery}`);
                     if (response.ok) {
                         const data = await response.json();
                         if (data && data.data) {

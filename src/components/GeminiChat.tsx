@@ -51,7 +51,7 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose }) => {
     useEffect(() => {
         const fetchShowAIData = async () => {
             try {
-                const response = await fetch('https://vercel-api-five-nu.vercel.app/api/showai');
+                const response = await fetch('/api/showai');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
