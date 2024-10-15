@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaEdit, FaTrash, FaReply, FaSave, FaSpinner } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaReply, FaSpinner } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import useInputValidation from '@/hooks/useInputValidation';
+import { doc, getDoc } from 'firebase/firestore';
+import { useFirebase } from '@/components/FirebaseConfig';
 
 interface Comment {
     id: string;
@@ -11,7 +13,7 @@ interface Comment {
     date: string;
     replies?: Comment[];
     parentId?: string;
-    replyToId?: string; // Thêm trường này
+    replyToId?: string;
 }
 
 interface CommentsProps {
@@ -34,11 +36,40 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
     const router = useRouter();
     const { validateInput, isValidating } = useInputValidation();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
+    const { db } = useFirebase();
 
     useEffect(() => {
         setComments(initialComments || []);
         setIsLoading(false);
     }, [initialComments]);
+
+    useEffect(() => {
+        const fetchUserDisplayName = async () => {
+            if (user && user.uid && db) {
+                const userRef = doc(db, 'users', user.uid);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData && userData.displayName) {
+                        setUserDisplayName(userData.displayName);
+                    }
+                }
+            }
+        };
+
+        fetchUserDisplayName();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user]);
+
+    const validateContent = async (content: string): Promise<boolean> => {
+        const isValid = await validateInput(content, {
+            instruction: "Kiểm tra xem nội dung này có phù hợp và không chứa nội dung xúc phạm hay không. Chỉ trả lời true hoặc false.",
+            validResponse: "true",
+            invalidResponse: "false"
+        });
+        return isValid;
+    };
 
     const handleCommentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -49,11 +80,7 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
 
         setIsLoading(true);
         setErrorMessage(null);
-        const isValid = await validateInput(newComment, {
-            instruction: "Kiểm tra xem bình luận này có phù hợp và không chứa nội dung xúc phạm hay không. Chỉ trả lời true hoặc false.",
-            validResponse: "true",
-            invalidResponse: "false"
-        });
+        const isValid = await validateContent(newComment);
 
         if (!isValid) {
             setErrorMessage("Bình luận của bạn không phù hợp. Vui lòng kiểm tra lại nội dung.");
@@ -64,7 +91,7 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         const newCommentObj = {
             id: Date.now().toString(),
             uid: user.uid,
-            user: user.displayName || 'Anonymous',
+            user: userDisplayName || 'Anonymous',
             text: newComment,
             date: new Date().toISOString(),
         };
@@ -93,12 +120,17 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         }
     };
 
-    const handleEditComment = (commentId: string, text: string) => {
-        setEditingCommentId(commentId);
-        setEditedCommentText(text);
-    };
-
     const handleSaveEdit = async (commentId: string) => {
+        setIsLoading(true);
+        setErrorMessage(null);
+        const isValid = await validateContent(editedCommentText);
+
+        if (!isValid) {
+            setErrorMessage("Nội dung chỉnh sửa của bạn không phù hợp. Vui lòng kiểm tra lại.");
+            setIsLoading(false);
+            return;
+        }
+
         // Cập nhật state ngay lập tức
         setComments(prevComments => prevComments.map(comment =>
             comment.id === commentId ? { ...comment, text: editedCommentText } : comment
@@ -121,6 +153,8 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         } catch (error) {
             console.error('Lỗi khi chỉnh sửa bình luận:', error);
             // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -154,11 +188,7 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
 
         setIsLoading(true);
         setErrorMessage(null);
-        const isValid = await validateInput(replyText, {
-            instruction: "Kiểm tra xem câu trả lời này có phù hợp và không chứa nội dung xúc phạm hay không. Chỉ trả lời true hoặc false.",
-            validResponse: "true",
-            invalidResponse: "false"
-        });
+        const isValid = await validateContent(replyText);
 
         if (!isValid) {
             setErrorMessage("Câu trả lời của bạn không phù hợp. Vui lòng kiểm tra lại nội dung.");
@@ -169,11 +199,11 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         const newReply = {
             id: Date.now().toString(),
             uid: user.uid,
-            user: user.displayName || 'Anonymous',
+            user: userDisplayName || 'Anonymous',
             text: replyText,
             date: new Date().toISOString(),
             parentId: parentId,
-            replyToId: replyToId, // Thêm trường này
+            replyToId: replyToId,
         };
 
         // Cập nhật state ngay lập tức
@@ -262,6 +292,16 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
     };
 
     const handleEditReply = async (parentId: string, replyId: string, newText: string) => {
+        setIsLoading(true);
+        setErrorMessage(null);
+        const isValid = await validateContent(newText);
+
+        if (!isValid) {
+            setErrorMessage("Nội dung chỉnh sửa của bạn không phù hợp. Vui lòng kiểm tra lại.");
+            setIsLoading(false);
+            return;
+        }
+
         // Cập nhật state ngay lập tức
         setComments(prevComments => prevComments.map(comment => {
             if (comment.id === parentId) {
@@ -292,7 +332,24 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
         } catch (error) {
             console.error('Lỗi khi chỉnh sửa câu trả lời:', error);
             // Có thể thêm logic để hoàn tác thay đổi nếu API gặp lỗi
+        } finally {
+            setIsLoading(false);
         }
+    };
+
+    const handleCancelReply = () => {
+        setReplyingTo(null);
+        setReplyText('');
+    };
+
+    const handleCancelEdit = () => {
+        setEditingCommentId(null);
+        setEditedCommentText('');
+    };
+
+    const handleEditComment = (commentId: string, commentText: string) => {
+        setEditingCommentId(commentId);
+        setEditedCommentText(commentText);
     };
 
     const renderCommentWithReplies = (comment: Comment) => (
@@ -321,9 +378,21 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
                             onChange={(e) => setEditedCommentText(e.target.value)}
                             className="w-full p-2 bg-gray-600 text-white rounded mt-2"
                         />
-                        <button onClick={() => handleSaveEdit(comment.id)} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-                            <FaSave className="inline mr-2" /> Lưu
-                        </button>
+                        {errorMessage && (
+                            <p className="text-red-500 mt-2">{errorMessage}</p>
+                        )}
+                        <div className="mt-2 flex space-x-2">
+                            <button
+                                onClick={() => handleSaveEdit(comment.id)}
+                                className="bg-blue-500 text-white px-4 py-2 rounded"
+                                disabled={isValidating || isLoading}
+                            >
+                                {isValidating ? 'Đang kiểm tra...' : isLoading ? 'Đang lưu...' : 'Lưu'}
+                            </button>
+                            <button onClick={handleCancelEdit} className="bg-gray-500 text-white px-4 py-2 rounded">
+                                Hủy
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     <p className="text-gray-300 mt-2">{comment.text}</p>
@@ -347,13 +416,21 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
                         {errorMessage && (
                             <p className="text-red-500 mt-2">{errorMessage}</p>
                         )}
-                        <button
-                            onClick={() => handleReplySubmit(comment.id)}
-                            className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
-                            disabled={isValidating || isLoading}
-                        >
-                            {isValidating ? 'Đang kiểm tra...' : isLoading ? 'Đang gửi...' : 'Gửi trả lời'}
-                        </button>
+                        <div className="mt-2 flex space-x-2">
+                            <button
+                                onClick={() => handleReplySubmit(comment.id)}
+                                className="bg-blue-500 text-white px-4 py-2 rounded"
+                                disabled={isValidating || isLoading}
+                            >
+                                {isValidating ? 'Đang kiểm tra...' : isLoading ? 'Đang gửi...' : 'Gửi trả lời'}
+                            </button>
+                            <button
+                                onClick={handleCancelReply}
+                                className="bg-gray-500 text-white px-4 py-2 rounded"
+                            >
+                                Hủy
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -383,9 +460,21 @@ const Comments: React.FC<CommentsProps> = ({ websiteId, comments: initialComment
                                     onChange={(e) => setEditedCommentText(e.target.value)}
                                     className="w-full p-2 bg-gray-600 text-white rounded mt-2"
                                 />
-                                <button onClick={() => handleEditReply(comment.id, reply.id, editedCommentText)} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-                                    <FaSave className="inline mr-2" /> Lưu
-                                </button>
+                                {errorMessage && (
+                                    <p className="text-red-500 mt-2">{errorMessage}</p>
+                                )}
+                                <div className="mt-2 flex space-x-2">
+                                    <button
+                                        onClick={() => handleEditReply(comment.id, reply.id, editedCommentText)}
+                                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                                        disabled={isValidating || isLoading}
+                                    >
+                                        {isValidating ? 'Đang kiểm tra...' : isLoading ? 'Đang lưu...' : 'Lưu'}
+                                    </button>
+                                    <button onClick={handleCancelEdit} className="bg-gray-500 text-white px-4 py-2 rounded">
+                                        Hủy
+                                    </button>
+                                </div>
                             </div>
                         ) : (
                             <p className="text-gray-300 mt-2">{reply.text}</p>
