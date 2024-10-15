@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     url: "https://showai.vercel.app",
   },
   verification: {
-    google: "A3b1gdpqs1J6C0eaFwp9BcA9_e5mVfUjqLTAgo25ztc",
+    google: "ULMnsGmjmo7o0bGjwjkW7UDPlGKwJii5L8t6nOtJ49o",
   },
 };
 
