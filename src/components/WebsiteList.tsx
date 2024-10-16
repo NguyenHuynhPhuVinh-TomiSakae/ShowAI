@@ -9,9 +9,9 @@ interface AIWebsite {
     id: string;
     name: string;
     description: string[];
-    tags: string[];
+    tags: string;
     link: string;
-    keyFeatures: string[];
+    keyFeatures: string;
     view?: number;
     heart?: number;
     evaluation?: number;
@@ -97,6 +97,22 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
         }
     };
 
+    const renderTags = (tags: string) => {
+        const tagArray = tags.split(',').map(tag => tag.trim());
+        return tagArray.map((tag, tagIndex) => (
+            <span
+                key={tagIndex}
+                className="bg-blue-900 text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-blue-700"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onTagClick(tag);
+                }}
+            >
+                {tag}
+            </span>
+        ));
+    };
+
     return (
         <motion.div
             className={isSidebar ? "flex flex-col gap-4 mb-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"}
@@ -178,18 +194,7 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                         )}
                     </AnimatePresence>
                     <div className="flex flex-wrap gap-2">
-                        {website.tags.map((tag, tagIndex) => (
-                            <span
-                                key={tagIndex}
-                                className="bg-blue-900 text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-blue-700"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onTagClick(tag);
-                                }}
-                            >
-                                {tag}
-                            </span>
-                        ))}
+                        {renderTags(website.tags)}
                     </div>
                 </motion.div>
             ))}
