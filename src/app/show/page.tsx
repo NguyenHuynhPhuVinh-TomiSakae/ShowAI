@@ -15,9 +15,9 @@ interface AIWebsite {
     id: string;
     name: string;
     description: string[];
-    tags: string;
+    tags: string[];
     link: string;
-    keyFeatures: string;
+    keyFeatures: string[];
 }
 
 function ShowContent() {
@@ -81,7 +81,7 @@ function ShowContent() {
     const fetchRandomWebsites = async () => {
         setIsRandomLoading(true);
         try {
-            const response = await fetch('/api/showai?random');
+            const response = await fetch('/api/showai?random=9');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

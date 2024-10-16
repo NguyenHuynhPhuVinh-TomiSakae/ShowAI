@@ -18,9 +18,9 @@ interface AIWebsite {
     id: string;
     name: string;
     description: string[];
-    tags: string;
+    tags: string[];
     link: string;
-    keyFeatures: string;
+    keyFeatures: string[];
     view?: number;
     heart?: number;
     evaluation?: number;
@@ -159,35 +159,6 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
         // Bạn có thể gọi API để lấy danh sách bình luận mới nhất
     };
 
-    const renderTags = (tags: string) => {
-        const tagArray = tags.split(',').map(tag => tag.trim());
-        return tagArray.map((tag, index) => (
-            <span
-                key={index}
-                onClick={() => onTagClick(tag)}
-                className="bg-blue-900 text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-blue-800 transition-colors duration-300"
-            >
-                {tag}
-            </span>
-        ));
-    };
-
-    const renderKeyFeatures = (features: string) => {
-        const featureArray = features.split(',').map(feature => feature.trim());
-        return featureArray.map((feature, index) => (
-            <li key={index}>
-                <TypeAnimation
-                    sequence={[
-                        feature,
-                        () => { },
-                    ]}
-                    speed={75}
-                    cursor={false}
-                />
-            </li>
-        ));
-    };
-
     return (
         <motion.div
             className="bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg"
@@ -246,7 +217,15 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
             </div>
 
             <div className="flex flex-wrap gap-2 mb-4">
-                {renderTags(website.tags)}
+                {website.tags && website.tags.map((tag, index) => (
+                    <span
+                        key={index}
+                        onClick={() => onTagClick(tag)}
+                        className="bg-blue-900 text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-blue-800 transition-colors duration-300"
+                    >
+                        {tag}
+                    </span>
+                ))}
             </div>
 
             <TypeAnimation
@@ -266,7 +245,18 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                 <div>
                     <strong className="text-blue-300">Tính năng chính:</strong>
                     <ul className="list-disc list-inside mt-2 text-gray-300">
-                        {renderKeyFeatures(website.keyFeatures)}
+                        {website.keyFeatures.map((feature, index) => (
+                            <li key={index}>
+                                <TypeAnimation
+                                    sequence={[
+                                        feature,
+                                        () => { },
+                                    ]}
+                                    speed={75}
+                                    cursor={false}
+                                />
+                            </li>
+                        ))}
                     </ul>
                 </div>
             )}

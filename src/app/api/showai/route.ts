@@ -1,28 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
-import NodeCache from 'node-cache';
+import { MongoClient, ObjectId, Db, Sort } from 'mongodb';
 
-// Cấu hình kết nối MySQL sử dụng URL từ Railway
-const dbUrl = process.env.MYSQL_URL || '';
-const dbConfig = new URL(dbUrl);
+// Thay thế bằng URL kết nối MongoDB Atlas của bạn
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+    throw new Error('MONGODB_URI is not defined in the environment variables');
+}
 
-// Tạo pool kết nối
-const pool = mysql.createPool({
-    host: dbConfig.hostname,
-    user: dbConfig.username,
-    password: dbConfig.password,
-    database: dbConfig.pathname.substr(1),
-    port: Number(dbConfig.port),
-    ssl: {
-        rejectUnauthorized: false
-    },
-    connectionLimit: 20,
-    queueLimit: 0,
-});
+// Tạo một instance của MongoClient để tái sử dụng
+const client = new MongoClient(uri);
 
-// Tạo một cache instance
-const cache = new NodeCache({ stdTTL: 3600 }); // Cache trong 1 giờ thay vì 10 phút
+// Kết nối đến database một lần và tái sử dụng
+let database: Db | null = null;
+async function connectToDatabase(): Promise<Db> {
+    if (!database) {
+        await client.connect();
+        database = client.db('showai');
+    }
+    return database;
+}
 
 // Hàm helper để tạo response với CORS headers
 function createCorsResponse(data: unknown, status = 200) {
@@ -35,13 +31,6 @@ function createCorsResponse(data: unknown, status = 200) {
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
-    const cacheKey = searchParams.toString();
-
-    // Kiểm tra cache trước
-    const cachedResult = cache.get(cacheKey);
-    if (cachedResult) {
-        return createCorsResponse(cachedResult);
-    }
 
     // Lấy các tham số tìm kiếm từ URL
     const searchKeyword = searchParams.get('q') || '';
@@ -51,109 +40,104 @@ export async function GET(request: Request) {
     const itemsPerPage = 9;
     const random = searchParams.get('random');
     const list = searchParams.get('list');
-    const limit = searchParams.get('limit');
     const sort = searchParams.get('sort') || '';
+    const limit = searchParams.get('limit');
 
     try {
-        // Tạo câu truy vấn SQL cơ bản
-        let query = 'SELECT SQL_CALC_FOUND_ROWS * FROM showai_data USE INDEX (primary) WHERE 1=1';
-        const queryParams: any[] = [];
+        const db = await connectToDatabase();
+        const collection = db.collection('data_web_ai');
+
+        // Tạo query object
+        const query: Record<string, unknown> = {};
 
         if (id) {
-            query += ' AND id = ?';
-            queryParams.push(id);
+            query.id = id;
         }
 
         if (searchKeyword) {
-            query += ' AND (name LIKE ? OR description LIKE ?)';
-            queryParams.push(`%${searchKeyword}%`, `%${searchKeyword}%`);
+            query.$or = [
+                { name: { $regex: searchKeyword, $options: 'i' } },
+                { description: { $elemMatch: { $regex: searchKeyword, $options: 'i' } } }
+            ];
         }
 
         if (tag) {
-            query += ' AND (tags LIKE ? OR FIND_IN_SET(?, tags) > 0)';
-            queryParams.push(`%${tag}%`, tag);
+            query.tags = { $elemMatch: { $regex: tag, $options: 'i' } };
         }
 
         if (list) {
             const listIds = list.split(',').map(id => id.trim());
-            query += ` AND id IN (${listIds.map(() => '?').join(',')})`;
-            queryParams.push(...listIds);
+            query.id = { $in: listIds };
         }
 
-        // Xử lý truy vấn ngẫu nhiên
+        let documents;
+        let totalItems;
+        let totalPages;
+
+        // Xác định cách sắp xếp
+        let sortOption: Sort = { _id: -1 };
+        if (sort === 'heart') {
+            sortOption = { heart: -1 };
+        } else if (sort === 'view') {
+            sortOption = { view: -1 };
+        } else if (sort === 'star') {
+            sortOption = { star: -1 };
+        } else if (sort === 'evaluation') {
+            sortOption = { evaluation: -1 };
+        }
+
         if (random) {
+            // Nếu có tham số random, lấy ngẫu nhiên số lượng bản ghi theo giá trị random
             const randomCount = parseInt(random, 10);
-            query += ' ORDER BY RAND() LIMIT ?';
-            queryParams.push(randomCount);
+            documents = await collection.aggregate([
+                { $match: query },
+                { $sample: { size: randomCount } }
+            ]).toArray();
+            totalItems = documents.length;
+            totalPages = 1;
+        } else if (page) {
+            // Nếu có tham số page, thực hiện phân trang
+            const pageNumber = parseInt(page, 10);
+            totalItems = await collection.countDocuments(query);
+            totalPages = Math.ceil(totalItems / itemsPerPage);
+            documents = await collection.find(query)
+                .sort(sortOption)
+                .skip((pageNumber - 1) * itemsPerPage)
+                .limit(itemsPerPage)
+                .toArray();
+        } else if (limit) {
+            // Nếu có tham số limit, hiển thị số lượng bản ghi theo giá trị limit
+            const limitCount = parseInt(limit, 10);
+            documents = await collection.find(query)
+                .sort(sortOption)
+                .limit(limitCount)
+                .toArray();
+            totalItems = documents.length;
+            totalPages = 1;
         } else {
-            // Xử lý sắp xếp nếu không có yêu cầu ngẫu nhiên
-            if (sort) {
-                const validSortFields = ['heart', 'star', 'view', 'evaluation'];
-                if (validSortFields.includes(sort)) {
-                    query += ` ORDER BY ${sort} DESC, id DESC`;
-                } else {
-                    query += ' ORDER BY id DESC';
-                }
-            } else {
-                query += ' ORDER BY id DESC';
-            }
-
-            // Xử lý phân trang hoặc giới hạn
-            if (page) {
-                const pageNumber = parseInt(page, 10);
-                const offset = (pageNumber - 1) * itemsPerPage;
-                query += ' LIMIT ? OFFSET ?';
-                queryParams.push(itemsPerPage, offset);
-            } else if (limit) {
-                query += ' LIMIT ?';
-                queryParams.push(parseInt(limit, 10));
-            }
+            // Nếu không có tham số page, random hoặc limit, lấy toàn bộ dữ liệu
+            documents = await collection.find(query).sort(sortOption).toArray();
+            totalItems = documents.length;
+            totalPages = 1;
         }
 
-        console.log('Query cuối cùng:', query);
-        console.log('Params cuối cùng:', queryParams);
+        // Tổng hợp toàn bộ tag
+        const allTags = await collection.distinct('tags');
 
-        // Thực hiện truy vấn chính và đếm tổng số bản ghi cùng lúc
-        const [rows] = await pool.query(query, queryParams);
-        const [countResult] = await pool.query('SELECT FOUND_ROWS() as count');
-        const totalItems = (countResult as any)[0].count;
-
-        // Log kết quả để kiểm tra
-        console.log('Kết quả truy vấn:', rows);
-
-        // Lấy tất cả các tag duy nhất
-        const [tags] = await pool.query(`
-            SELECT DISTINCT tag
-            FROM (
-                SELECT TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(tags, ',', numbers.n), ',', -1)) AS tag
-                FROM 
-                    (SELECT 1 n UNION ALL SELECT 2
-                     UNION ALL SELECT 3 UNION ALL SELECT 4
-                     UNION ALL SELECT 5) numbers
-                INNER JOIN showai_data
-                WHERE n <= 1 + (LENGTH(tags) - LENGTH(REPLACE(tags, ',', '')))
-            ) AS subquery
-            WHERE tag != ''
-        `);
-
-        const result = {
-            data: rows,
+        // Sử dụng hàm helper để tạo response
+        return createCorsResponse({
+            data: documents,
             pagination: page ? {
                 currentPage: page ? parseInt(page, 10) : 1,
-                totalPages: Math.ceil(totalItems / itemsPerPage),
+                totalPages: totalPages,
                 totalItems: totalItems,
                 itemsPerPage: itemsPerPage
             } : null,
-            tags: (tags as any[]).map(t => t.tag)
-        };
-
-        // Lưu kết quả vào cache
-        cache.set(cacheKey, result);
-
-        return createCorsResponse(result);
+            tags: allTags
+        });
     } catch (error) {
-        console.error('Lỗi khi truy vấn MySQL:', error);
-        return createCorsResponse({ error: 'Đã xảy ra lỗi khi truy vấn dữ liệu', details: error }, 500);
+        console.error('Lỗi khi truy vấn MongoDB:', error);
+        return createCorsResponse({ error: 'Đã xảy ra lỗi khi truy vấn dữ liệu' }, 500);
     }
 }
 
@@ -161,6 +145,9 @@ export async function POST(request: Request) {
     const data = await request.json();
 
     try {
+        const db = await connectToDatabase();
+        const collection = db.collection('data_web_ai');
+
         // Thêm các trường mới với giá trị mặc định
         const newData = {
             ...data,
@@ -168,17 +155,13 @@ export async function POST(request: Request) {
             star: 0,
             view: 0,
             evaluation: 0,
-            comments: JSON.stringify([]),
-            shortComments: JSON.stringify([])
+            comments: [],
+            shortComments: []
         };
 
-        const [result] = await pool.execute('INSERT INTO showai_data SET ?', [newData]);
-        const insertId = (result as mysql.ResultSetHeader).insertId;
+        const result = await collection.insertOne(newData);
 
-        // Cập nhật cache khi có thay đổi dữ liệu
-        invalidateCache();
-
-        return createCorsResponse({ success: true, id: insertId });
+        return createCorsResponse({ success: true, id: result.insertedId });
     } catch (error) {
         console.error('Lỗi khi thêm dữ liệu:', error);
         return createCorsResponse({ error: 'Đã xảy ra lỗi khi thêm dữ liệu' }, 500);
@@ -186,24 +169,28 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-    const { id, ...updateData } = await request.json();
+    const { _id, id, ...updateData } = await request.json();
 
     try {
-        if (!id) {
-            throw new Error('Không có ID hợp lệ để cập nhật');
+        const db = await connectToDatabase();
+        const collection = db.collection('data_web_ai');
+
+        let query;
+        if (_id) {
+            query = { _id: new ObjectId(_id) };
+        } else if (id) {
+            query = { id: id };
+        } else {
+            throw new Error('No valid ID provided for update');
         }
 
-        const [result] = await pool.execute('UPDATE showai_data SET ? WHERE id = ?', [updateData, id]);
-        const affectedRows = (result as mysql.ResultSetHeader).affectedRows;
+        const result = await collection.updateOne(query, { $set: updateData });
 
-        if (affectedRows === 0) {
-            return createCorsResponse({ error: 'Không tìm thấy bản ghi với ID đã cung cấp' }, 404);
+        if (result.matchedCount === 0) {
+            return createCorsResponse({ error: 'No document found with the provided ID' }, 404);
         }
 
-        // Cập nhật cache khi có thay đổi dữ liệu
-        invalidateCache();
-
-        return createCorsResponse({ success: true, modifiedCount: affectedRows });
+        return createCorsResponse({ success: true, modifiedCount: result.modifiedCount });
     } catch (error) {
         console.error('Lỗi khi cập nhật dữ liệu:', error);
         return createCorsResponse({ error: 'Đã xảy ra lỗi khi cập nhật dữ liệu' }, 500);
@@ -214,13 +201,12 @@ export async function DELETE(request: Request) {
     const { id } = await request.json();
 
     try {
-        const [result] = await pool.execute('DELETE FROM showai_data WHERE id = ?', [id]);
-        const affectedRows = (result as mysql.ResultSetHeader).affectedRows;
+        const db = await connectToDatabase();
+        const collection = db.collection('data_web_ai');
 
-        // Cập nhật cache khi có thay đổi dữ liệu
-        invalidateCache();
+        const result = await collection.deleteOne({ _id: new ObjectId(id) });
 
-        return createCorsResponse({ success: true, deletedCount: affectedRows });
+        return createCorsResponse({ success: true, deletedCount: result.deletedCount });
     } catch (error) {
         console.error('Lỗi khi xóa dữ liệu:', error);
         return createCorsResponse({ error: 'Đã xảy ra lỗi khi xóa dữ liệu' }, 500);
@@ -230,8 +216,4 @@ export async function DELETE(request: Request) {
 // Xử lý OPTIONS request cho preflight
 export async function OPTIONS() {
     return createCorsResponse(null, 204);
-}
-
-function invalidateCache() {
-    cache.flushAll();
 }

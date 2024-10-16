@@ -11,9 +11,9 @@ interface AIWebsite {
     id: string;
     name: string;
     description: string[];
-    tags: string;
+    tags: string[];
     link: string;
-    keyFeatures: string;
+    keyFeatures: string[];
     view?: number;
     heart?: number;
     star?: number;

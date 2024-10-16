@@ -8,9 +8,9 @@ interface AIWebsite {
     id: string;
     name: string;
     description: string[];
-    tags: string;
+    tags: string[];
     link: string;
-    keyFeatures: string;
+    keyFeatures: string[];
 }
 
 export function useStarredWebsites() {
@@ -84,9 +84,9 @@ export function useStarredWebsites() {
                         id: websiteId,
                         name: 'Loading...',
                         description: [],
-                        tags: '',
+                        tags: [],
                         link: '',
-                        keyFeatures: ''
+                        keyFeatures: []
                     };
                     return [...prevWebsites, tempWebsite];
                 }
