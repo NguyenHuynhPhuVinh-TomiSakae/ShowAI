@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId, Db, Sort } from 'mongodb';
 import Redis from 'ioredis';
@@ -62,12 +64,12 @@ export async function GET(request: Request) {
         // Tạo khóa cache dựa trên các tham số tìm kiếm, loại bỏ random
         const cacheKey = `data:${searchKeyword}:${tag}:${id}:${page}:${list}:${sort}:${limit}`;
 
-        // Kiểm tra cache chỉ khi không có tham số random
+        let cachedData = null;
         if (!random) {
-            const cachedData = await redis.getBuffer(cacheKey);
-            if (cachedData) {
-                const uncompressedData = await ungzipAsync(cachedData);
-                return createCorsResponse(JSON.parse(uncompressedData.toString()));
+            const cachedBuffer = await redis.getBuffer(cacheKey);
+            if (cachedBuffer) {
+                const uncompressedData = await ungzipAsync(cachedBuffer);
+                cachedData = JSON.parse(uncompressedData.toString());
             }
         }
 
@@ -110,65 +112,89 @@ export async function GET(request: Request) {
             sortOption = { evaluation: -1 };
         }
 
-        if (random) {
-            // Xử lý trường hợp random mà không lưu vào cache
-            const randomCount = parseInt(random, 10);
-            documents = await collection.aggregate([
-                { $match: query },
-                { $sample: { size: randomCount } }
-            ]).toArray();
-            totalItems = documents.length;
-            totalPages = 1;
+        if (cachedData) {
+            // Sử dụng dữ liệu cơ bản từ cache
+            documents = cachedData.data;
+            totalItems = cachedData.pagination?.totalItems;
+            totalPages = cachedData.pagination?.totalPages;
 
-            // Trả về kết quả ngay lập tức mà không lưu vào cache
-            return createCorsResponse({
-                data: documents,
-                pagination: null,
-                tags: await collection.distinct('tags')
+            // Lấy thông tin động từ database
+            const dynamicFields = ['heart', 'star', 'view', 'evaluation', 'comments', 'shortComments', 'ratings'];
+            const dynamicData = await collection.find(
+                { id: { $in: documents.map((doc: { id: string }) => doc.id) } },
+                { projection: dynamicFields.reduce((acc, field) => ({ ...acc, [field]: 1 }), { id: 1 }) }
+            ).toArray();
+            // Kết hợp dữ liệu cache với dữ liệu động
+            documents = documents.map((doc: any) => {
+                const dynamicDoc = dynamicData.find((d: any) => d.id === doc.id);
+                return { ...doc, ...dynamicDoc };
             });
-        } else if (page) {
-            // Nếu có tham số page, thực hiện phân trang
-            const pageNumber = parseInt(page, 10);
-            totalItems = await collection.countDocuments(query);
-            totalPages = Math.ceil(totalItems / itemsPerPage);
-            documents = await collection.find(query)
-                .sort(sortOption)
-                .skip((pageNumber - 1) * itemsPerPage)
-                .limit(itemsPerPage)
-                .toArray();
-        } else if (limit) {
-            // Nếu có tham số limit, hiển thị số lượng bản ghi theo giá trị limit
-            const limitCount = parseInt(limit, 10);
-            documents = await collection.find(query)
-                .sort(sortOption)
-                .limit(limitCount)
-                .toArray();
-            totalItems = documents.length;
-            totalPages = 1;
         } else {
-            // Nếu không có tham số page, random hoặc limit, lấy toàn bộ dữ liệu
-            documents = await collection.find(query).sort(sortOption).toArray();
-            totalItems = documents.length;
-            totalPages = 1;
+            // Lấy toàn bộ dữ liệu từ database
+            if (random) {
+                // Xử lý trường hợp random
+                const randomCount = parseInt(random, 10);
+                documents = await collection.aggregate([
+                    { $match: query },
+                    { $sample: { size: randomCount } }
+                ]).toArray();
+                totalItems = documents.length;
+                totalPages = 1;
+
+                // Trả về kết quả ngay lập tức mà không lưu vào cache
+                return createCorsResponse({
+                    data: documents,
+                    pagination: null,
+                    tags: await collection.distinct('tags')
+                });
+            } else if (page) {
+                // Xử lý phân trang
+                const pageNumber = parseInt(page, 10);
+                totalItems = await collection.countDocuments(query);
+                totalPages = Math.ceil(totalItems / itemsPerPage);
+                documents = await collection.find(query)
+                    .sort(sortOption)
+                    .skip((pageNumber - 1) * itemsPerPage)
+                    .limit(itemsPerPage)
+                    .toArray();
+            } else if (limit) {
+                // Xử lý giới hạn số lượng bản ghi
+                const limitCount = parseInt(limit, 10);
+                documents = await collection.find(query)
+                    .sort(sortOption)
+                    .limit(limitCount)
+                    .toArray();
+                totalItems = documents.length;
+                totalPages = 1;
+            } else {
+                // Lấy toàn bộ dữ liệu
+                documents = await collection.find(query).sort(sortOption).toArray();
+                totalItems = documents.length;
+                totalPages = 1;
+            }
+
+            // Lưu dữ liệu cơ bản vào cache (nếu không phải random)
+            if (!random) {
+                const dataToCache = documents.map(doc => {
+                    const { heart, star, view, evaluation, comments, shortComments, ratings, ...rest } = doc;
+                    return rest;
+                });
+
+                const compressedData = await gzipAsync(JSON.stringify({
+                    data: dataToCache,
+                    pagination: page ? {
+                        currentPage: page ? parseInt(page, 10) : 1,
+                        totalPages: totalPages,
+                        totalItems: totalItems,
+                        itemsPerPage: itemsPerPage
+                    } : null,
+                    tags: await collection.distinct('tags')
+                }));
+                await redis.set(cacheKey, compressedData, 'EX', 3600); // Cache trong 1 giờ
+            }
         }
 
-        // Tổng hợp toàn bộ tag
-        const allTags = await collection.distinct('tags');
-
-        // Nén và lưu kết quả vào cache chỉ khi không phải trường hợp random
-        const compressedData = await gzipAsync(JSON.stringify({
-            data: documents,
-            pagination: page ? {
-                currentPage: page ? parseInt(page, 10) : 1,
-                totalPages: totalPages,
-                totalItems: totalItems,
-                itemsPerPage: itemsPerPage
-            } : null,
-            tags: allTags
-        }));
-        await redis.set(cacheKey, compressedData, 'EX', 3600); // Cache trong 1 giờ
-
-        // Sử dụng hàm helper để tạo response
+        // Trả về dữ liệu đầy đủ cho response
         return createCorsResponse({
             data: documents,
             pagination: page ? {
@@ -177,7 +203,7 @@ export async function GET(request: Request) {
                 totalItems: totalItems,
                 itemsPerPage: itemsPerPage
             } : null,
-            tags: allTags
+            tags: cachedData ? cachedData.tags : await collection.distinct('tags')
         });
     } catch (error) {
         console.error('Lỗi khi truy vấn MongoDB:', error);

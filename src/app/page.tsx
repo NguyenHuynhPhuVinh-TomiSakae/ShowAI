@@ -38,7 +38,10 @@ export default function Home() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    fetchData(1);
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    const initialPage = pageParam ? parseInt(pageParam, 10) : 1;
+    fetchData(initialPage);
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -84,6 +87,7 @@ export default function Home() {
     if (newPage >= 1 && newPage <= (paginationInfo?.totalPages || 1)) {
       setPaginationInfo(prev => prev ? { ...prev, currentPage: newPage } : null);
       fetchData(newPage);
+      router.push(`/?page=${newPage}`);
     }
   };
 
