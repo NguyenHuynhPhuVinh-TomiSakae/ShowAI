@@ -81,7 +81,7 @@ function ShowContent() {
     const fetchRandomWebsites = async () => {
         setIsRandomLoading(true);
         try {
-            const response = await fetch('/api/showai?random=9');
+            const response = await fetch('/api/showai?random=8');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -160,7 +160,7 @@ function ShowContent() {
                             </div>
                         ) : randomWebsites.length > 0 ? (
                             <div className="mt-8">
-                                <h3 className="text-xl text-center font-bold text-blue-300 mb-4">Đề xuất trang web AI ngẫu nhiên</h3>
+                                <h3 className="text-xl md:text-2xl text-center font-bold text-blue-300 mb-4">Đề xuất trang web AI ngẫu nhiên</h3>
                                 <WebsiteList websites={randomWebsites} onTagClick={handleTagClick} isRandom={true} />
                             </div>
                         ) : (

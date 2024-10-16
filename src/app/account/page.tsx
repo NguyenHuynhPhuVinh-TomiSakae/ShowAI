@@ -184,7 +184,7 @@ const AccountPage = () => {
                                     websites={heartedWebsites}
                                     onTagClick={handleTagClick}
                                     isSidebar={false}
-                                    isRandom={true}
+                                    isShuffled={true}
                                 />
                             ) : (
                                 <p>Bạn chưa có trang web yêu thích nào.</p>

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId, Db, Sort } from 'mongodb';
 import Redis from 'ioredis';
+import { gzip, unzip } from 'zlib';
+import { promisify } from 'util';
 
 // Thay thế bằng URL kết nối MongoDB Atlas của bạn
 const uri = process.env.MONGODB_URI;
@@ -36,6 +38,9 @@ function createCorsResponse(data: unknown, status = 200) {
     return response;
 }
 
+const gzipAsync = promisify(gzip);
+const ungzipAsync = promisify(unzip);
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
 
@@ -54,13 +59,16 @@ export async function GET(request: Request) {
         const db = await connectToDatabase();
         const collection = db.collection('data_web_ai');
 
-        // Tạo khóa cache dựa trên các tham số tìm kiếm
-        const cacheKey = `data:${searchKeyword}:${tag}:${id}:${page}:${random}:${list}:${sort}:${limit}`;
+        // Tạo khóa cache dựa trên các tham số tìm kiếm, loại bỏ random
+        const cacheKey = `data:${searchKeyword}:${tag}:${id}:${page}:${list}:${sort}:${limit}`;
 
-        // Kiểm tra cache trước
-        const cachedData = await redis.get(cacheKey);
-        if (cachedData) {
-            return createCorsResponse(JSON.parse(cachedData));
+        // Kiểm tra cache chỉ khi không có tham số random
+        if (!random) {
+            const cachedData = await redis.getBuffer(cacheKey);
+            if (cachedData) {
+                const uncompressedData = await ungzipAsync(cachedData);
+                return createCorsResponse(JSON.parse(uncompressedData.toString()));
+            }
         }
 
         // Tạo query object
@@ -103,7 +111,7 @@ export async function GET(request: Request) {
         }
 
         if (random) {
-            // Nếu có tham số random, lấy ngẫu nhiên số lượng bản ghi theo giá trị random
+            // Xử lý trường hợp random mà không lưu vào cache
             const randomCount = parseInt(random, 10);
             documents = await collection.aggregate([
                 { $match: query },
@@ -111,6 +119,13 @@ export async function GET(request: Request) {
             ]).toArray();
             totalItems = documents.length;
             totalPages = 1;
+
+            // Trả về kết quả ngay lập tức mà không lưu vào cache
+            return createCorsResponse({
+                data: documents,
+                pagination: null,
+                tags: await collection.distinct('tags')
+            });
         } else if (page) {
             // Nếu có tham số page, thực hiện phân trang
             const pageNumber = parseInt(page, 10);
@@ -140,8 +155,8 @@ export async function GET(request: Request) {
         // Tổng hợp toàn bộ tag
         const allTags = await collection.distinct('tags');
 
-        // Lưu kết quả vào cache
-        await redis.set(cacheKey, JSON.stringify({
+        // Nén và lưu kết quả vào cache chỉ khi không phải trường hợp random
+        const compressedData = await gzipAsync(JSON.stringify({
             data: documents,
             pagination: page ? {
                 currentPage: page ? parseInt(page, 10) : 1,
@@ -150,7 +165,8 @@ export async function GET(request: Request) {
                 itemsPerPage: itemsPerPage
             } : null,
             tags: allTags
-        }), 'EX', 3600); // Cache trong 1 giờ
+        }));
+        await redis.set(cacheKey, compressedData, 'EX', 3600); // Cache trong 1 giờ
 
         // Sử dụng hàm helper để tạo response
         return createCorsResponse({

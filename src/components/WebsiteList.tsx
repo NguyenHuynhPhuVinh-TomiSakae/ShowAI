@@ -25,9 +25,10 @@ interface WebsiteListProps {
     onTagClick: (tag: string) => void;
     isSidebar?: boolean;
     isRandom?: boolean;
+    isShuffled?: boolean;
 }
 
-const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSidebar = false, isRandom = false }) => {
+const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSidebar = false, isRandom = false, isShuffled = false }) => {
     const router = useRouter();
     const [hoveredWebsite, setHoveredWebsite] = useState<string | null>(null);
     const [isMobile, setIsMobile] = useState(false);
@@ -59,9 +60,9 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
     const handleMouseEnter = (id: string, index: number) => {
         setHoveredWebsite(id);
         gsap.to(websiteRefs.current[index], {
-            scale: (!isSidebar && !isRandom && !isMobile) ? 1.05 : 1,
+            scale: (!isSidebar && !isRandom && !isMobile && !isShuffled) ? 1.05 : 1,
             boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)',
-            duration: (!isSidebar && !isRandom && !isMobile) ? 0.3 : 0,
+            duration: (!isSidebar && !isRandom && !isMobile && !isShuffled) ? 0.3 : 0,
             ease: 'power2.out'
         });
     };
@@ -99,7 +100,14 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
 
     return (
         <motion.div
-            className={isSidebar ? "flex flex-col gap-4 mb-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"}
+            className={isSidebar
+                ? "flex flex-col gap-4 mb-4"
+                : isRandom
+                    ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
+                    : isShuffled
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                        : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            }
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -157,7 +165,7 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                         </a>
                     </div>
                     <AnimatePresence>
-                        {!isSidebar && !isMobile && hoveredWebsite === website.id && !isRandom ? (
+                        {!isSidebar && !isMobile && hoveredWebsite === website.id && !isRandom && !isShuffled ? (
                             <motion.div
                                 className="text-gray-300 mb-4 flex-grow overflow-hidden"
                                 initial={{ opacity: 0, height: 0 }}
