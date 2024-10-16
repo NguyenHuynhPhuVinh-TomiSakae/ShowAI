@@ -1,14 +1,21 @@
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId, Db, Sort } from 'mongodb';
+import Redis from 'ioredis';
 
 // Thay thế bằng URL kết nối MongoDB Atlas của bạn
 const uri = process.env.MONGODB_URI;
 if (!uri) {
-    throw new Error('MONGODB_URI is not defined in the environment variables');
+    throw new Error('MONGODB_URI không được định nghĩa trong biến môi trường');
 }
 
-// Tạo một instance của MongoClient để tái sử dụng
-const client = new MongoClient(uri);
+// Tạo pool kết nối MongoDB
+const client = new MongoClient(uri, {
+    maxPoolSize: 10, // Số lượng kết nối tối đa trong pool
+    minPoolSize: 5   // Số lượng kết nối tối thiểu trong pool
+});
+
+// Kết nối Redis
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
 // Kết nối đến database một lần và tái sử dụng
 let database: Db | null = null;
@@ -46,6 +53,15 @@ export async function GET(request: Request) {
     try {
         const db = await connectToDatabase();
         const collection = db.collection('data_web_ai');
+
+        // Tạo khóa cache dựa trên các tham số tìm kiếm
+        const cacheKey = `data:${searchKeyword}:${tag}:${id}:${page}:${random}:${list}:${sort}:${limit}`;
+
+        // Kiểm tra cache trước
+        const cachedData = await redis.get(cacheKey);
+        if (cachedData) {
+            return createCorsResponse(JSON.parse(cachedData));
+        }
 
         // Tạo query object
         const query: Record<string, unknown> = {};
@@ -123,6 +139,18 @@ export async function GET(request: Request) {
 
         // Tổng hợp toàn bộ tag
         const allTags = await collection.distinct('tags');
+
+        // Lưu kết quả vào cache
+        await redis.set(cacheKey, JSON.stringify({
+            data: documents,
+            pagination: page ? {
+                currentPage: page ? parseInt(page, 10) : 1,
+                totalPages: totalPages,
+                totalItems: totalItems,
+                itemsPerPage: itemsPerPage
+            } : null,
+            tags: allTags
+        }), 'EX', 3600); // Cache trong 1 giờ
 
         // Sử dụng hàm helper để tạo response
         return createCorsResponse({
