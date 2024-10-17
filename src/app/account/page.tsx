@@ -1,4 +1,3 @@
-
 'use client'
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -30,6 +29,7 @@ const AccountPage = () => {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isGoogleUser, setIsGoogleUser] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth?.onAuthStateChanged((currentUser) => {
@@ -41,6 +41,7 @@ const AccountPage = () => {
                 setIsGoogleUser(currentUser.providerData[0]?.providerId === 'google.com');
                 fetchUserData(currentUser.uid);
                 fetchHeartedWebsites(currentUser.uid);
+                checkAdminStatus(currentUser.uid);
             } else {
                 router.push('/login');
             }
@@ -183,6 +184,25 @@ const AccountPage = () => {
         }
     };
 
+    const checkAdminStatus = async (userId: string) => {
+        try {
+            if (db) {
+                const userDoc = doc(db, 'users', userId);
+                const userSnapshot = await getDoc(userDoc);
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.data();
+                    setIsAdmin(userData.admin === 1);
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra trạng thái admin:', error);
+        }
+    };
+
+    const handleAdminAccess = () => {
+        router.push('/admin');
+    };
+
     const SkeletonLoader = () => (
         <div className="bg-gray-800 p-6 rounded-lg shadow-md">
             <Skeleton width={200} height={24} baseColor="#1F2937" highlightColor="#374151" className="mb-4" />
@@ -245,6 +265,14 @@ const AccountPage = () => {
         >
             <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold mb-4">Tài khoản của bạn</h1>
+                {isAdmin && (
+                    <button
+                        onClick={handleAdminAccess}
+                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                    >
+                        Truy cập trang Admin
+                    </button>
+                )}
             </div>
             <div className="container mx-auto px-4">
                 {errorMessage && (
