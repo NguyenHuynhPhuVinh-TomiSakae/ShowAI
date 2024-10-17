@@ -27,6 +27,7 @@ const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({ websiteData
     const generateContent = async (prompt: string) => {
         setIsLoading(true);
         setDisplayedText('');
+        setIsPaused(false); // Thêm dòng này để reset trạng thái tạm dừng
         let apiKey;
         try {
             const apiKeyResponse = await fetch('/api/Gemini');

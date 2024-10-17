@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaHeart, FaTrophy, FaChevronLeft, FaChevronRight, FaFire, FaThumbsUp } from 'react-icons/fa';
 import WebsiteList from '@/components/WebsiteList';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useSwipeable } from 'react-swipeable';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -32,6 +32,16 @@ const LeaderboardPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('view');
     const [isMobile, setIsMobile] = useState(false);
+
+    const controls = useAnimation();
+
+    const handleDragEnd = (event: any, info: any) => {
+        if (info.offset.x > 100) {
+            changeTab('prev');
+        } else if (info.offset.x < -100) {
+            changeTab('next');
+        }
+    };
 
     useEffect(() => {
         fetchLeaderboardData();
@@ -88,12 +98,6 @@ const LeaderboardPage = () => {
         }
         setActiveTab(tabs[newIndex]);
     };
-
-    const handlers = useSwipeable({
-        onSwipedLeft: () => changeTab('next'),
-        onSwipedRight: () => changeTab('prev'),
-        trackMouse: true
-    });
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -236,7 +240,12 @@ const LeaderboardPage = () => {
                                 </button>
                             </div>
                         )}
-                        <div {...handlers}>
+                        <motion.div
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            onDragEnd={handleDragEnd}
+                            animate={controls}
+                        >
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={activeTab}
@@ -248,7 +257,7 @@ const LeaderboardPage = () => {
                                     {renderTabContent()}
                                 </motion.div>
                             </AnimatePresence>
-                        </div>
+                        </motion.div>
                     </>
                 )}
             </div>
