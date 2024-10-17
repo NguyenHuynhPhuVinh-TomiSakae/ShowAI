@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useState, useEffect } from 'react';
 import { IoClose, IoExpand, IoContract, IoDownload, IoSettings } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';

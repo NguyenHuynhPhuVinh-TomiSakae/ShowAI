@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useState, useEffect, Suspense } from 'react';
 import { FaCommentAlt, FaSpinner } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';

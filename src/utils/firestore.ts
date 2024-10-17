@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useFirebase } from '@/components/FirebaseConfig';
 import { updateDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 

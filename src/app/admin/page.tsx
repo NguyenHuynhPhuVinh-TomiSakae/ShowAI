@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
@@ -28,7 +28,7 @@ interface DataItem {
 }
 
 export default function Admin() {
-    const [isAuthorized, setIsAuthorized] = useState(false)
+    const [, setIsAuthorized] = useState(false)
     const { isInitialized, auth, app } = useFirebase()
     const { getUserFromFirestore } = useFirestoreOperations()
     const router = useRouter()
