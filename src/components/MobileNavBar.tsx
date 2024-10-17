@@ -2,7 +2,7 @@ import { IoClose } from 'react-icons/io5';
 import { FaBars } from 'react-icons/fa';
 import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
 import { IoMdChatbubbles } from 'react-icons/io';
-import { MdCompareArrows, MdDesignServices } from 'react-icons/md';
+import { MdCompareArrows } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
@@ -12,7 +12,6 @@ interface MobileNavBarProps {
     toggleSidebar: () => void;
     isAIToolsDropdownOpen: boolean;
     toggleAIToolsDropdown: () => void;
-    setIsAIDesignModalOpen: (isOpen: boolean) => void;
     setIsGeminiChatOpen: (isOpen: boolean) => void;
     setIsAICompareModalOpen: (isOpen: boolean) => void;
     user: { username: string } | null;
@@ -26,7 +25,6 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     toggleSidebar,
     isAIToolsDropdownOpen,
     toggleAIToolsDropdown,
-    setIsAIDesignModalOpen,
     setIsGeminiChatOpen,
     setIsAICompareModalOpen,
     user,
@@ -114,16 +112,6 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                 transition={{ duration: 0.3 }}
                                                 className="mt-2 space-y-2 pl-6"
                                             >
-                                                <button
-                                                    onClick={() => {
-                                                        setIsAIDesignModalOpen(true);
-                                                        toggleSidebar();
-                                                    }}
-                                                    className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
-                                                >
-                                                    <MdDesignServices className="mr-3" />
-                                                    AI Giao Diện
-                                                </button>
                                                 <button
                                                     onClick={() => {
                                                         setIsGeminiChatOpen(true);

@@ -2,7 +2,6 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import GeminiChat from './GeminiChat';
-import AIDesignModal from './AIDesignModal';
 import AICompareModal from './AICompareModal';
 import Live2DModelComponent from './Live2DModelComponent';
 import { useRouter } from 'next/navigation';
@@ -17,30 +16,16 @@ import DesktopNavBar from './DesktopNavBar';
 const NavBar = () => {
     const router = useRouter();
     const [isGeminiChatOpen, setIsGeminiChatOpen] = useState(false);
-    const [isAIDesignModalOpen, setIsAIDesignModalOpen] = useState(false);
     const [isAICompareModalOpen, setIsAICompareModalOpen] = useState(false);
     const [isLive2DModalOpen, setIsLive2DModalOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isAIToolsDropdownOpen, setIsAIToolsDropdownOpen] = useState(false);
-    const [navStyles, setNavStyles] = useState({
-        bgColor: 'bg-blue-600',
-        textColor: 'text-white',
-        padding: 'p-4',
-        border: 'border-b border-white border-opacity-20 shadow-lg'
-    });
     const [user, setUser] = useState<DocumentData | null>(null);
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
     const { auth } = useFirebase();
     const { getUserFromFirestore } = useFirestoreOperations();
 
     useEffect(() => {
-        const storedNavStyles = localStorage.getItem('newNavStyles');
-        if (storedNavStyles) {
-            setNavStyles(JSON.parse(storedNavStyles));
-        } else {
-            localStorage.setItem('newNavStyles', JSON.stringify(navStyles));
-        }
-
         const storedLive2DState = localStorage.getItem('isLive2DModalOpen');
         if (storedLive2DState) {
             setIsLive2DModalOpen(JSON.parse(storedLive2DState));
@@ -99,7 +84,7 @@ const NavBar = () => {
     };
 
     return (
-        <nav className={`${navStyles.bgColor} ${navStyles.textColor} ${navStyles.padding} ${navStyles.border}`}>
+        <nav className="bg-blue-600 text-white p-4 border-b border-white border-opacity-20 shadow-lg">
             <div className="container md:mx-4 flex justify-between items-center">
                 <div
                     className="text-3xl font-bold cursor-pointer"
@@ -120,7 +105,6 @@ const NavBar = () => {
                     toggleSidebar={toggleSidebar}
                     isAIToolsDropdownOpen={isAIToolsDropdownOpen}
                     toggleAIToolsDropdown={() => setIsAIToolsDropdownOpen(!isAIToolsDropdownOpen)}
-                    setIsAIDesignModalOpen={setIsAIDesignModalOpen}
                     setIsGeminiChatOpen={setIsGeminiChatOpen}
                     setIsAICompareModalOpen={setIsAICompareModalOpen}
                     user={user ? { username: user.username } : null}
@@ -131,9 +115,9 @@ const NavBar = () => {
                 <DesktopNavBar
                     isAIToolsDropdownOpen={isAIToolsDropdownOpen}
                     setIsAIToolsDropdownOpen={setIsAIToolsDropdownOpen}
-                    setIsAIDesignModalOpen={setIsAIDesignModalOpen}
                     setIsGeminiChatOpen={setIsGeminiChatOpen}
                     setIsAICompareModalOpen={setIsAICompareModalOpen}
+                    setIsAIDesignModalOpen={() => { }}
                     isLive2DModalOpen={isLive2DModalOpen}
                     toggleLive2DModal={toggleLive2DModal}
                     user={user ? { username: user.username } : null}
@@ -142,9 +126,6 @@ const NavBar = () => {
                     handleLogout={handleLogout}
                 />
             </div>
-            {isAIDesignModalOpen && (
-                <AIDesignModal isOpen={isAIDesignModalOpen} onClose={() => setIsAIDesignModalOpen(false)} />
-            )}
             {isAICompareModalOpen && (
                 <AICompareModal isOpen={isAICompareModalOpen} onClose={() => setIsAICompareModalOpen(false)} />
             )}

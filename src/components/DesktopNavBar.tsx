@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
 import { IoMdChatbubbles } from 'react-icons/io';
-import { MdCompareArrows, MdDesignServices } from 'react-icons/md';
+import { MdCompareArrows } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -22,7 +22,6 @@ interface DesktopNavBarProps {
 const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
     isAIToolsDropdownOpen,
     setIsAIToolsDropdownOpen,
-    setIsAIDesignModalOpen,
     setIsGeminiChatOpen,
     setIsAICompareModalOpen,
     isLive2DModalOpen,
@@ -76,10 +75,6 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                     className="absolute top-full right-0 w-64 bg-gray-800 border border-blue-400 rounded-md shadow-lg z-50 mt-2"
                                 >
                                     <div className="p-4 space-y-2">
-                                        <button onClick={() => { setIsAIDesignModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
-                                            <MdDesignServices className="mr-3" />
-                                            AI Giao Diện
-                                        </button>
                                         <button onClick={() => { setIsGeminiChatOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
                                             <IoMdChatbubbles className="mr-3" />
                                             AI Hỗ Trợ
