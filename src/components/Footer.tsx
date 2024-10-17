@@ -13,11 +13,11 @@ const Footer = () => {
     });
 
     useEffect(() => {
-        const storedFooterStyles = localStorage.getItem('footerStyles');
+        const storedFooterStyles = localStorage.getItem('newFooterStyles');
         if (storedFooterStyles) {
             setFooterStyles(JSON.parse(storedFooterStyles));
         } else {
-            localStorage.setItem('footerStyles', JSON.stringify(footerStyles));
+            localStorage.setItem('newFooterStyles', JSON.stringify(footerStyles));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

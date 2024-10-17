@@ -63,8 +63,8 @@ const AIDesignModal: React.FC<AIDesignModalProps> = ({ onClose, isOpen }) => {
                 ],
             });
 
-            const storedNavStyles = localStorage.getItem('navStyles');
-            const storedFooterStyles = localStorage.getItem('footerStyles');
+            const storedNavStyles = localStorage.getItem('newNavStyles');
+            const storedFooterStyles = localStorage.getItem('newFooterStyles');
             const currentStyles = JSON.stringify({
                 nav: storedNavStyles ? JSON.parse(storedNavStyles) : {},
                 footer: storedFooterStyles ? JSON.parse(storedFooterStyles) : {}
@@ -82,7 +82,7 @@ const AIDesignModal: React.FC<AIDesignModalProps> = ({ onClose, isOpen }) => {
 
 5. Padding: không thay đổi.
 
-Trả về dưới dạng JSON với 2 key là 'navStyles' và 'footerStyles', mỗi key chứa các thuộc tính 'bgColor', 'textColor', và 'padding'.`);
+Trả về dưới dạng JSON với 2 key là 'newNavStyles' và 'newFooterStyles', mỗi key chứa các thuộc tính 'bgColor', 'textColor', và 'padding'.`);
 
             const newStyles = JSON.parse(result.response.text());
 
@@ -91,8 +91,8 @@ Trả về dưới dạng JSON với 2 key là 'navStyles' và 'footerStyles', m
             setStyleHistory(updatedHistory);
             localStorage.setItem('styleHistory', JSON.stringify(updatedHistory));
 
-            localStorage.setItem('navStyles', JSON.stringify(newStyles.navStyles));
-            localStorage.setItem('footerStyles', JSON.stringify(newStyles.footerStyles));
+            localStorage.setItem('newNavStyles', JSON.stringify(newStyles.navStyles));
+            localStorage.setItem('newFooterStyles', JSON.stringify(newStyles.footerStyles));
 
             // Reload the page to apply new styles
             window.location.reload();
@@ -105,8 +105,8 @@ Trả về dưới dạng JSON với 2 key là 'navStyles' và 'footerStyles', m
 
     const revertToPreviousDesign = () => {
         if (styleHistory.length > 0) {
-            localStorage.removeItem('navStyles');
-            localStorage.removeItem('footerStyles');
+            localStorage.removeItem('newNavStyles');
+            localStorage.removeItem('newFooterStyles');
             localStorage.removeItem('styleHistory')
             window.location.reload();
         }

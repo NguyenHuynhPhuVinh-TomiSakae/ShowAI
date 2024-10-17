@@ -34,11 +34,11 @@ const NavBar = () => {
     const { getUserFromFirestore } = useFirestoreOperations();
 
     useEffect(() => {
-        const storedNavStyles = localStorage.getItem('navStyles');
+        const storedNavStyles = localStorage.getItem('newNavStyles');
         if (storedNavStyles) {
             setNavStyles(JSON.parse(storedNavStyles));
         } else {
-            localStorage.setItem('navStyles', JSON.stringify(navStyles));
+            localStorage.setItem('newNavStyles', JSON.stringify(navStyles));
         }
 
         const storedLive2DState = localStorage.getItem('isLive2DModalOpen');
