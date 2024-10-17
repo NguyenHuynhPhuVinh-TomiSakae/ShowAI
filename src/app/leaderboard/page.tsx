@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { FaEye, FaHeart, FaTrophy, FaChevronLeft, FaChevronRight, FaFire, FaThumbsUp } from 'react-icons/fa';
 import WebsiteList from '@/components/WebsiteList';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -32,16 +32,6 @@ const LeaderboardPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('view');
     const [isMobile, setIsMobile] = useState(false);
-
-    const controls = useAnimation();
-
-    const handleDragEnd = (event: any, info: any) => {
-        if (info.offset.x > 100) {
-            changeTab('prev');
-        } else if (info.offset.x < -100) {
-            changeTab('next');
-        }
-    };
 
     useEffect(() => {
         fetchLeaderboardData();
@@ -240,24 +230,17 @@ const LeaderboardPage = () => {
                                 </button>
                             </div>
                         )}
-                        <motion.div
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 0 }}
-                            onDragEnd={handleDragEnd}
-                            animate={controls}
-                        >
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={activeTab}
-                                    initial={{ opacity: 0, x: isMobile ? 100 : 0, y: isMobile ? 0 : 20 }}
-                                    animate={{ opacity: 1, x: 0, y: 0 }}
-                                    exit={{ opacity: 0, x: isMobile ? -100 : 0, y: isMobile ? 0 : -20 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    {renderTabContent()}
-                                </motion.div>
-                            </AnimatePresence>
-                        </motion.div>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeTab}
+                                initial={{ opacity: 0, x: isMobile ? 100 : 0, y: isMobile ? 0 : 20 }}
+                                animate={{ opacity: 1, x: 0, y: 0 }}
+                                exit={{ opacity: 0, x: isMobile ? -100 : 0, y: isMobile ? 0 : -20 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                {renderTabContent()}
+                            </motion.div>
+                        </AnimatePresence>
                     </>
                 )}
             </div>
