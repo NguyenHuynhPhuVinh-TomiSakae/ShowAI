@@ -62,9 +62,9 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
     const handleMouseEnter = (id: string, index: number) => {
         setHoveredWebsite(id);
         gsap.to(websiteRefs.current[index], {
-            scale: (!isSidebar && !isRandom && !isMobile && !isShuffled) ? 1.05 : 1,
+            scale: 1,
             boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)',
-            duration: (!isSidebar && !isRandom && !isMobile && !isShuffled) ? 0.3 : 0,
+            duration: 0,
             ease: 'power2.out'
         });
     };
@@ -182,25 +182,11 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                             </div>
                         </div>
                         <AnimatePresence>
-                            {!isSidebar && !isMobile && hoveredWebsite === website.id && !isRandom && !isShuffled ? (
-                                <motion.div
-                                    className="text-gray-300 mb-4 flex-grow overflow-hidden"
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <p>
-                                        {Array.isArray(website.description) ? website.description[0] : website.description}
-                                    </p>
-                                </motion.div>
-                            ) : (
-                                <div className="text-gray-300 mb-4 flex-grow overflow-hidden">
-                                    <p className={isSidebar ? "line-clamp-3" : "line-clamp-4"}>
-                                        {Array.isArray(website.description) ? website.description[0] : website.description}
-                                    </p>
-                                </div>
-                            )}
+                            <div className="text-gray-300 mb-4 flex-grow overflow-hidden">
+                                <p className={isSidebar ? "line-clamp-3" : "line-clamp-4"}>
+                                    {Array.isArray(website.description) ? website.description[0] : website.description}
+                                </p>
+                            </div>
                         </AnimatePresence>
                         <div className="flex flex-wrap gap-2">
                             {website.tags.map((tag, tagIndex) => (
