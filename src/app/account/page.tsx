@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirebase } from '@/components/FirebaseConfig';
 import { FaUser, FaHeart, FaSpinner } from 'react-icons/fa';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { signOut, deleteUser } from 'firebase/auth';
 import WebsiteList from '@/components/WebsiteList';
 import { motion, AnimatePresence } from 'framer-motion';
 import DisplayNameEditor from '@/components/DisplayNameEditor';
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
+import ModalPortal from '@/components/ModalPortal';
 
 const AccountPage = () => {
     const [activeTab, setActiveTab] = useState('info');
@@ -15,8 +18,16 @@ const AccountPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [heartedWebsites, setHeartedWebsites] = useState<any[]>([]);
     const [isHeartedLoading, setIsHeartedLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const { auth, db } = useFirebase();
     const router = useRouter();
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isGoogleUser, setIsGoogleUser] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth?.onAuthStateChanged((currentUser) => {
@@ -25,6 +36,7 @@ const AccountPage = () => {
                     displayName: currentUser.displayName,
                     uid: currentUser.uid
                 });
+                setIsGoogleUser(currentUser.providerData[0]?.providerId === 'google.com');
                 fetchUserData(currentUser.uid);
                 fetchHeartedWebsites(currentUser.uid);
             } else {
@@ -57,7 +69,7 @@ const AccountPage = () => {
             }
             setIsLoading(false);
         } catch (error) {
-            console.error('Error fetching user data:', error);
+            console.error('Lỗi khi lấy dữ liệu người dùng:', error);
             setIsLoading(false);
         }
     };
@@ -87,7 +99,7 @@ const AccountPage = () => {
                 }
             }
         } catch (error) {
-            console.error('Error fetching hearted websites:', error);
+            console.error('Lỗi khi lấy danh sách trang web yêu thích:', error);
         } finally {
             setIsHeartedLoading(false);
         }
@@ -105,6 +117,66 @@ const AccountPage = () => {
                 setUser({ ...user, displayName: newName });
             } catch (error) {
                 console.error('Lỗi khi cập nhật tên hiển thị:', error);
+                setErrorMessage('Có lỗi xảy ra khi cập nhật tên hiển thị. Vui lòng thử lại sau.');
+            }
+        }
+    };
+
+    const handleResetPassword = async () => {
+        if (newPassword !== confirmNewPassword) {
+            setErrorMessage('Mật khẩu mới và xác nhận mật khẩu không khớp.');
+            return;
+        }
+
+        if (auth && auth.currentUser) {
+            try {
+                const credential = EmailAuthProvider.credential(
+                    auth.currentUser.email!,
+                    oldPassword
+                );
+                await reauthenticateWithCredential(auth.currentUser, credential);
+                await updatePassword(auth.currentUser, newPassword);
+
+                setSuccessMessage('Mật khẩu đã được cập nhật thành công.');
+                setErrorMessage(null);
+                setShowPasswordModal(false);
+                setOldPassword('');
+                setNewPassword('');
+                setConfirmNewPassword('');
+            } catch (error) {
+                console.error('Lỗi khi đặt lại mật khẩu:', error);
+                setErrorMessage('Có lỗi xảy ra khi đặt lại mật khẩu. Vui lòng kiểm tra mật khẩu cũ và thử lại.');
+                setSuccessMessage(null);
+            }
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteAccount = async () => {
+        if (user && user.uid && auth && auth.currentUser && db) {
+            try {
+                await deleteDoc(doc(db, 'users', user.uid));
+                await deleteUser(auth.currentUser);
+                router.push('/');
+            } catch (error) {
+                console.error('Lỗi khi xóa tài khoản:', error);
+                setErrorMessage('Có lỗi xảy ra khi xóa tài khoản. Vui lòng thử lại sau.');
+            }
+        }
+        setShowDeleteModal(false);
+    };
+
+    const handleSignOut = async () => {
+        if (auth) {
+            try {
+                await signOut(auth);
+                router.push('/');
+            } catch (error) {
+                console.error('Lỗi khi đăng xuất:', error);
+                setErrorMessage('Có lỗi xảy ra khi đăng xuất. Vui lòng thử lại sau.');
             }
         }
     };
@@ -134,6 +206,16 @@ const AccountPage = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold mb-4">Tài khoản của bạn</h1>
             </div>
             <div className="container mx-auto px-4">
+                {errorMessage && (
+                    <div className="bg-red-500 text-white p-4 mb-4 rounded">
+                        {errorMessage}
+                    </div>
+                )}
+                {successMessage && (
+                    <div className="bg-green-500 text-white p-4 mb-4 rounded">
+                        {successMessage}
+                    </div>
+                )}
                 <div className="flex mb-6">
                     <button
                         className={`mr-4 py-2 px-4 rounded-t-lg ${activeTab === 'info' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'}`}
@@ -165,6 +247,28 @@ const AccountPage = () => {
                                 initialName={user.displayName || ''}
                                 onSave={handleSaveName}
                             />
+                            <div className="mt-6 flex flex-wrap gap-4">
+                                {!isGoogleUser && (
+                                    <button
+                                        onClick={() => setShowPasswordModal(true)}
+                                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                    >
+                                        Đổi Mật Khẩu
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    Xóa Tài Khoản
+                                </button>
+                                <button
+                                    onClick={handleSignOut}
+                                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    Đăng Xuất
+                                </button>
+                            </div>
                         </motion.div>
                     )}
 
@@ -192,6 +296,75 @@ const AccountPage = () => {
                         </motion.div>
                     )}
                 </AnimatePresence>
+                <ModalPortal>
+                    {showPasswordModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+                            <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
+                                <h2 className="text-xl font-bold mb-4">Đổi mật khẩu</h2>
+                                <div className="space-y-4">
+                                    <input
+                                        type="password"
+                                        placeholder="Mật khẩu cũ"
+                                        value={oldPassword}
+                                        onChange={(e) => setOldPassword(e.target.value)}
+                                        className="w-full p-2 rounded bg-gray-700 text-white"
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Mật khẩu mới"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        className="w-full p-2 rounded bg-gray-700 text-white"
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Xác nhận mật khẩu mới"
+                                        value={confirmNewPassword}
+                                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                        className="w-full p-2 rounded bg-gray-700 text-white"
+                                    />
+                                    <div className="flex justify-end space-x-4">
+                                        <button
+                                            onClick={() => setShowPasswordModal(false)}
+                                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                                        >
+                                            Hủy
+                                        </button>
+                                        <button
+                                            onClick={handleResetPassword}
+                                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                                        >
+                                            Xác nhận
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showDeleteModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+                            <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
+                                <h2 className="text-xl font-bold mb-4">Xác nhận xóa tài khoản</h2>
+                                <p className="mb-6">Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.</p>
+                                <div className="flex justify-end space-x-4">
+                                    <button
+                                        onClick={() => setShowDeleteModal(false)}
+                                        className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        onClick={confirmDeleteAccount}
+                                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                                    >
+                                        Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </ModalPortal>
             </div>
         </motion.div>
     );
