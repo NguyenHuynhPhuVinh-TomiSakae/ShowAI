@@ -20,7 +20,6 @@ interface ImageSettings {
     width: number;
     height: number;
     steps: number;
-    numberOfImages: number;
 }
 
 const AIImageGenModal: React.FC<AIImageGenModalProps> = ({ isOpen, onClose }) => {
@@ -31,8 +30,7 @@ const AIImageGenModal: React.FC<AIImageGenModalProps> = ({ isOpen, onClose }) =>
     const [settings, setSettings] = useState<ImageSettings>({
         width: 1024,
         height: 768,
-        steps: 4,
-        numberOfImages: 1
+        steps: 4
     });
     const [showSettings, setShowSettings] = useState(false);
     const [togetherApiKey, setTogetherApiKey] = useState<string | null>(null);
@@ -77,14 +75,14 @@ const AIImageGenModal: React.FC<AIImageGenModalProps> = ({ isOpen, onClose }) =>
                 width: settings.width,
                 height: settings.height,
                 steps: settings.steps,
-                n: settings.numberOfImages,
+                n: 1,
                 response_format: "b64_json"
             } as any);
 
-            const newImages = response.data.map((item: any) => ({
+            const newImages = [{
                 id: uuidv4(),
-                url: `data:image/png;base64,${item.b64_json}`
-            }));
+                url: `data:image/png;base64,${response.data[0].b64_json}`
+            }];
             setGeneratedImages(prevImages => [...newImages, ...prevImages]);
         } catch (error) {
             console.error("Lỗi khi tạo hình ảnh:", error);
@@ -199,19 +197,6 @@ const AIImageGenModal: React.FC<AIImageGenModalProps> = ({ isOpen, onClose }) =>
                                                     min="1"
                                                     max="12"
                                                     value={settings.steps}
-                                                    onChange={handleSettingChange}
-                                                    className="w-full"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label htmlFor="numberOfImages" className="block text-sm font-medium text-gray-300">Số lượng ảnh: {settings.numberOfImages}</label>
-                                                <input
-                                                    type="range"
-                                                    id="numberOfImages"
-                                                    name="numberOfImages"
-                                                    min="1"
-                                                    max="4"
-                                                    value={settings.numberOfImages}
                                                     onChange={handleSettingChange}
                                                     className="w-full"
                                                 />
