@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaImage } from 'react-icons/fa';
 import { IoMdChatbubbles } from 'react-icons/io';
 import { MdCompareArrows } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,6 +17,7 @@ interface DesktopNavBarProps {
     isUserDropdownOpen: boolean;
     setIsUserDropdownOpen: (isOpen: boolean) => void;
     handleLogout: () => void;
+    setIsAIImageGenModalOpen: (isOpen: boolean) => void;
 }
 
 const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
@@ -29,7 +30,8 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
     user,
     isUserDropdownOpen,
     setIsUserDropdownOpen,
-    handleLogout
+    handleLogout,
+    setIsAIImageGenModalOpen
 }) => {
     const router = useRouter();
     const aiToolsRef = useRef<HTMLDivElement>(null);
@@ -82,6 +84,10 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                         <button onClick={() => { setIsAICompareModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
                                             <MdCompareArrows className="mr-3" />
                                             AI So Sánh
+                                        </button>
+                                        <button onClick={() => { setIsAIImageGenModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
+                                            <FaImage className="mr-3" />
+                                            AI Tạo Ảnh
                                         </button>
                                     </div>
                                 </motion.div>

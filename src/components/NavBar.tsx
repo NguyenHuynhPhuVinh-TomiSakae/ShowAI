@@ -12,6 +12,7 @@ import { User } from 'firebase/auth';
 import { DocumentData } from 'firebase/firestore';
 import MobileNavBar from './MobileNavBar';
 import DesktopNavBar from './DesktopNavBar';
+import AIImageGenModal from './AIImageGenModal';
 
 const NavBar = () => {
     const router = useRouter();
@@ -22,6 +23,7 @@ const NavBar = () => {
     const [isAIToolsDropdownOpen, setIsAIToolsDropdownOpen] = useState(false);
     const [user, setUser] = useState<DocumentData | null>(null);
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+    const [isAIImageGenModalOpen, setIsAIImageGenModalOpen] = useState(false);
     const { auth } = useFirebase();
     const { getUserFromFirestore } = useFirestoreOperations();
 
@@ -111,6 +113,7 @@ const NavBar = () => {
                     isUserDropdownOpen={isUserDropdownOpen}
                     toggleUserDropdown={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                     handleLogout={handleLogout}
+                    setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
                 />
                 <DesktopNavBar
                     isAIToolsDropdownOpen={isAIToolsDropdownOpen}
@@ -124,6 +127,7 @@ const NavBar = () => {
                     isUserDropdownOpen={isUserDropdownOpen}
                     setIsUserDropdownOpen={setIsUserDropdownOpen}
                     handleLogout={handleLogout}
+                    setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
                 />
             </div>
             {isAICompareModalOpen && (
@@ -134,6 +138,9 @@ const NavBar = () => {
             )}
             {isGeminiChatOpen && (
                 <GeminiChat isOpen={isGeminiChatOpen} onClose={() => setIsGeminiChatOpen(false)} />
+            )}
+            {isAIImageGenModalOpen && (
+                <AIImageGenModal isOpen={isAIImageGenModalOpen} onClose={() => setIsAIImageGenModalOpen(false)} />
             )}
         </nav>
     );

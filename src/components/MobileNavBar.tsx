@@ -6,6 +6,7 @@ import { MdCompareArrows } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { FaImage } from 'react-icons/fa';
 
 interface MobileNavBarProps {
     isSidebarOpen: boolean;
@@ -18,6 +19,7 @@ interface MobileNavBarProps {
     isUserDropdownOpen: boolean;
     toggleUserDropdown: () => void;
     handleLogout: () => void;
+    setIsAIImageGenModalOpen: (isOpen: boolean) => void;
 }
 
 const MobileNavBar: React.FC<MobileNavBarProps> = ({
@@ -30,7 +32,8 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     user,
     isUserDropdownOpen,
     toggleUserDropdown,
-    handleLogout
+    handleLogout,
+    setIsAIImageGenModalOpen
 }) => {
     const router = useRouter();
     const sidebarRef = useRef<HTMLDivElement>(null);
@@ -131,6 +134,16 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                 >
                                                     <MdCompareArrows className="mr-3" />
                                                     AI So Sánh
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setIsAIImageGenModalOpen(true);
+                                                        toggleSidebar();
+                                                    }}
+                                                    className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
+                                                >
+                                                    <FaImage className="mr-3" />
+                                                    AI Tạo Ảnh
                                                 </button>
                                             </motion.div>
                                         )}
