@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react'
 import WebsiteList from '@/components/WebsiteList'
 import Image from 'next/image'
@@ -15,6 +16,9 @@ interface DataItem {
     star: number;
     view: number;
     image?: string;
+    comments: any[];
+    shortComments: any[];
+    ratings: any[];
 }
 
 interface AdminUIProps {

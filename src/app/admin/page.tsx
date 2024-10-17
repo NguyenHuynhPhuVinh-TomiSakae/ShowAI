@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
@@ -7,6 +8,7 @@ import { useFirestoreOperations } from '@/utils/firestore'
 import AdminUI from './AdminUI'
 import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage'
 import { FirebaseStorage } from 'firebase/storage'
+import SkeletonLoader from './SkeletonLoader' // Giả sử bạn đã tạo file này
 
 interface DataItem {
     _id: string;
@@ -20,6 +22,9 @@ interface DataItem {
     star: number;
     view: number;
     image?: string;
+    comments: any[];
+    shortComments: any[];
+    ratings: any[];
 }
 
 export default function Admin() {
@@ -83,10 +88,6 @@ export default function Admin() {
 
         checkAuthorization()
     }, [auth, getUserFromFirestore, router, fetchData])
-
-    if (!isAuthorized) {
-        return <div className="text-center mt-8">Đang kiểm tra quyền truy cập...</div>
-    }
 
     const filterData = () => {
         let filtered = data
@@ -199,7 +200,7 @@ export default function Admin() {
         }
     }
 
-    if (isLoading) return <div className="text-center mt-8">Loading...</div>
+    if (isLoading) return <SkeletonLoader />
     if (error) return <div className="text-center mt-8 text-red-500">{error}</div>
 
     const filteredData = filterData()
