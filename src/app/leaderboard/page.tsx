@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaHeart, FaTrophy, FaChevronLeft, FaChevronRight, FaFire, FaThumbsUp } from 'react-icons/fa';
 import WebsiteList from '@/components/WebsiteList';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSwipeable } from 'react-swipeable';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -88,6 +88,12 @@ const LeaderboardPage = () => {
         }
         setActiveTab(tabs[newIndex]);
     };
+
+    const handlers = useSwipeable({
+        onSwipedLeft: () => changeTab('next'),
+        onSwipedRight: () => changeTab('prev'),
+        trackMouse: true
+    });
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -230,17 +236,19 @@ const LeaderboardPage = () => {
                                 </button>
                             </div>
                         )}
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeTab}
-                                initial={{ opacity: 0, x: isMobile ? 100 : 0, y: isMobile ? 0 : 20 }}
-                                animate={{ opacity: 1, x: 0, y: 0 }}
-                                exit={{ opacity: 0, x: isMobile ? -100 : 0, y: isMobile ? 0 : -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {renderTabContent()}
-                            </motion.div>
-                        </AnimatePresence>
+                        <div {...handlers}>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={activeTab}
+                                    initial={{ opacity: 0, x: isMobile ? 100 : 0, y: isMobile ? 0 : 20 }}
+                                    animate={{ opacity: 1, x: 0, y: 0 }}
+                                    exit={{ opacity: 0, x: isMobile ? -100 : 0, y: isMobile ? 0 : -20 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    {renderTabContent()}
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
                     </>
                 )}
             </div>
