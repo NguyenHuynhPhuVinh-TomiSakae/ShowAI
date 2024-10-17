@@ -39,27 +39,29 @@ const SearchBar: React.FC<SearchBarProps> = ({ onTagClick, allTags = [] }) => {
 
     return (
         <div className="flex flex-col items-center justify-center">
-            <div className="relative flex w-full max-w-md">
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm công cụ AI..."
-                    className="py-3 px-5 pr-16 rounded-full w-full text-white bg-gray-800 border-2 border-[#3E52E8] focus:outline-none focus:ring-2 focus:ring-[#3E52E8] focus:border-transparent transition-all duration-300 shadow-md"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                />
-                <button
-                    className="absolute right-14 top-1/2 transform -translate-y-1/2 text-[#3E52E8] hover:text-[#4B5EFF] transition-colors duration-300"
-                    onClick={() => setShowTagDropdown(!showTagDropdown)}
-                >
-                    <FaTags className="text-xl" />
-                </button>
-                <button
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-[#3E52E8] text-white rounded-full p-2 hover:bg-[#4B5EFF] transition-colors duration-300"
-                    onClick={handleSearch}
-                >
-                    <FaSearch className="text-xl" />
-                </button>
+            <div className="relative flex w-full max-w-md p-[3px] bg-gradient-to-r from-[#3E52E8] to-[#4B5EFF] rounded-full shadow-lg">
+                <div className="relative flex w-full bg-gray-900 rounded-full">
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm công cụ AI..."
+                        className="py-3 px-5 pr-16 rounded-full w-full text-white bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#3E52E8] focus:border-transparent transition-all duration-300"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    />
+                    <button
+                        className="absolute right-14 top-1/2 transform -translate-y-1/2 text-[#3E52E8] hover:text-[#4B5EFF] transition-colors duration-300"
+                        onClick={() => setShowTagDropdown(!showTagDropdown)}
+                    >
+                        <FaTags className="text-xl" />
+                    </button>
+                    <button
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-[#3E52E8] text-white rounded-full p-2 hover:bg-[#4B5EFF] transition-colors duration-300"
+                        onClick={handleSearch}
+                    >
+                        <FaSearch className="text-xl" />
+                    </button>
+                </div>
                 <div
                     ref={dropdownRef}
                     className={`absolute top-full left-0 mt-3 w-full bg-gray-900 rounded-lg shadow-xl z-10 p-4 border border-[#3E52E8] transition-all duration-300 ${showTagDropdown ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'

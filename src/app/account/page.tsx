@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirebase } from '@/components/FirebaseConfig';
-import { FaUser, FaHeart, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaHeart } from 'react-icons/fa';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signOut, deleteUser } from 'firebase/auth';
 import WebsiteList from '@/components/WebsiteList';
@@ -11,6 +11,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DisplayNameEditor from '@/components/DisplayNameEditor';
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import ModalPortal from '@/components/ModalPortal';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const AccountPage = () => {
     const [activeTab, setActiveTab] = useState('info');
@@ -181,10 +183,49 @@ const AccountPage = () => {
         }
     };
 
+    const SkeletonLoader = () => (
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md">
+            <Skeleton width={200} height={24} baseColor="#1F2937" highlightColor="#374151" className="mb-4" />
+            <Skeleton count={3} baseColor="#1F2937" highlightColor="#374151" className="mb-4" />
+            <div className="mt-6 flex flex-wrap gap-4">
+                <Skeleton width={120} height={40} baseColor="#1F2937" highlightColor="#374151" />
+                <Skeleton width={120} height={40} baseColor="#1F2937" highlightColor="#374151" />
+                <Skeleton width={120} height={40} baseColor="#1F2937" highlightColor="#374151" />
+            </div>
+        </div>
+    );
+
+    const FavoritesSkeletonLoader = () => (
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md">
+            <Skeleton width={200} height={24} baseColor="#1F2937" highlightColor="#374151" className="mb-4" />
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="bg-gray-700 rounded-lg p-4">
+                        <Skeleton height={150} baseColor="#1F2937" highlightColor="#374151" className="mb-2" />
+                        <Skeleton count={2} baseColor="#1F2937" highlightColor="#374151" className="mb-2" />
+                        <div className="flex flex-wrap gap-2">
+                            <Skeleton width={60} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                            <Skeleton width={60} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
     if (isLoading || isHeartedLoading) {
         return (
-            <div className="flex justify-center items-center h-screen bg-[#0F172A]">
-                <FaSpinner className="animate-spin text-4xl text-blue-500" />
+            <div className="bg-[#0F172A] text-white min-h-screen pb-4">
+                <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
+                    <Skeleton width={200} height={36} baseColor="#1F2937" highlightColor="#374151" className="mx-auto" />
+                </div>
+                <div className="container mx-auto px-4">
+                    <div className="flex mb-6">
+                        <Skeleton width={100} height={40} baseColor="#1F2937" highlightColor="#374151" className="mr-4" />
+                        <Skeleton width={100} height={40} baseColor="#1F2937" highlightColor="#374151" />
+                    </div>
+                    <SkeletonLoader />
+                </div>
             </div>
         );
     }
@@ -283,7 +324,9 @@ const AccountPage = () => {
                             className="bg-gray-800 p-6 rounded-lg shadow-md"
                         >
                             <h2 className="text-xl font-semibold mb-4 text-blue-300">Trang web yêu thích</h2>
-                            {heartedWebsites.length > 0 ? (
+                            {isHeartedLoading ? (
+                                <FavoritesSkeletonLoader />
+                            ) : heartedWebsites.length > 0 ? (
                                 <WebsiteList
                                     websites={heartedWebsites}
                                     onTagClick={handleTagClick}

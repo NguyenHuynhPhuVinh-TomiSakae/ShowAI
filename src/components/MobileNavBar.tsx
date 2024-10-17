@@ -1,5 +1,8 @@
-import { IoClose, IoMenu } from 'react-icons/io5';
+import { IoClose } from 'react-icons/io5';
+import { FaBars } from 'react-icons/fa';
 import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
+import { IoMdChatbubbles } from 'react-icons/io';
+import { MdCompareArrows, MdDesignServices } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
@@ -69,8 +72,12 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
 
     return (
         <div className="md:hidden">
-            <button onClick={toggleSidebar} className="text-white">
-                <IoMenu size={32} />
+            <button
+                onClick={toggleSidebar}
+                className="fixed top-4 right-4 z-50 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors duration-300"
+                aria-label="Toggle sidebar"
+            >
+                {isSidebarOpen ? <IoClose size={24} /> : <FaBars size={24} />}
             </button>
             <AnimatePresence>
                 {isSidebarOpen && (
@@ -80,24 +87,17 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'tween', duration: 0.3 }}
-                        className="fixed top-0 right-0 h-full w-64 bg-[#3E52E8] z-50 shadow-lg overflow-y-auto border border-blue-300"
+                        className="fixed top-0 right-0 h-full w-64 bg-gray-900 z-40 overflow-y-auto border-l border-gray-700 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
                     >
-                        <div className="flex flex-col h-full p-6">
-                            <div className="flex justify-between items-center mb-8 border-b border-blue-300 pb-4">
+                        <div className="flex flex-col h-full">
+                            <div className="flex items-center px-6 py-3 mt-3 border-b border-gray-700">
                                 <p className="text-2xl font-bold text-white">ShowAI</p>
-                                <button
-                                    onClick={toggleSidebar}
-                                    className="text-white hover:text-gray-200 transition-colors duration-300"
-                                    aria-label="Close sidebar"
-                                >
-                                    <IoClose size={28} />
-                                </button>
                             </div>
-                            <div className="space-y-6">
-                                <div className="bg-[#1E293B] rounded-lg p-2">
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                                <div className="bg-gray-800 rounded-lg p-2 border border-blue-400">
                                     <button
                                         onClick={toggleAIToolsDropdown}
-                                        className="flex items-center justify-between w-full text-white py-2 px-3 hover:bg-[#4B5563] rounded transition-colors duration-300"
+                                        className="flex items-center justify-between w-full text-blue-400 py-2 px-3 hover:bg-blue-400 hover:text-gray-800 rounded transition-colors duration-300"
                                     >
                                         <span className="flex items-center">
                                             <FaTools className="mr-3" />
@@ -119,8 +119,9 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                         setIsAIDesignModalOpen(true);
                                                         toggleSidebar();
                                                     }}
-                                                    className="block w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
+                                                    className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
                                                 >
+                                                    <MdDesignServices className="mr-3" />
                                                     AI Giao Diện
                                                 </button>
                                                 <button
@@ -128,8 +129,9 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                         setIsGeminiChatOpen(true);
                                                         toggleSidebar();
                                                     }}
-                                                    className="block w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
+                                                    className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
                                                 >
+                                                    <IoMdChatbubbles className="mr-3" />
                                                     AI Hỗ Trợ
                                                 </button>
                                                 <button
@@ -137,8 +139,9 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                         setIsAICompareModalOpen(true);
                                                         toggleSidebar();
                                                     }}
-                                                    className="block w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
+                                                    className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
                                                 >
+                                                    <MdCompareArrows className="mr-3" />
                                                     AI So Sánh
                                                 </button>
                                             </motion.div>
@@ -147,16 +150,16 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                 </div>
                                 <button
                                     onClick={handleLeaderboardClick}
-                                    className="flex items-center w-full text-white py-3 px-4 bg-[#1E293B] hover:bg-[#4B5563] rounded-md transition-colors duration-300 text-lg font-semibold"
+                                    className="nav-button w-full justify-center bg-gray-800 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-800"
                                 >
                                     <FaTrophy className="mr-4 text-xl" />
                                     Bảng Xếp Hạng
                                 </button>
                                 {user ? (
-                                    <div className="bg-[#1E293B] rounded-lg p-2">
+                                    <div className="bg-gray-800 rounded-lg p-2 border border-teal-400">
                                         <button
                                             onClick={toggleUserDropdown}
-                                            className="flex items-center justify-between w-full text-white py-2 px-3 hover:bg-[#4B5563] rounded transition-colors duration-300"
+                                            className="flex items-center justify-between w-full text-teal-400 py-2 px-3 hover:bg-teal-400 hover:text-gray-800 rounded transition-colors duration-300"
                                         >
                                             <span>{user.username}</span>
                                             {isUserDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
@@ -172,14 +175,14 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                 >
                                                     <button
                                                         onClick={handleAccountClick}
-                                                        className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
+                                                        className="dropdown-item text-teal-400 hover:bg-teal-400 hover:text-gray-800"
                                                     >
                                                         <FaUser className="mr-3" />
                                                         Tài Khoản
                                                     </button>
                                                     <button
                                                         onClick={handleLogoutClick}
-                                                        className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
+                                                        className="dropdown-item text-teal-400 hover:bg-teal-400 hover:text-gray-800"
                                                     >
                                                         <FaSignOutAlt className="mr-3" />
                                                         Đăng Xuất
@@ -191,7 +194,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                 ) : (
                                     <button
                                         onClick={handleLoginClick}
-                                        className="flex items-center w-full text-white py-3 px-4 bg-[#1E293B] hover:bg-[#4B5563] rounded-md transition-colors duration-300 text-lg font-semibold"
+                                        className="nav-button w-full justify-center bg-gray-800 border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-800"
                                     >
                                         <FaUserCircle className="mr-4 text-xl" />
                                         Đăng Nhập

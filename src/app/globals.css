@@ -11,8 +11,8 @@
 .box-live {
     border: 2px solid transparent;
     background:
-        linear-gradient(#131219, #131219) padding-box,
-        linear-gradient(var(--angle), transparent 50%, #00ff00 50%, transparent) border-box;
+        linear-gradient(#1F2937, #1F2937) padding-box,
+        linear-gradient(var(--angle), transparent 50%, #10B981 50%, transparent) border-box;
     animation: rotate 2s linear infinite;
 }
 
@@ -36,4 +36,24 @@
     to {
         right: 100%;
     }
+}
+
+@layer components {
+    .nav-button {
+        @apply flex items-center bg-indigo-700 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-all duration-300 shadow-md hover:shadow-lg;
+    }
+
+    .dropdown-item {
+        @apply flex items-center w-full text-left py-2 px-3 text-white hover:bg-white hover:bg-opacity-20 rounded transition-all duration-300;
+    }
+}
+
+/* Thêm hiệu ứng glow cho các nút */
+.nav-button:hover {
+    box-shadow: 0 0 15px rgba(129, 140, 248, 0.6);
+}
+
+/* Hiệu ứng cho dropdown */
+.dropdown-item:hover {
+    transform: translateX(5px);
 }

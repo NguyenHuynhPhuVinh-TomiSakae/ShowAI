@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { FaChevronDown, FaChevronUp, FaCircle, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
 import { IoMdChatbubbles } from 'react-icons/io';
-import { MdCompareArrows } from 'react-icons/md';
+import { MdCompareArrows, MdDesignServices } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -54,18 +54,16 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
     return (
         <div className="hidden md:flex md:items-center">
             <div className="md:relative md:w-auto md:bg-transparent md:flex md:items-center">
-                <div className="flex flex-row p-0">
+                <div className="flex flex-row p-0 space-x-4">
                     <div
                         className="relative group"
                         ref={aiToolsRef}
                         onMouseEnter={() => handleMouseEnter(setIsAIToolsDropdownOpen)}
                         onMouseLeave={() => handleMouseLeave(setIsAIToolsDropdownOpen)}
                     >
-                        <button
-                            className="text-white px-4 py-2 rounded mx-2 bg-[#1E293B] hover:bg-[#2D3748] transition-colors duration-300 w-auto mb-0 flex items-center justify-between"
-                        >
+                        <button className="nav-button group bg-gray-800 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-gray-800">
                             <FaTools className="mr-2" />
-                            Công Cụ AI
+                            <span>Công Cụ AI</span>
                             {isAIToolsDropdownOpen ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />}
                         </button>
                         <AnimatePresence>
@@ -75,36 +73,18 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
                                     transition={{ duration: 0.2 }}
-                                    className="absolute top-full right-0 w-64 bg-[#1E293B] rounded-md shadow-lg z-10"
+                                    className="absolute top-full right-0 w-64 bg-gray-800 border border-blue-400 rounded-md shadow-lg z-50 mt-2"
                                 >
                                     <div className="p-4 space-y-2">
-                                        <button
-                                            onClick={() => {
-                                                setIsAIDesignModalOpen(true);
-                                                setIsAIToolsDropdownOpen(false);
-                                            }}
-                                            className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
-                                        >
-                                            <FaTools className="mr-3" />
+                                        <button onClick={() => { setIsAIDesignModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
+                                            <MdDesignServices className="mr-3" />
                                             AI Giao Diện
                                         </button>
-                                        <button
-                                            onClick={() => {
-                                                setIsGeminiChatOpen(true);
-                                                setIsAIToolsDropdownOpen(false);
-                                            }}
-                                            className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
-                                        >
+                                        <button onClick={() => { setIsGeminiChatOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
                                             <IoMdChatbubbles className="mr-3" />
                                             AI Hỗ Trợ
                                         </button>
-                                        <button
-                                            onClick={() => {
-                                                setIsAICompareModalOpen(true);
-                                                setIsAIToolsDropdownOpen(false);
-                                            }}
-                                            className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
-                                        >
+                                        <button onClick={() => { setIsAICompareModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
                                             <MdCompareArrows className="mr-3" />
                                             AI So Sánh
                                         </button>
@@ -115,14 +95,14 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                     </div>
                     <motion.button
                         onClick={handleLive2DToggle}
-                        className={`hidden md:flex items-center bg-[#1E293B] text-[#93C5FD] px-4 py-2 rounded mx-2 hover:bg-[#2D3748] hover:text-white transition-colors duration-300 ${isLive2DModalOpen ? 'box-live' : ''}`}
+                        className={`nav-button bg-gray-800 border ${isLive2DModalOpen ? 'box-live text-green-400' : 'border-gray-400 text-gray-400'} hover:bg-gray-700`}
                     >
-                        <FaCircle className={`mr-2 ${isLive2DModalOpen ? 'text-green-500' : 'text-[#93C5FD]'}`} size={12} />
+                        <FaCircle className="mr-2" size={12} />
                         {['L', 'i', 'v', 'e'].map((char, index) => (
                             <motion.span
                                 key={index}
                                 initial={{ y: 0 }}
-                                animate={isLive2DModalOpen ? { y: [-5, 0], color: ['#93C5FD', '#FFFFFF'] } : {}}
+                                animate={isLive2DModalOpen ? { y: [-2, 0] } : {}}
                                 transition={{
                                     repeat: isLive2DModalOpen ? Infinity : 0,
                                     repeatType: "reverse",
@@ -134,12 +114,9 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                             </motion.span>
                         ))}
                     </motion.button>
-                    <button
-                        onClick={() => router.push('/leaderboard')}
-                        className="flex items-center bg-[#1E293B] text-white px-4 py-2 rounded mx-2 hover:bg-[#2D3748] transition-colors duration-300 w-auto"
-                    >
+                    <button onClick={() => router.push('/leaderboard')} className="nav-button bg-gray-800 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-800">
                         <FaTrophy className="mr-2" />
-                        Bảng Xếp Hạng
+                        <span>Bảng Xếp Hạng</span>
                     </button>
                     <div
                         className="relative group"
@@ -147,12 +124,9 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                         onMouseEnter={() => user && handleMouseEnter(setIsUserDropdownOpen)}
                         onMouseLeave={() => user && handleMouseLeave(setIsUserDropdownOpen)}
                     >
-                        <button
-                            onClick={() => !user && router.push('/login')}
-                            className="flex items-center bg-[#1E293B] text-white px-4 py-2 rounded mx-2 hover:bg-[#2D3748] transition-colors duration-300 w-auto"
-                        >
+                        <button onClick={() => !user && router.push('/login')} className="nav-button bg-gray-800 border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-800">
                             <FaUserCircle className="mr-2" />
-                            {user ? user.username : 'Đăng Nhập'}
+                            <span>{user ? user.username : 'Đăng Nhập'}</span>
                             {user && (isUserDropdownOpen ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />)}
                         </button>
                         <AnimatePresence>
@@ -162,26 +136,14 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
                                     transition={{ duration: 0.2 }}
-                                    className="absolute top-full right-0 w-64 bg-[#1E293B] rounded-md shadow-lg z-10"
+                                    className="absolute top-full right-0 w-64 bg-gray-800 border border-teal-400 rounded-md shadow-lg z-50 mt-2"
                                 >
                                     <div className="p-4 space-y-2">
-                                        <button
-                                            onClick={() => {
-                                                router.push('/account');
-                                                setIsUserDropdownOpen(false);
-                                            }}
-                                            className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
-                                        >
+                                        <button onClick={() => { router.push('/account'); setIsUserDropdownOpen(false); }} className="dropdown-item hover:bg-teal-400 hover:text-gray-800">
                                             <FaUser className="mr-3" />
                                             Tài Khoản
                                         </button>
-                                        <button
-                                            onClick={() => {
-                                                handleLogout();
-                                                setIsUserDropdownOpen(false);
-                                            }}
-                                            className="flex items-center w-full text-left py-2 px-3 text-white hover:bg-[#4B5563] rounded transition-colors duration-300"
-                                        >
+                                        <button onClick={() => { handleLogout(); setIsUserDropdownOpen(false); }} className="dropdown-item hover:bg-teal-400 hover:text-gray-800">
                                             <FaSignOutAlt className="mr-3" />
                                             Đăng Xuất
                                         </button>

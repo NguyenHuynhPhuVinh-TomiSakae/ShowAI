@@ -2,13 +2,15 @@
 'use client'
 import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { FaSpinner, FaStar, FaTimes } from 'react-icons/fa';
+import { FaStar, FaTimes } from 'react-icons/fa';
 import WebsiteList from '@/components/WebsiteList';
 import SearchBar from '@/components/SearchBar';
 import ModalPortal from '@/components/ModalPortal';
 import WebsiteDetails from '@/components/WebsiteDetails';
 import { useStarredWebsites } from '@/hooks/useStarredWebsites';
 import { motion, AnimatePresence } from 'framer-motion';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 interface AIWebsite {
     _id: string;
@@ -127,6 +129,49 @@ function ShowContent() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [handleScroll]);
 
+    const WebsiteDetailsSkeleton = () => (
+        <div className="bg-gray-800 border-2 border-gray-700 rounded-lg shadow-lg overflow-hidden p-6">
+            <div className="flex justify-between items-center mb-4">
+                <Skeleton width={200} height={30} baseColor="#1F2937" highlightColor="#374151" />
+                <Skeleton width={30} height={30} baseColor="#1F2937" highlightColor="#374151" />
+            </div>
+            <Skeleton count={3} baseColor="#1F2937" highlightColor="#374151" />
+            <div className="mt-4">
+                <Skeleton width={100} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                <div className="flex flex-wrap gap-2 mt-2">
+                    <Skeleton width={60} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                    <Skeleton width={60} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                    <Skeleton width={60} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                </div>
+            </div>
+            <div className="mt-4">
+                <Skeleton width={150} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                <Skeleton count={3} baseColor="#1F2937" highlightColor="#374151" />
+            </div>
+        </div>
+    );
+
+    const RandomWebsitesSkeleton = () => (
+        <div className="mt-8">
+            <Skeleton width={200} height={30} baseColor="#1F2937" highlightColor="#374151" className="mb-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {Array.from({ length: 8 }).map((_, index) => (
+                    <div key={index} className="bg-gray-800 border-2 border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                        <Skeleton height={150} baseColor="#1F2937" highlightColor="#374151" />
+                        <div className="p-4">
+                            <Skeleton width={150} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                            <Skeleton count={2} baseColor="#1F2937" highlightColor="#374151" />
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                <Skeleton width={60} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                                <Skeleton width={60} height={24} baseColor="#1F2937" highlightColor="#374151" />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
             <div className="bg-[#2A3284] text-center py-4 mb-4 px-4">
@@ -137,28 +182,23 @@ function ShowContent() {
             <div className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2">
-                        {isLoading && (
-                            <div className="text-center">
-                                <FaSpinner className="inline-block animate-spin mr-2" /> Đang tải...
-                            </div>
-                        )}
-                        {error && <p className="text-center text-red-500">{error}</p>}
-                        {!isLoading && !error && website && (
+                        {isLoading ? (
+                            <WebsiteDetailsSkeleton />
+                        ) : error ? (
+                            <p className="text-center text-red-500">{error}</p>
+                        ) : website ? (
                             <WebsiteDetails
                                 website={website}
                                 isStarred={isStarred(website.id)}
                                 onStarClick={handleStarClick}
                                 onTagClick={handleTagClick}
                             />
-                        )}
-                        {!isLoading && !error && !website && (
+                        ) : (
                             <p className="text-center">Không có dữ liệu để hiển thị.</p>
                         )}
 
                         {isRandomLoading ? (
-                            <div className="text-center mt-8">
-                                <FaSpinner className="inline-block animate-spin mr-2" /> Đang tải đề xuất...
-                            </div>
+                            <RandomWebsitesSkeleton />
                         ) : randomWebsites.length > 0 ? (
                             <div className="mt-8">
                                 <h3 className="text-xl md:text-2xl text-center font-bold text-blue-300 mb-4">Đề xuất trang web AI ngẫu nhiên</h3>
@@ -183,7 +223,7 @@ function ShowContent() {
                                         </div>
                                         {isStarredLoading ? (
                                             <div>
-                                                <FaSpinner className="inline-block animate-spin mr-2" /> Đang tải...
+                                                <Skeleton count={5} height={50} baseColor="#1F2937" highlightColor="#374151" />
                                             </div>
                                         ) : starredWebsites.length > 0 ? (
                                             <WebsiteList websites={starredWebsites} onTagClick={handleTagClick} isSidebar={true} />
@@ -203,7 +243,7 @@ function ShowContent() {
                             <div className="overflow-y-auto">
                                 {isStarredLoading ? (
                                     <div>
-                                        <FaSpinner className="inline-block animate-spin mr-2" /> Đang tải...
+                                        <Skeleton count={5} height={50} baseColor="#1F2937" highlightColor="#374151" />
                                     </div>
                                 ) : starredWebsites.length > 0 ? (
                                     <WebsiteList websites={starredWebsites} onTagClick={handleTagClick} isSidebar={true} />

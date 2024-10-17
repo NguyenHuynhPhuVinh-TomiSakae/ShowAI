@@ -23,9 +23,10 @@ const NavBar = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isAIToolsDropdownOpen, setIsAIToolsDropdownOpen] = useState(false);
     const [navStyles, setNavStyles] = useState({
-        bgColor: 'bg-[#3E52E8]',
+        bgColor: 'bg-blue-600',
         textColor: 'text-white',
-        padding: 'p-4'
+        padding: 'p-4',
+        border: 'border-b border-white border-opacity-20 shadow-lg'
     });
     const [user, setUser] = useState<DocumentData | null>(null);
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
@@ -98,7 +99,7 @@ const NavBar = () => {
     };
 
     return (
-        <nav className={`${navStyles.bgColor} ${navStyles.textColor} ${navStyles.padding}`}>
+        <nav className={`${navStyles.bgColor} ${navStyles.textColor} ${navStyles.padding} ${navStyles.border}`}>
             <div className="container md:mx-4 flex justify-between items-center">
                 <div
                     className="text-3xl font-bold cursor-pointer"
