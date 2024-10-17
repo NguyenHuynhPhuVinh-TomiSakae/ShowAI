@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FaStar, FaEye, FaHeart } from 'react-icons/fa';
+import { FaEye, FaHeart, FaThumbtack } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import AdditionalInfoButton from './AdditionalInfoButton';
@@ -31,12 +31,12 @@ interface AIWebsite {
 
 interface WebsiteDetailsProps {
     website: AIWebsite;
-    isStarred: boolean;
-    onStarClick: () => void;
+    isPinned: boolean;
+    onPinClick: () => void;
     onTagClick: (tag: string) => void;
 }
 
-const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onStarClick, onTagClick }) => {
+const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPinClick, onTagClick }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [viewCount] = useState(website.view || 0);
     const [isHearted, setIsHearted] = useState(false);
@@ -191,12 +191,12 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                         />
                         <span className="text-base sm:text-lg text-gray-400">{heartCount}</span>
                     </div>
-                    <div className="flex items-center">
-                        <FaStar
-                            className={`cursor-pointer text-2xl sm:text-3xl mr-2 ${isStarred ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-300'} transition-colors`}
-                            onClick={onStarClick}
-                        />
-                    </div>
+                    <button
+                        onClick={onPinClick}
+                        className={`text-2xl ${isPinned ? 'text-green-400' : 'text-gray-400'} hover:text-green-400 transition-colors duration-200`}
+                    >
+                        <FaThumbtack />
+                    </button>
                 </div>
                 <Link
                     href={website.link}

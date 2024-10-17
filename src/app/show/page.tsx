@@ -2,7 +2,7 @@
 'use client'
 import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { FaStar, FaTimes } from 'react-icons/fa';
+import { FaTimes, FaThumbtack } from 'react-icons/fa';
 import WebsiteList from '@/components/WebsiteList';
 import SearchBar from '@/components/SearchBar';
 import ModalPortal from '@/components/ModalPortal';
@@ -189,8 +189,8 @@ function ShowContent() {
                         ) : website ? (
                             <WebsiteDetails
                                 website={website}
-                                isStarred={isStarred(website.id)}
-                                onStarClick={handleStarClick}
+                                isPinned={isStarred(website.id)}
+                                onPinClick={handleStarClick}
                                 onTagClick={handleTagClick}
                             />
                         ) : (
@@ -216,7 +216,10 @@ function ShowContent() {
                                 <div className="bg-gray-800 w-full max-w-md h-full overflow-y-auto">
                                     <div className="p-4">
                                         <div className="flex justify-between items-center mb-4">
-                                            <h2 className="text-xl font-bold text-blue-300">Danh sách các trang nổi bật</h2>
+                                            <h2 className="text-xl font-bold text-blue-300 flex items-center">
+                                                <FaThumbtack className="mr-2 text-green-400" />
+                                                Danh sách các trang đã ghim
+                                            </h2>
                                             <button onClick={toggleStarredModal} className="text-white">
                                                 <FaTimes />
                                             </button>
@@ -228,7 +231,7 @@ function ShowContent() {
                                         ) : starredWebsites.length > 0 ? (
                                             <WebsiteList websites={starredWebsites} onTagClick={handleTagClick} isSidebar={true} />
                                         ) : (
-                                            <p className="text-center text-white">Không có trang nổi bật nào.</p>
+                                            <p className="text-center text-white">Không có trang nào được ghim.</p>
                                         )}
                                     </div>
                                 </div>
@@ -239,7 +242,10 @@ function ShowContent() {
                     {/* Starred Websites (for desktop) */}
                     {!isMobile && (
                         <div className="lg:block sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto">
-                            <h2 className="text-xl font-bold text-blue-300 mb-4">Danh sách các trang nổi bật</h2>
+                            <h2 className="text-xl font-bold text-blue-300 mb-4 flex items-center">
+                                <FaThumbtack className="mr-2 text-green-400" />
+                                Danh sách các trang đã ghim
+                            </h2>
                             <div className="overflow-y-auto">
                                 {isStarredLoading ? (
                                     <div>
@@ -248,7 +254,7 @@ function ShowContent() {
                                 ) : starredWebsites.length > 0 ? (
                                     <WebsiteList websites={starredWebsites} onTagClick={handleTagClick} isSidebar={true} />
                                 ) : (
-                                    <p className="text-center text-white">Không có trang nổi bật nào.</p>
+                                    <p className="text-center text-white">Không có trang nào được ghim.</p>
                                 )}
                             </div>
                         </div>
@@ -268,7 +274,7 @@ function ShowContent() {
                             className="fixed bottom-5 right-5 bg-blue-500 text-white p-3 rounded-full"
                             onClick={toggleStarredModal}
                         >
-                            <FaStar />
+                            <FaThumbtack />
                         </motion.button>
                     </AnimatePresence>
                 </ModalPortal>
