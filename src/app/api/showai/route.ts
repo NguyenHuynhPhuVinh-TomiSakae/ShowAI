@@ -6,7 +6,7 @@ import Redis from 'ioredis';
 import { gzip, unzip } from 'zlib';
 import { promisify } from 'util';
 
-// Thay thế bằng URL kết nối MongoDB Atlas của bạn
+// Thay thế bằng URI kết nối MongoDB Atlas của bạn
 const uri = process.env.MONGODB_URI;
 if (!uri) {
     throw new Error('MONGODB_URI không được định nghĩa trong biến môi trường');
