@@ -25,5 +25,5 @@ export const useFirebase = () => {
         initializeFirebase();
     }, []);
 
-    return { isInitialized, auth, db };
+    return { isInitialized, auth, db, app };
 };

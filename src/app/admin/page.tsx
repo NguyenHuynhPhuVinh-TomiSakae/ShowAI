@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useFirebase } from '@/components/FirebaseConfig'
 import { useFirestoreOperations } from '@/utils/firestore'
 import AdminUI from './AdminUI'
+import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage'
+import { FirebaseStorage } from 'firebase/storage'
 
 interface DataItem {
     _id: string;
@@ -22,19 +24,23 @@ interface DataItem {
 
 export default function Admin() {
     const [isAuthorized, setIsAuthorized] = useState(false)
-    const { auth } = useFirebase()
+    const { isInitialized, auth, app } = useFirebase()
     const { getUserFromFirestore } = useFirestoreOperations()
     const router = useRouter()
     const [data, setData] = useState<DataItem[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [isFormOpen, setIsFormOpen] = useState(false)
     const [formData, setFormData] = useState<Partial<DataItem>>({})
-    const [isEditing, setIsEditing] = useState(false)
-    const [searchTerm, setSearchTerm] = useState('')
+    const [searchTerm] = useState('')
     const [selectedTag, setSelectedTag] = useState('')
-    const [viewMode, setViewMode] = useState<'full' | 'compact'>('full')
     const [dataFetched, setDataFetched] = useState(false)
+    const [storage, setStorage] = useState<FirebaseStorage | null>(null)
+
+    useEffect(() => {
+        if (isInitialized) {
+            setStorage(getStorage(app))
+        }
+    }, [isInitialized, app])
 
     const fetchData = useCallback(async () => {
         if (dataFetched) return; // Prevent refetching if data has already been fetched
@@ -102,19 +108,20 @@ export default function Admin() {
         const maxId = Math.max(...data.map(item => parseInt(item.id)), 0);
         setFormData({
             id: (maxId + 1).toString(),
+            name: '',
+            description: [],
+            tags: [],
+            link: '',
             keyFeatures: [],
             heart: 0,
             star: 0,
-            view: 0
+            view: 0,
+            image: ''
         })
-        setIsEditing(false)
-        setIsFormOpen(true)
     }
 
     const handleEdit = (item: DataItem) => {
         setFormData({ ...item, keyFeatures: item.keyFeatures || [] })
-        setIsEditing(true)
-        setIsFormOpen(true)
     }
 
     const handleDelete = async (id: string, name: string) => {
@@ -138,14 +145,41 @@ export default function Admin() {
         }
     }
 
+    const uploadImage = async (imageData: string, id: string): Promise<string> => {
+        if (!storage) {
+            throw new Error('Storage chưa được khởi tạo')
+        }
+        const imageName = `website_images/${id}.jpg`
+        const storageRef = ref(storage, imageName)
+
+        try {
+            // Tải lên ảnh dưới dạng base64
+            await uploadString(storageRef, imageData, 'data_url')
+            // Lấy URL tải xuống
+            const downloadURL = await getDownloadURL(storageRef)
+            return downloadURL
+        } catch (error) {
+            console.error('Lỗi khi tải lên ảnh:', error)
+            throw error
+        }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
+            let imageUrl = formData.image
+
+            // Nếu có ảnh mới được tải lên (dạng base64), tải nó lên Firebase Storage
+            if (formData.image && formData.image.startsWith('data:image')) {
+                const id = formData.id || (Math.max(...data.map(item => parseInt(item.id)), 0) + 1).toString()
+                imageUrl = await uploadImage(formData.image, id)
+            }
+
             const url = '/api/showai'
-            const method = isEditing ? 'PUT' : 'POST'
-            const body = isEditing
-                ? { _id: formData._id, ...formData }
-                : formData;
+            const method = formData._id ? 'PUT' : 'POST'
+            const body = formData._id
+                ? { _id: formData._id, ...formData, image: imageUrl }
+                : { ...formData, image: imageUrl };
 
             const response = await fetch(url, {
                 method,
@@ -155,13 +189,13 @@ export default function Admin() {
                 body: JSON.stringify(body),
             })
             if (!response.ok) {
-                throw new Error(`Failed to ${isEditing ? 'update' : 'add'} item`)
+                throw new Error(`Không thể ${formData._id ? 'cập nhật' : 'thêm'} mục`)
             }
             fetchData()
-            setIsFormOpen(false)
+            setFormData({}) // Đặt lại form sau khi gửi thành công
         } catch (error) {
-            console.error(`Error ${isEditing ? 'updating' : 'adding'} item:`, error)
-            setError(`An error occurred while ${isEditing ? 'updating' : 'adding'} the item`)
+            console.error(`Lỗi ${formData._id ? 'cập nhật' : 'thêm'} mục:`, error)
+            setError(`Đã xảy ra lỗi khi ${formData._id ? 'cập nhật' : 'thêm'} mục`)
         }
     }
 
@@ -173,20 +207,12 @@ export default function Admin() {
     return (
         <AdminUI
             filteredData={filteredData}
-            viewMode={viewMode}
-            searchTerm={searchTerm}
-            selectedTag={selectedTag}
-            isFormOpen={isFormOpen}
-            isEditing={isEditing}
             formData={formData}
             handleAdd={handleAdd}
             handleEdit={handleEdit}
             handleDelete={handleDelete}
             handleSubmit={handleSubmit}
-            setSearchTerm={setSearchTerm}
             setSelectedTag={setSelectedTag}
-            setViewMode={setViewMode}
-            setIsFormOpen={setIsFormOpen}
             setFormData={setFormData}
         />
     )
