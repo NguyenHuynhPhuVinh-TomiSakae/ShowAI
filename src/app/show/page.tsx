@@ -18,6 +18,7 @@ interface AIWebsite {
     tags: string[];
     link: string;
     keyFeatures: string[];
+    image?: string;
 }
 
 function ShowContent() {

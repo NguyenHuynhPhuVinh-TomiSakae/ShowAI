@@ -12,6 +12,7 @@ import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firest
 import Rating from './Rating';
 import Comments from './Comments';
 import ShortCommentInput from './ShortCommentInput';
+import Image from 'next/image';
 
 interface AIWebsite {
     _id: string;
@@ -25,6 +26,7 @@ interface AIWebsite {
     heart?: number;
     evaluation?: number;
     comments?: Array<{ id: string; uid: string; user: string; text: string; date: string }>;
+    image?: string; // Thêm trường image vào interface
 }
 
 interface WebsiteDetailsProps {
@@ -45,6 +47,7 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
     const router = useRouter();
     const [websiteRating, setWebsiteRating] = useState(website.evaluation || 0);
     const [isRating, setIsRating] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         setIsVisible(true);
@@ -159,6 +162,19 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
         // Bạn có thể gọi API để lấy danh sách bình luận mới nhất
     };
 
+    useEffect(() => {
+        const checkIsMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        checkIsMobile();
+        window.addEventListener('resize', checkIsMobile);
+
+        return () => {
+            window.removeEventListener('resize', checkIsMobile);
+        };
+    }, []);
+
     return (
         <motion.div
             className="bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg"
@@ -166,6 +182,31 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
             animate={isVisible ? "visible" : "hidden"}
             variants={containerVariants}
         >
+            {website.image && (
+                isMobile ? (
+                    <div className="mb-4 relative w-full h-64">
+                        <Image
+                            src={website.image}
+                            alt={website.name}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-lg"
+                        />
+                    </div>
+                ) : (
+                    <div className="mb-4 relative w-full h-64 bg-gray-700 flex items-center justify-center rounded-lg">
+                        <Image
+                            src={website.image}
+                            alt={website.name}
+                            width={500}
+                            height={300}
+                            objectFit="contain"
+                            className="rounded-lg"
+                        />
+                    </div>
+                )
+            )}
+
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center mb-2 sm:mb-0">
                     <h2 className="text-2xl font-bold text-blue-300 mr-4">{website.name}</h2>

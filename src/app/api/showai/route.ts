@@ -43,15 +43,39 @@ function createCorsResponse(data: unknown, status = 200) {
 const gzipAsync = promisify(gzip);
 const ungzipAsync = promisify(unzip);
 
+// Thêm hàm helper để xóa cache
+async function clearCache() {
+    const keys = await redis.keys('data:*');
+    if (keys.length > 0) {
+        await redis.del(...keys);
+    }
+}
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
+
+    // Thêm tham số mới để xóa cache
+    const clearCache = searchParams.get('clearCache');
+
+    if (clearCache === 'true') {
+        try {
+            const keys = await redis.keys('data:*');
+            if (keys.length > 0) {
+                await redis.del(...keys);
+            }
+            return createCorsResponse({ message: 'Đã xóa sạch cache Redis' });
+        } catch (error) {
+            console.error('Lỗi khi xóa cache Redis:', error);
+            return createCorsResponse({ error: 'Đã xảy ra lỗi khi xóa cache Redis' }, 500);
+        }
+    }
 
     // Lấy các tham số tìm kiếm từ URL
     const searchKeyword = searchParams.get('q') || '';
     const tag = searchParams.get('tag') || '';
     const id = searchParams.get('id') || '';
     const page = searchParams.get('page');
-    const itemsPerPage = 9;
+    const itemsPerPage = 8; // Thay đổi từ 9 thành 8
     const random = searchParams.get('random');
     const list = searchParams.get('list');
     const sort = searchParams.get('sort') || '';
@@ -218,7 +242,7 @@ export async function POST(request: Request) {
         const db = await connectToDatabase();
         const collection = db.collection('data_web_ai');
 
-        // Thêm các trường mới với giá trị mặc định
+        // Thêm các trường mới với giá trị mặc định, bao gồm cả trường image
         const newData = {
             ...data,
             heart: 0,
@@ -226,10 +250,14 @@ export async function POST(request: Request) {
             view: 0,
             evaluation: 0,
             comments: [],
-            shortComments: []
+            shortComments: [],
+            image: data.image || '' // Thêm trường image, sử dụng giá trị từ dữ liệu đầu vào hoặc chuỗi rỗng nếu không có
         };
 
         const result = await collection.insertOne(newData);
+
+        // Xóa cache sau khi thêm dữ liệu mới
+        await clearCache();
 
         return createCorsResponse({ success: true, id: result.insertedId });
     } catch (error) {
@@ -257,8 +285,11 @@ export async function PUT(request: Request) {
         const result = await collection.updateOne(query, { $set: updateData });
 
         if (result.matchedCount === 0) {
-            return createCorsResponse({ error: 'No document found with the provided ID' }, 404);
+            return createCorsResponse({ error: 'Không tìm thấy tài liệu với ID đã cung cấp' }, 404);
         }
+
+        // Xóa cache sau khi cập nhật dữ liệu
+        await clearCache();
 
         return createCorsResponse({ success: true, modifiedCount: result.modifiedCount });
     } catch (error) {
@@ -275,6 +306,9 @@ export async function DELETE(request: Request) {
         const collection = db.collection('data_web_ai');
 
         const result = await collection.deleteOne({ _id: new ObjectId(id) });
+
+        // Xóa cache sau khi xóa dữ liệu
+        await clearCache();
 
         return createCorsResponse({ success: true, deletedCount: result.deletedCount });
     } catch (error) {

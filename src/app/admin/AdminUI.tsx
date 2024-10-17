@@ -12,6 +12,7 @@ interface DataItem {
     heart: number;
     star: number;
     view: number;
+    image?: string; // Thêm trường image
 }
 
 interface AdminUIProps {
@@ -221,6 +222,20 @@ export default function AdminUI({
                                         }}
                                         className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
                                         rows={5}
+                                    />
+                                </div>
+                                {/* Thêm trường nhập liệu cho hình ảnh */}
+                                <div>
+                                    <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="image">
+                                        Link hình ảnh
+                                    </label>
+                                    <input
+                                        type="url"
+                                        id="image"
+                                        value={formData.image || ''}
+                                        onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                        className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                                        placeholder="https://example.com/image.jpg"
                                     />
                                 </div>
                                 <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">

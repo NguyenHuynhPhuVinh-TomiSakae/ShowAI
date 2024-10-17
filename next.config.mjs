@@ -8,6 +8,9 @@ const nextConfig = {
             },
         ];
     },
+    images: {
+        domains: ['firebasestorage.googleapis.com'], // Thay 'example.com' bằng tên miền thực tế của bạn
+    },
 };
 
 export default nextConfig;

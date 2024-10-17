@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { FaExternalLinkAlt, FaEye, FaHeart, FaStar } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
+import Image from 'next/image';
 
 interface AIWebsite {
     _id: string;
@@ -18,6 +19,7 @@ interface AIWebsite {
     label?: string;
     labelColor?: string;
     labelIcon?: React.ReactNode;
+    image?: string;
 }
 
 interface WebsiteListProps {
@@ -105,8 +107,8 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                 : isRandom
                     ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
                     : isShuffled
-                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                        : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                        ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
+                        : "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
             }
             variants={containerVariants}
             initial="hidden"
@@ -122,18 +124,43 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                     onClick={() => handleWebsiteClick(website.id)}
                     onMouseEnter={() => handleMouseEnter(website.id, index)}
                     onMouseLeave={() => handleMouseLeave(index)}
-                    className={`border border-gray-700 rounded-lg p-5 transition-all duration-300 flex flex-col bg-gray-800 cursor-pointer ${isSidebar ? 'h-auto' : 'h-full'} relative`}
+                    className={`border border-gray-700 rounded-lg transition-all duration-300 flex flex-col cursor-pointer ${isSidebar ? 'h-auto' : 'h-full'} relative overflow-hidden`}
                 >
-                    {website.label && (
-                        <div className={`absolute top-0 left-0 m-2 flex items-center ${website.labelColor || 'text-blue-500'}`}>
-                            {website.labelIcon}
-                            <span className="text-xs font-bold">{website.label}</span>
+                    {website.image && !isSidebar && (
+                        <div className="p-3 pb-0 bg-gray-900">
+                            <div className="relative w-full h-40 overflow-hidden rounded-t-lg">
+                                <Image
+                                    src={website.image}
+                                    alt={website.name}
+                                    layout="fill"
+                                    objectFit="cover"
+                                />
+                            </div>
                         </div>
                     )}
-                    <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center space-x-2">
-                            <h2 className={`font-semibold text-blue-300 ${isSidebar ? 'text-lg' : 'text-xl'}`}>{website.name}</h2>
-                            <div className="flex items-center space-x-2 text-gray-400 text-sm">
+                    <div className="p-5 pt-3 bg-gray-800 flex-grow">
+                        {website.label && (
+                            <div className={`absolute top-0 left-0 m-2 flex items-center ${website.labelColor || 'text-blue-500'}`}>
+                                {website.labelIcon}
+                                <span className="text-xs font-bold">{website.label}</span>
+                            </div>
+                        )}
+                        <div className="flex flex-col mb-2">
+                            <div className="flex justify-between items-center mb-2">
+                                <h2 className={`font-semibold text-blue-300 ${isSidebar ? 'text-lg' : 'text-xl'}`}>
+                                    {website.name}
+                                </h2>
+                                <a
+                                    href={website.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className={`text-blue-300 hover:text-blue-500 ${isMobile || isSidebar || (!isSidebar && !isMobile && hoveredWebsite === website.id) ? 'block' : 'hidden'}`}
+                                >
+                                    <FaExternalLinkAlt />
+                                </a>
+                            </div>
+                            <div className="flex items-center space-x-4 text-gray-400 text-sm">
                                 {website.view !== undefined && (
                                     <div className="flex items-center">
                                         <FaEye className="mr-1" />
@@ -154,50 +181,41 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                                 )}
                             </div>
                         </div>
-                        <a
-                            href={website.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className={`text-blue-300 hover:text-blue-500 ${isMobile || isSidebar || (!isSidebar && !isMobile && hoveredWebsite === website.id) ? 'block' : 'hidden'}`}
-                        >
-                            <FaExternalLinkAlt />
-                        </a>
-                    </div>
-                    <AnimatePresence>
-                        {!isSidebar && !isMobile && hoveredWebsite === website.id && !isRandom && !isShuffled ? (
-                            <motion.div
-                                className="text-gray-300 mb-4 flex-grow overflow-hidden"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <p>
-                                    {Array.isArray(website.description) ? website.description[0] : website.description}
-                                </p>
-                            </motion.div>
-                        ) : (
-                            <div className="text-gray-300 mb-4 flex-grow overflow-hidden">
-                                <p className={isSidebar ? "line-clamp-3" : "line-clamp-4"}>
-                                    {Array.isArray(website.description) ? website.description[0] : website.description}
-                                </p>
-                            </div>
-                        )}
-                    </AnimatePresence>
-                    <div className="flex flex-wrap gap-2">
-                        {website.tags.map((tag, tagIndex) => (
-                            <span
-                                key={tagIndex}
-                                className="bg-blue-900 text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-blue-700"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onTagClick(tag);
-                                }}
-                            >
-                                {tag}
-                            </span>
-                        ))}
+                        <AnimatePresence>
+                            {!isSidebar && !isMobile && hoveredWebsite === website.id && !isRandom && !isShuffled ? (
+                                <motion.div
+                                    className="text-gray-300 mb-4 flex-grow overflow-hidden"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <p>
+                                        {Array.isArray(website.description) ? website.description[0] : website.description}
+                                    </p>
+                                </motion.div>
+                            ) : (
+                                <div className="text-gray-300 mb-4 flex-grow overflow-hidden">
+                                    <p className={isSidebar ? "line-clamp-3" : "line-clamp-4"}>
+                                        {Array.isArray(website.description) ? website.description[0] : website.description}
+                                    </p>
+                                </div>
+                            )}
+                        </AnimatePresence>
+                        <div className="flex flex-wrap gap-2">
+                            {website.tags.map((tag, tagIndex) => (
+                                <span
+                                    key={tagIndex}
+                                    className="bg-blue-900 text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-blue-700"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onTagClick(tag);
+                                    }}
+                                >
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
                     </div>
                 </motion.div>
             ))}
