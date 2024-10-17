@@ -9,11 +9,6 @@ interface ClientPageTransitionProps {
 
 const animations = [
     {
-        initial: { opacity: 0, x: -50 },
-        animate: { opacity: 1, x: 0 },
-        exit: { opacity: 0, x: 50 }
-    },
-    {
         initial: { opacity: 0, y: 50 },
         animate: { opacity: 1, y: 0 },
         exit: { opacity: 0, y: -50 }
@@ -28,6 +23,16 @@ const animations = [
         animate: { opacity: 1 },
         exit: { opacity: 0 }
     },
+    {
+        initial: { opacity: 0, rotateY: -90 },
+        animate: { opacity: 1, rotateY: 0 },
+        exit: { opacity: 0, rotateY: 90 }
+    },
+    {
+        initial: { opacity: 0, scale: 1.2 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.8 }
+    }
 ];
 
 const ClientPageTransition = ({ children }: ClientPageTransitionProps) => {
