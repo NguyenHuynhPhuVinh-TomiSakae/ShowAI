@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSpinner, FaRobot, FaQuestionCircle, FaLightbulb, FaCode } from 'react-icons/fa';
+import { FaPlus, FaSpinner, FaRobot, FaQuestionCircle, FaLightbulb, FaCode, FaPause, FaPlay, FaEye } from 'react-icons/fa';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -22,6 +22,7 @@ const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({ websiteData
     const [typingIndex, setTypingIndex] = useState(-1);
     const [displayedText, setDisplayedText] = useState('');
     const typingSpeed = 10; // milliseconds per character
+    const [isPaused, setIsPaused] = useState(false);
 
     const generateContent = async (prompt: string) => {
         setIsLoading(true);
@@ -80,9 +81,9 @@ const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({ websiteData
     const generateCodeExamples = () => generateContent('Dựa trên thông tin sau về một trang web AI, hãy cung cấp 2 ví dụ mã nguồn ngắn gọn minh họa cách tích hợp hoặc sử dụng API của trang web này');
 
     useEffect(() => {
-        if (typingIndex >= 0 && typingIndex < additionalInfo.length) {
+        if (typingIndex >= 0 && typingIndex < additionalInfo.length && !isPaused) {
             const text = additionalInfo[typingIndex].parts;
-            let charIndex = 0;
+            let charIndex = displayedText.length;
             const typingInterval = setInterval(() => {
                 if (charIndex < text.length) {
                     setDisplayedText(prevText => prevText + text[charIndex]);
@@ -94,27 +95,47 @@ const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({ websiteData
             }, typingSpeed);
             return () => clearInterval(typingInterval);
         }
-    }, [typingIndex, additionalInfo]);
+    }, [typingIndex, additionalInfo, isPaused, displayedText]);
+
+    const handlePauseResume = () => {
+        setIsPaused(!isPaused);
+    };
+
+    const handleShowAll = () => {
+        if (typingIndex >= 0 && typingIndex < additionalInfo.length) {
+            setDisplayedText(additionalInfo[typingIndex].parts);
+            setTypingIndex(-1);
+        }
+    };
 
     const renderButton = (onClick: () => void, icon: React.ReactNode, text: string, bgColor: string) => (
         <button
             onClick={onClick}
-            className={`flex items-center ${bgColor} text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity duration-300`}
-            disabled={isLoading}
+            className={`flex items-center ${bgColor} text-white px-2 py-1 md:px-4 md:py-2 text-sm md:text-base rounded-full hover:opacity-90 transition-opacity duration-300`}
         >
-            {isLoading ? <FaSpinner className="animate-spin mr-2" /> : icon}
-            {isLoading ? 'Đang tạo...' : text}
+            {icon}
+            <span className="ml-1 md:ml-2">{text}</span>
+        </button>
+    );
+
+    const renderControlButton = (onClick: () => void, icon: React.ReactNode, text: string, bgColor: string) => (
+        <button
+            onClick={onClick}
+            className={`flex items-center ${bgColor} text-white px-1 py-1 md:px-3 md:py-2 rounded-md hover:opacity-90 transition-opacity duration-300`}
+        >
+            {icon}
+            <span className="ml-1 text-xs md:text-sm">{text}</span>
         </button>
     );
 
     return (
         <div className="mt-4">
             {additionalInfo.length === 0 && (
-                <div className="flex flex-wrap gap-4">
-                    {renderButton(generateAdditionalInfo, <FaPlus className="mr-2" />, 'Thêm thông tin', 'bg-blue-500')}
-                    {renderButton(generateQA, <FaQuestionCircle className="mr-2" />, 'Tạo Q&A', 'bg-green-500')}
-                    {renderButton(generateUseCases, <FaLightbulb className="mr-2" />, 'Tạo tình huống sử dụng', 'bg-yellow-500')}
-                    {renderButton(generateCodeExamples, <FaCode className="mr-2" />, 'Tạo ví dụ mã', 'bg-purple-500')}
+                <div className="flex flex-wrap gap-2 md:gap-4">
+                    {renderButton(generateAdditionalInfo, <FaPlus />, 'Thêm thông tin', 'bg-blue-500')}
+                    {renderButton(generateQA, <FaQuestionCircle />, 'Tạo Q&A', 'bg-green-500')}
+                    {renderButton(generateUseCases, <FaLightbulb />, 'Tạo tình huống sử dụng', 'bg-yellow-500')}
+                    {renderButton(generateCodeExamples, <FaCode />, 'Tạo ví dụ mã', 'bg-purple-500')}
                 </div>
             )}
             {responseHistory.map((response, index) => (
@@ -152,6 +173,22 @@ const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({ websiteData
                         >
                             {index === responseHistory.length - 1 && typingIndex !== -1 ? displayedText : response}
                         </ReactMarkdown>
+                        {index === responseHistory.length - 1 && typingIndex !== -1 && (
+                            <div className="mt-2 flex gap-2">
+                                {renderControlButton(
+                                    handlePauseResume,
+                                    isPaused ? <FaPlay className="text-lg" /> : <FaPause className="text-lg" />,
+                                    isPaused ? 'Tiếp tục' : 'Tạm dừng',
+                                    isPaused ? 'bg-green-500' : 'bg-yellow-500'
+                                )}
+                                {renderControlButton(
+                                    handleShowAll,
+                                    <FaEye className="text-lg" />,
+                                    'Hiển thị tất cả',
+                                    'bg-blue-500'
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             ))}
@@ -162,11 +199,11 @@ const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({ websiteData
                 </div>
             )}
             {responseHistory.length > 0 && typingIndex === -1 && !isLoading && (
-                <div className="flex flex-wrap gap-4 mt-4">
-                    {renderButton(generateAdditionalInfo, <FaPlus className="mr-2" />, 'Thêm thông tin', 'bg-blue-500')}
-                    {renderButton(generateQA, <FaQuestionCircle className="mr-2" />, 'Tạo Q&A', 'bg-green-500')}
-                    {renderButton(generateUseCases, <FaLightbulb className="mr-2" />, 'Tạo tình huống sử dụng', 'bg-yellow-500')}
-                    {renderButton(generateCodeExamples, <FaCode className="mr-2" />, 'Tạo ví dụ mã', 'bg-purple-500')}
+                <div className="flex flex-wrap gap-2 md:gap-4 mt-4">
+                    {renderButton(generateAdditionalInfo, <FaPlus className="mr-1 md:mr-2" />, 'Thêm thông tin', 'bg-blue-500')}
+                    {renderButton(generateQA, <FaQuestionCircle className="mr-1 md:mr-2" />, 'Tạo Q&A', 'bg-green-500')}
+                    {renderButton(generateUseCases, <FaLightbulb className="mr-1 md:mr-2" />, 'Tạo tình huống sử dụng', 'bg-yellow-500')}
+                    {renderButton(generateCodeExamples, <FaCode className="mr-1 md:mr-2" />, 'Tạo ví dụ mã', 'bg-purple-500')}
                 </div>
             )}
         </div>
