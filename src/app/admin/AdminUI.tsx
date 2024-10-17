@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import WebsiteList from '@/components/WebsiteList'
 import Image from 'next/image'
 import DataAnalysis from '@/components/DataAnalysis'
+import Modal from './Modal'; // Giả sử bạn đã có component Modal
 
 interface DataItem {
     _id: string;
@@ -43,6 +44,13 @@ export default function AdminUI({
     setFormData
 }: AdminUIProps) {
     const [activeTab, setActiveTab] = useState('list')
+    const [searchTerm, setSearchTerm] = useState('')
+    const [currentPage, setCurrentPage] = useState(1)
+    const [filterTag, setFilterTag] = useState('')
+    const itemsPerPage = 9
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [confirmAction, setConfirmAction] = useState<() => void>(() => { });
+    const [confirmMessage, setConfirmMessage] = useState('');
 
     const resetForm = () => {
         setFormData({
@@ -64,24 +72,85 @@ export default function AdminUI({
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await handleSubmit(e);
-        window.location.reload(); // Reload trang sau khi gửi form
+        showConfirmationModal(
+            'Bạn có chắc chắn muốn lưu những thay đổi này không?',
+            async () => {
+                await handleSubmit(e);
+                window.location.reload();
+            }
+        );
     };
 
     const handleDeleteItem = async (id: string, name: string) => {
-        await handleDelete(id, name);
-        window.location.reload(); // Reload trang sau khi xóa
+        showConfirmationModal(
+            `Bạn có chắc chắn muốn xóa "${name}" không?`,
+            async () => {
+                await handleDelete(id, name);
+                window.location.reload();
+            }
+        );
     };
+
+    const filteredAndSearchedData = filteredData
+        .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.description.some(desc => desc.toLowerCase().includes(searchTerm.toLowerCase())))
+        .filter(item => filterTag ? item.tags.includes(filterTag) : true);
+
+    const pageCount = Math.ceil(filteredAndSearchedData.length / itemsPerPage);
+    const paginatedData = filteredAndSearchedData.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const renderSearchAndFilter = () => (
+        <div className="mb-4 flex flex-wrap gap-4">
+            <input
+                type="text"
+                placeholder="Tìm kiếm..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white"
+            />
+            <select
+                value={filterTag}
+                onChange={(e) => setFilterTag(e.target.value)}
+                className="px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white"
+            >
+                <option value="">Tất cả tags</option>
+                {Array.from(new Set(filteredData.flatMap(item => item.tags))).map(tag => (
+                    <option key={tag} value={tag}>{tag}</option>
+                ))}
+            </select>
+        </div>
+    );
+
+    const renderPagination = () => (
+        <div className="mt-4 flex justify-center">
+            {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`mx-1 px-3 py-1 rounded ${currentPage === page ? 'bg-[#3B82F6] text-white' : 'bg-[#2D3748] text-[#93C5FD]'}`}
+                >
+                    {page}
+                </button>
+            ))}
+        </div>
+    );
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'list':
                 return (
-                    <WebsiteList
-                        websites={filteredData}
-                        onTagClick={setSelectedTag}
-                        isShuffled={true}
-                    />
+                    <>
+                        {renderSearchAndFilter()}
+                        <WebsiteList
+                            websites={paginatedData}
+                            onTagClick={setSelectedTag}
+                            isShuffled={true}
+                        />
+                        {renderPagination()}
+                    </>
                 )
             case 'create':
                 return renderForm(false)
@@ -89,8 +158,9 @@ export default function AdminUI({
                 return (
                     <div>
                         <h3 className="text-xl font-bold mb-4 text-[#93C5FD]">Chọn trang web để chỉnh sửa:</h3>
+                        {renderSearchAndFilter()}
                         <ul className="space-y-2">
-                            {filteredData.map(item => (
+                            {paginatedData.map(item => (
                                 <li key={item._id} className="flex justify-between items-center bg-[#1E293B] p-2 rounded">
                                     <span>{item.name}</span>
                                     <button
@@ -105,6 +175,7 @@ export default function AdminUI({
                                 </li>
                             ))}
                         </ul>
+                        {renderPagination()}
                     </div>
                 )
             case 'editForm':
@@ -113,8 +184,9 @@ export default function AdminUI({
                 return (
                     <div>
                         <h3 className="text-xl font-bold mb-4 text-[#93C5FD]">Chọn trang web để xóa:</h3>
+                        {renderSearchAndFilter()}
                         <ul className="space-y-2">
-                            {filteredData.map(item => (
+                            {paginatedData.map(item => (
                                 <li key={item._id} className="flex justify-between items-center bg-[#1E293B] p-2 rounded">
                                     <span>{item.name}</span>
                                     <button
@@ -126,6 +198,7 @@ export default function AdminUI({
                                 </li>
                             ))}
                         </ul>
+                        {renderPagination()}
                     </div>
                 )
             case 'analysis':
@@ -259,6 +332,17 @@ export default function AdminUI({
         </form>
     )
 
+    const showConfirmationModal = (message: string, action: () => void) => {
+        setConfirmMessage(message);
+        setConfirmAction(() => action);
+        setShowConfirmModal(true);
+    };
+
+    const handleConfirm = () => {
+        confirmAction();
+        setShowConfirmModal(false);
+    };
+
     return (
         <div className="container mx-auto p-4 bg-gradient-to-b from-[#0F172A] to-[#1E293B] flex py-6">
             <div className="w-1/4 pr-4">
@@ -299,6 +383,12 @@ export default function AdminUI({
             <div className="w-3/4">
                 {renderTabContent()}
             </div>
+            <Modal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={handleConfirm}
+                message={confirmMessage}
+            />
         </div>
     )
 }
