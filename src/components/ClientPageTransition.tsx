@@ -16,7 +16,7 @@ const animations = [
     {
         initial: { opacity: 0, scale: 0.9 },
         animate: { opacity: 1, scale: 1 },
-        exit: { opacity: 0, scale: 1.1 }
+        exit: { opacity: 0, scale: 0.9 }
     },
     {
         initial: { opacity: 0 },
@@ -27,11 +27,6 @@ const animations = [
         initial: { opacity: 0, rotateY: -90 },
         animate: { opacity: 1, rotateY: 0 },
         exit: { opacity: 0, rotateY: 90 }
-    },
-    {
-        initial: { opacity: 0, scale: 1.2 },
-        animate: { opacity: 1, scale: 1 },
-        exit: { opacity: 0, scale: 0.8 }
     }
 ];
 
