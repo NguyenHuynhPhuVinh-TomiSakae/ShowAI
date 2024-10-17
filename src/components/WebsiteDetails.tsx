@@ -47,7 +47,6 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
     const router = useRouter();
     const [websiteRating, setWebsiteRating] = useState(website.evaluation || 0);
     const [isRating, setIsRating] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         setIsVisible(true);
@@ -157,90 +156,59 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
         return [...comments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     };
 
-    const handleCommentAdded = () => {
-        // Cập nhật danh sách bình luận ngắn
-        // Bạn có thể gọi API để lấy danh sách bình luận mới nhất
-    };
-
-    useEffect(() => {
-        const checkIsMobile = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-
-        checkIsMobile();
-        window.addEventListener('resize', checkIsMobile);
-
-        return () => {
-            window.removeEventListener('resize', checkIsMobile);
-        };
-    }, []);
-
     return (
         <motion.div
-            className="bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg"
+            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-4 sm:p-8 shadow-2xl border border-gray-700 overflow-hidden"
             initial="hidden"
             animate={isVisible ? "visible" : "hidden"}
             variants={containerVariants}
         >
             {website.image && (
-                isMobile ? (
-                    <div className="mb-4 relative w-full h-64">
-                        <Image
-                            src={website.image}
-                            alt={website.name}
-                            layout="fill"
-                            objectFit="cover"
-                            className="rounded-lg"
-                        />
-                    </div>
-                ) : (
-                    <div className="mb-4 relative w-full h-64 bg-gray-700 flex items-center justify-center rounded-lg">
-                        <Image
-                            src={website.image}
-                            alt={website.name}
-                            width={500}
-                            height={300}
-                            objectFit="contain"
-                            className="rounded-lg"
-                        />
-                    </div>
-                )
+                <div className="mb-6 sm:mb-8 relative w-full h-48 sm:h-96 overflow-hidden rounded-2xl">
+                    <Image
+                        src={website.image}
+                        alt={website.name}
+                        layout="fill"
+                        objectFit="cover"
+                        className="transition-transform duration-500 hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-70"></div>
+                    <h2 className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 text-2xl sm:text-4xl font-bold text-white">{website.name}</h2>
+                </div>
             )}
 
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center mb-2 sm:mb-0">
-                    <h2 className="text-2xl font-bold text-blue-300 mr-4">{website.name}</h2>
-                    <div className="flex items-center space-x-6 mt-2 sm:mt-0">
-                        <div className="flex items-center text-gray-400">
-                            <FaEye className="text-2xl mr-1" />
-                            <span>{viewCount}</span>
-                        </div>
-                        <div className="flex items-center">
-                            <FaHeart
-                                className={`text-2xl mr-1 ${isHearted ? 'text-red-500' : 'text-gray-400 cursor-pointer'}`}
-                                onClick={handleHeartClick}
-                            />
-                            <span className="text-gray-400">{heartCount}</span>
-                        </div>
-                        <div className="flex items-center">
-                            <FaStar
-                                className={`cursor-pointer text-3xl mr-1 ${isStarred ? 'text-yellow-400' : 'text-gray-400'}`}
-                                onClick={onStarClick}
-                            />
-                        </div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8">
+                {!website.image && <h2 className="text-3xl sm:text-4xl font-bold text-blue-300 mr-4 mb-4 sm:mb-0">{website.name}</h2>}
+                <div className="flex items-center space-x-4 sm:space-x-8 mb-4 sm:mb-0">
+                    <div className="flex items-center text-gray-400 hover:text-gray-300 transition-colors">
+                        <FaEye className="text-xl sm:text-2xl mr-2" />
+                        <span className="text-base sm:text-lg">{viewCount}</span>
+                    </div>
+                    <div className="flex items-center">
+                        <FaHeart
+                            className={`text-xl sm:text-2xl mr-2 ${isHearted ? 'text-red-500' : 'text-gray-400 hover:text-red-400 cursor-pointer'} transition-colors`}
+                            onClick={handleHeartClick}
+                        />
+                        <span className="text-base sm:text-lg text-gray-400">{heartCount}</span>
+                    </div>
+                    <div className="flex items-center">
+                        <FaStar
+                            className={`cursor-pointer text-2xl sm:text-3xl mr-2 ${isStarred ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-300'} transition-colors`}
+                            onClick={onStarClick}
+                        />
                     </div>
                 </div>
                 <Link
                     href={website.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block bg-[#6366F1] hover:bg-[#93C5FD] text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 mt-2 sm:mt-0"
+                    className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 px-6 sm:py-3 sm:px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg text-sm sm:text-base"
                 >
                     Truy cập trang web
                 </Link>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-6 sm:mb-8">
                 {isRating ? (
                     <p className="text-gray-400 flex items-center">
                         <FaSpinner className="animate-spin mr-2" />
@@ -257,12 +225,12 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                 )}
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
                 {website.tags && website.tags.map((tag, index) => (
                     <span
                         key={index}
                         onClick={() => onTagClick(tag)}
-                        className="bg-blue-900 text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-blue-800 transition-colors duration-300"
+                        className="bg-blue-900 text-blue-200 text-xs sm:text-sm font-medium px-3 py-1 sm:px-4 sm:py-2 rounded-full cursor-pointer hover:bg-blue-800 transition-colors duration-300"
                     >
                         {tag}
                     </span>
@@ -278,16 +246,17 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                 ]}
                 wrapper="p"
                 speed={99}
-                className="text-gray-300 mb-4 whitespace-pre-wrap"
+                className="text-gray-300 mb-6 sm:mb-8 whitespace-pre-wrap leading-relaxed text-base sm:text-lg"
                 cursor={false}
             />
 
             {website.keyFeatures && website.keyFeatures.length > 0 && (
-                <div>
-                    <strong className="text-blue-300">Tính năng chính:</strong>
-                    <ul className="list-disc list-inside mt-2 text-gray-300">
+                <div className="mb-6 sm:mb-8 bg-gray-800 rounded-xl p-4 sm:p-6">
+                    <strong className="text-xl sm:text-2xl text-blue-300 mb-3 sm:mb-4 block">Tính năng chính:</strong>
+                    <ul className="list-none mt-3 sm:mt-4 text-gray-300 space-y-2 sm:space-y-3">
                         {website.keyFeatures.map((feature, index) => (
-                            <li key={index}>
+                            <li key={index} className="flex items-start">
+                                <span className="text-blue-400 mr-2 sm:mr-3 text-lg sm:text-xl">•</span>
                                 <TypeAnimation
                                     sequence={[
                                         feature,
@@ -295,6 +264,7 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
                                     ]}
                                     speed={75}
                                     cursor={false}
+                                    className="text-base sm:text-lg"
                                 />
                             </li>
                         ))}
@@ -304,17 +274,18 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isStarred, onS
 
             <AdditionalInfoButton websiteData={JSON.stringify(website)} />
 
-            <ShortCommentInput
-                websiteId=''
-                onCommentAdded={handleCommentAdded}
-                user={user}
-            />
+            <div className="mt-8 sm:mt-12">
+                <ShortCommentInput
+                    websiteId={website.id}
+                    user={user}
+                />
 
-            <Comments
-                websiteId={website.id}
-                comments={sortComments(website.comments || [])}
-                user={user}
-            />
+                <Comments
+                    websiteId={website.id}
+                    comments={sortComments(website.comments || [])}
+                    user={user}
+                />
+            </div>
         </motion.div>
     );
 };

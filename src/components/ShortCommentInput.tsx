@@ -7,11 +7,10 @@ import ModalPortal from './ModalPortal';
 
 interface ShortCommentInputProps {
     websiteId: string;
-    onCommentAdded: () => void;
     user: any;
 }
 
-const ShortCommentInputContent: React.FC<ShortCommentInputProps> = ({ onCommentAdded, user }) => {
+const ShortCommentInputContent: React.FC<ShortCommentInputProps> = ({ user }) => {
     const searchParams = useSearchParams();
     const websiteId = searchParams.get('id');
 
@@ -188,7 +187,6 @@ const ShortCommentInputContent: React.FC<ShortCommentInputProps> = ({ onCommentA
 
                 if (response.ok) {
                     setSuccessMessage('Bình luận đã được gửi thành công!');
-                    onCommentAdded();
                     addAnimatedComment(comment); // Thêm bình luận mới vào animation
                     setComment('');
                     fetchComments();
