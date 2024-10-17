@@ -17,6 +17,7 @@ interface DataItem {
     heart: number;
     star: number;
     view: number;
+    image?: string;
 }
 
 export default function Admin() {

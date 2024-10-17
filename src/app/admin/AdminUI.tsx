@@ -224,7 +224,7 @@ export default function AdminUI({
                                         rows={5}
                                     />
                                 </div>
-                                {/* Thêm trường nhập liệu cho hình ảnh */}
+                                {/* Trường nhập liệu cho hình ảnh */}
                                 <div>
                                     <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="image">
                                         Link hình ảnh
