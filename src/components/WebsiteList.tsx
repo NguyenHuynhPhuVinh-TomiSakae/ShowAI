@@ -139,26 +139,28 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                         </div>
                     )}
                     <div className="p-5 pt-3 bg-gray-800 flex-grow">
-                        {website.label && (
-                            <div className={`absolute top-0 left-0 m-2 flex items-center ${website.labelColor || 'text-blue-500'}`}>
-                                {website.labelIcon}
-                                <span className="text-xs font-bold">{website.label}</span>
-                            </div>
-                        )}
                         <div className="flex flex-col mb-2">
                             <div className="flex justify-between items-center mb-2">
                                 <h2 className={`font-semibold text-blue-300 ${isSidebar ? 'text-lg' : 'text-xl'}`}>
                                     {website.name}
                                 </h2>
-                                <a
-                                    href={website.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className={`text-blue-300 hover:text-blue-500 ${isMobile || isSidebar || (!isSidebar && !isMobile && hoveredWebsite === website.id) ? 'block' : 'hidden'}`}
-                                >
-                                    <FaExternalLinkAlt />
-                                </a>
+                                <div className="flex items-center">
+                                    {website.label && (
+                                        <div className={`flex items-center mr-2 ${website.labelColor || 'text-blue-500'}`}>
+                                            {website.labelIcon}
+                                            <span className="text-xs font-bold ml-1">{website.label}</span>
+                                        </div>
+                                    )}
+                                    <a
+                                        href={website.link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className={`text-blue-300 hover:text-blue-500 ${isMobile || isSidebar || (!isSidebar && !isMobile && hoveredWebsite === website.id) ? 'block' : 'hidden'}`}
+                                    >
+                                        <FaExternalLinkAlt />
+                                    </a>
+                                </div>
                             </div>
                             <div className="flex items-center space-x-4 text-gray-400 text-sm">
                                 {website.view !== undefined && (

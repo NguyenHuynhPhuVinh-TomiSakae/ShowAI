@@ -255,7 +255,7 @@ const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({ title, icon, we
                                     index === 2 ? <FaTrophy className="text-orange-400 mr-1" /> : undefined
                         }))}
                         onTagClick={onTagClick}
-                        isRandom={true}
+                        isShuffled={true}
                     />
                 </div>
             </div>
