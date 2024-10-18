@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import ChatInterface from './ChatInterface';
+import VoiceSearch from './VoiceSearch';
 
 interface Message {
     text: string;
@@ -37,6 +38,7 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose }) => {
     const [isFirstMessage, setIsFirstMessage] = useState(true);
     const [isExpanded, setIsExpanded] = useState(false);
     const [, setClearTrigger] = useState(0);
+    const [, setTranscript] = useState('');
 
     const sampleQuestions = [
         "Bạn có thể giới thiệu về một công cụ AI tạo hình ảnh không?",
@@ -295,6 +297,15 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose }) => {
         });
     };
 
+    const handleTranscript = (newTranscript: string) => {
+        setTranscript(newTranscript);
+        setInput(newTranscript);
+    };
+
+    const handleClearInput = () => {
+        setInput('');
+    };
+
     return (
         <ChatInterface
             isOpen={isOpen}
@@ -315,7 +326,14 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose }) => {
             messagesEndRef={messagesEndRef}
             regenerateResponse={regenerateResponse}
             editMessage={editMessage}
-        />
+        >
+            <VoiceSearch
+                onTranscript={handleTranscript}
+                onClearInput={handleClearInput}
+                className="ml-2"
+                isGemini={true} // Thêm prop này
+            />
+        </ChatInterface>
     );
 };
 

@@ -34,6 +34,7 @@ interface ChatInterfaceProps {
     messagesEndRef: React.RefObject<HTMLDivElement>;
     regenerateResponse: () => void;
     editMessage: (index: number, newText: string) => void;
+    children?: React.ReactNode;
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
@@ -54,7 +55,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     handleSampleQuestionClick,
     messagesEndRef,
     regenerateResponse,
-    editMessage
+    editMessage,
+    children,
 }) => {
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -342,6 +344,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                             placeholder={isLoadingAIWebsites ? "Đang tải dữ liệu..." : "Nhập tin nhắn của bạn..."}
                                             disabled={isLoading || isTyping || isLoadingAIWebsites}
                                         />
+                                        {children}
                                         {isLoadingAIWebsites ? (
                                             <button
                                                 type="button"

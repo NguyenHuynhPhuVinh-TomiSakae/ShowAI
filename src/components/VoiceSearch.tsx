@@ -5,6 +5,7 @@ interface VoiceSearchProps {
     onTranscript: (transcript: string) => void;
     onClearInput: () => void;
     className?: string;
+    isGemini?: boolean; // Thêm prop mới này
 }
 
 interface SpeechRecognition extends EventTarget {
@@ -41,7 +42,7 @@ declare global {
     }
 }
 
-const VoiceSearch: React.FC<VoiceSearchProps> = ({ onTranscript, onClearInput, className }) => {
+const VoiceSearch: React.FC<VoiceSearchProps> = ({ onTranscript, onClearInput, className, isGemini = false }) => {
     const [isListening, setIsListening] = useState(false);
     const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
 
@@ -81,6 +82,9 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onTranscript, onClearInput, c
     const stopListening = () => {
         recognition?.stop();
         setIsListening(false);
+        if (isGemini) {
+            onClearInput(); // Chỉ xóa input nếu là Gemini chat
+        }
     };
 
     useEffect(() => {
