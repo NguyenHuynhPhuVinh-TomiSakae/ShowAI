@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react'
 import WebsiteList from '@/components/WebsiteList'
 import Image from 'next/image'
 import DataAnalysis from '@/components/DataAnalysis'
 import Modal from './Modal'; // Giả sử bạn đã có component Modal
+import WebsiteDetails from '@/components/WebsiteDetails'
 
 interface DataItem {
     _id: string;
@@ -51,6 +51,7 @@ export default function AdminUI({
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmAction, setConfirmAction] = useState<() => void>(() => { });
     const [confirmMessage, setConfirmMessage] = useState('');
+    const [isPreviewMode, setIsPreviewMode] = useState(false);
 
     const resetForm = () => {
         setFormData({
@@ -72,13 +73,8 @@ export default function AdminUI({
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        showConfirmationModal(
-            'Bạn có chắc chắn muốn lưu những thay đổi này không?',
-            async () => {
-                await handleSubmit(e);
-                window.location.reload();
-            }
-        );
+        await handleSubmit(e);
+        window.location.reload();
     };
 
     const handleDeleteItem = async (id: string, name: string) => {
@@ -208,128 +204,160 @@ export default function AdminUI({
         }
     }
 
-    const renderForm = (isEditing: boolean) => (
-        <form onSubmit={handleFormSubmit} className="space-y-4 sm:space-y-6">
-            <div>
-                <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="name">
-                    Tên
-                </label>
-                <input
-                    type="text"
-                    id="name"
-                    value={formData.name || ''}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
-                    required
-                />
-            </div>
-            <div>
-                <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="description">
-                    Mô tả (mỗi dòng một mô tả)
-                </label>
-                <textarea
-                    id="description"
-                    value={formData.description ? formData.description.join('\n') : ''}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value.split('\n').filter(desc => desc.trim() !== '') })}
-                    className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
-                    rows={5}
-                    required
-                />
-            </div>
-            <div>
-                <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="tags">
-                    Tags (phân cách bằng dấu phẩy)
-                </label>
-                <input
-                    type="text"
-                    id="tags"
-                    value={formData.tags ? formData.tags.join(', ') : ''}
-                    onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(tag => tag.trim()) })}
-                    className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
-                />
-            </div>
-            <div>
-                <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="link">
-                    Liên kết
-                </label>
-                <input
-                    type="url"
-                    id="link"
-                    value={formData.link || ''}
-                    onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
-                    required
-                />
-            </div>
-            <div>
-                <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="keyFeatures">
-                    Tính năng chính (mỗi dòng một tính năng, để trống nếu không có)
-                </label>
-                <textarea
-                    id="keyFeatures"
-                    value={formData.keyFeatures ? formData.keyFeatures.join('\n') : ''}
-                    onChange={(e) => {
-                        const features = e.target.value.split('\n').filter(feature => feature.trim() !== '');
-                        setFormData({ ...formData, keyFeatures: features });
-                    }}
-                    className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
-                    rows={5}
-                />
-            </div>
-            {/* Thay đổi trường nhập liệu cho hình ảnh */}
-            <div>
-                <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="image">
-                    Hình ảnh
-                </label>
-                <div className="flex items-center space-x-4">
-                    <input
-                        type="file"
-                        id="image"
-                        accept="image/*"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                    setFormData({ ...formData, image: reader.result as string });
-                                };
-                                reader.readAsDataURL(file);
-                            }
-                        }}
-                        className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+    const renderForm = (isEditing: boolean = false) => (
+        <>
+            {isPreviewMode ? (
+                <div>
+                    <WebsiteDetails
+                        website={formData as DataItem}
+                        isPinned={false}
+                        onPinClick={() => { }}
+                        onTagClick={() => { }}
                     />
-                    {formData.image && (
-                        <div className="relative w-24 h-24">
-                            <Image
-                                src={formData.image}
-                                alt="Xem trước"
-                                layout="fill"
-                                objectFit="cover"
-                                className="rounded-md"
-                            />
-                        </div>
-                    )}
+                    <div className="mt-4 flex justify-end space-x-4">
+                        <button
+                            onClick={() => setIsPreviewMode(false)}
+                            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
+                        >
+                            Quay lại chỉnh sửa
+                        </button>
+                        <button
+                            onClick={() => showConfirmationModal(
+                                'Bạn có chắc chắn muốn lưu những thay đổi này không?',
+                                () => handleFormSubmit(new Event('submit') as unknown as React.FormEvent)
+                            )}
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
+                        >
+                            Lưu
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
-                <button
-                    type="submit"
-                    className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105"
-                >
-                    {isEditing ? 'Cập nhật' : 'Thêm'}
-                </button>
-                <button
-                    type="button"
-                    onClick={() => {
-                        setActiveTab('list');
-                        resetForm();
-                    }}
-                    className="w-full sm:w-auto bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105"
-                >
-                    Hủy
-                </button>
-            </div>
-        </form>
+            ) : (
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    setIsPreviewMode(true);
+                }} className="space-y-4 sm:space-y-6">
+                    <div>
+                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="name">
+                            Tên
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            value={formData.name || ''}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="description">
+                            Mô tả (mỗi dòng một mô tả)
+                        </label>
+                        <textarea
+                            id="description"
+                            value={formData.description ? formData.description.join('\n') : ''}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value.split('\n').filter(desc => desc.trim() !== '') })}
+                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                            rows={5}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="tags">
+                            Tags (phân cách bằng dấu phẩy)
+                        </label>
+                        <input
+                            type="text"
+                            id="tags"
+                            value={formData.tags ? formData.tags.join(', ') : ''}
+                            onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(tag => tag.trim()) })}
+                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="link">
+                            Liên kết
+                        </label>
+                        <input
+                            type="url"
+                            id="link"
+                            value={formData.link || ''}
+                            onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="keyFeatures">
+                            Tính năng chính (mỗi dòng một tính năng, để trống nếu không có)
+                        </label>
+                        <textarea
+                            id="keyFeatures"
+                            value={formData.keyFeatures ? formData.keyFeatures.join('\n') : ''}
+                            onChange={(e) => {
+                                const features = e.target.value.split('\n').filter(feature => feature.trim() !== '');
+                                setFormData({ ...formData, keyFeatures: features });
+                            }}
+                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                            rows={5}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="image">
+                            Hình ảnh
+                        </label>
+                        <div className="flex items-center space-x-4">
+                            <input
+                                type="file"
+                                id="image"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                            setFormData({ ...formData, image: reader.result as string });
+                                        };
+                                        reader.readAsDataURL(file);
+                                    }
+                                }}
+                                className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                            />
+                            {formData.image && (
+                                <div className="relative w-24 h-24">
+                                    <Image
+                                        src={formData.image}
+                                        alt="Xem trước"
+                                        layout="fill"
+                                        objectFit="cover"
+                                        className="rounded-md"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
+                        <button
+                            type="submit"
+                            className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105"
+                        >
+                            Xem trước
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setActiveTab('list');
+                                resetForm();
+                            }}
+                            className="w-full sm:w-auto bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105"
+                        >
+                            {isEditing ? 'Hủy chỉnh sửa' : 'Hủy'}
+                        </button>
+                    </div>
+                </form>
+            )}
+        </>
     )
 
     const showConfirmationModal = (message: string, action: () => void) => {
