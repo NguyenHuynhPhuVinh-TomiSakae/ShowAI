@@ -55,7 +55,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ onTagClick, allTags = [] }) => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                         />
-                        <VoiceSearch onTranscript={handleVoiceTranscript} className="absolute right-24 top-1/2 transform -translate-y-1/2 text-[#3E52E8] hover:text-[#4B5EFF] transition-colors duration-300" />
+                        <VoiceSearch
+                            onTranscript={handleVoiceTranscript}
+                            onClearInput={() => setSearchTerm('')}
+                            className="absolute right-24 top-1/2 transform -translate-y-1/2 text-[#3E52E8] hover:text-[#4B5EFF] transition-colors duration-300" />
                         <button
                             className="absolute right-14 top-1/2 transform -translate-y-1/2 text-[#3E52E8] hover:text-[#4B5EFF] transition-colors duration-300"
                             onClick={() => setShowTagDropdown(!showTagDropdown)}

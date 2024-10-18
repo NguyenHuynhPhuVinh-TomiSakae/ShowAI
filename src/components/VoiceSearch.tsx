@@ -3,6 +3,7 @@ import { FaMicrophone, FaStop } from 'react-icons/fa';
 
 interface VoiceSearchProps {
     onTranscript: (transcript: string) => void;
+    onClearInput: () => void;
     className?: string;
 }
 
@@ -40,7 +41,7 @@ declare global {
     }
 }
 
-const VoiceSearch: React.FC<VoiceSearchProps> = ({ onTranscript, className }) => {
+const VoiceSearch: React.FC<VoiceSearchProps> = ({ onTranscript, onClearInput, className }) => {
     const [isListening, setIsListening] = useState(false);
     const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
 
@@ -65,12 +66,31 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onTranscript, className }) =>
 
     const toggleListening = () => {
         if (isListening) {
-            recognition?.stop();
+            stopListening();
         } else {
-            recognition?.start();
+            startListening();
         }
-        setIsListening(!isListening);
     };
+
+    const startListening = () => {
+        onClearInput();
+        recognition?.start();
+        setIsListening(true);
+    };
+
+    const stopListening = () => {
+        recognition?.stop();
+        setIsListening(false);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (isListening) {
+                stopListening();
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isListening]);
 
     if (!recognition) {
         return null;

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "assemblyai": "^4.7.1",
     "chart.js": "^4.4.5",
     "firebase": "^10.14.1",
     "framer-motion": "^11.11.7",
