@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -13,6 +12,7 @@ import Rating from './Rating';
 import Comments from './Comments';
 import ShortCommentInput from './ShortCommentInput';
 import Image from 'next/image';
+import AICompare from './AICompare';
 
 interface AIWebsite {
     _id: string;
@@ -273,6 +273,8 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
             )}
 
             <AdditionalInfoButton websiteData={JSON.stringify(website)} />
+
+            <AICompare currentWebsite={website} />
 
             <div className="mt-8 sm:mt-12">
                 <ShortCommentInput

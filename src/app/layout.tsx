@@ -65,14 +65,6 @@ export default function RootLayout({
         </NavFooter>
         <ScrollToTopButton />
         <div id="modal-root"></div>
-        <Script
-          src="/live2d/core/live2dcubismcore.min.js"
-          strategy="beforeInteractive"
-        />
-        <Script
-          src="/live2d/core/live2d.min.js"
-          strategy="beforeInteractive"
-        />
         <Script id="structured-data" type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

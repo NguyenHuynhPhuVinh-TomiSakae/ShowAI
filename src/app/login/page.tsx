@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,6 +13,7 @@ const LoginPage = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLogin, setIsLogin] = useState(true);
     const [error, setError] = useState('');
+    const [agreeToTerms, setAgreeToTerms] = useState(false);
 
     const { auth } = useFirebase();
     const { addUserToFirestore, updateUserInFirestore, getUserFromFirestore } = useFirestoreOperations();
@@ -61,6 +61,11 @@ const LoginPage = () => {
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (!agreeToTerms) {
+            setError('Vui lòng đồng ý với điều khoản và chính sách bảo mật');
+            return;
+        }
 
         const email = `${username}@gmail.com`;
 
@@ -112,6 +117,11 @@ const LoginPage = () => {
     };
 
     const handleGoogleAuth = async () => {
+        if (!agreeToTerms) {
+            setError('Vui lòng đồng ý với điều khoản và chính sách bảo mật');
+            return;
+        }
+
         const provider = new GoogleAuthProvider();
         try {
             if (!auth) {
@@ -174,6 +184,25 @@ const LoginPage = () => {
                             required
                         />
                     )}
+                    <div className="flex items-center">
+                        <input
+                            type="checkbox"
+                            id="agreeToTerms"
+                            checked={agreeToTerms}
+                            onChange={(e) => setAgreeToTerms(e.target.checked)}
+                            className="mr-2"
+                        />
+                        <label htmlFor="agreeToTerms" className="text-sm text-gray-300 whitespace-nowrap">
+                            Tôi đồng ý với{' '}
+                            <button
+                                type="button"
+                                onClick={() => router.push('/privacy-policy')}
+                                className="text-blue-400 hover:underline"
+                            >
+                                điều khoản và chính sách bảo mật
+                            </button>
+                        </label>
+                    </div>
                     {error && <p className="text-red-500 text-sm">{error}</p>}
                     <button
                         type="submit"
