@@ -1,27 +1,33 @@
 import { IoClose } from 'react-icons/io5';
 import { FaBars } from 'react-icons/fa';
-import { FaChevronDown, FaChevronUp, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
-import { IoMdChatbubbles } from 'react-icons/io';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { FaImage } from 'react-icons/fa';
 
 interface MobileNavBarProps {
     isSidebarOpen: boolean;
     toggleSidebar: () => void;
+    isAIToolsDropdownOpen: boolean;
+    toggleAIToolsDropdown: () => void;
     user: { username: string } | null;
     isUserDropdownOpen: boolean;
     toggleUserDropdown: () => void;
     handleLogout: () => void;
+    setIsAIImageGenModalOpen: (isOpen: boolean) => void;
 }
 
 const MobileNavBar: React.FC<MobileNavBarProps> = ({
     isSidebarOpen,
     toggleSidebar,
+    isAIToolsDropdownOpen,
+    toggleAIToolsDropdown,
     user,
     isUserDropdownOpen,
     toggleUserDropdown,
     handleLogout,
+    setIsAIImageGenModalOpen
 }) => {
     const router = useRouter();
     const sidebarRef = useRef<HTMLDivElement>(null);
@@ -43,11 +49,6 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
 
     const handleLeaderboardClick = () => {
         router.push('/leaderboard');
-        toggleSidebar();
-    };
-
-    const handleShowAIChatClick = () => {
-        router.push('/chat');
         toggleSidebar();
     };
 
@@ -88,13 +89,40 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                 <p className="text-2xl font-bold text-white">ShowAI</p>
                             </div>
                             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                                <button
-                                    onClick={handleShowAIChatClick}
-                                    className="nav-button w-full justify-center bg-gray-800 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-gray-800"
-                                >
-                                    <IoMdChatbubbles className="mr-4 text-xl" />
-                                    ShowAIChat
-                                </button>
+                                <div className="bg-gray-800 rounded-lg p-2 border border-blue-400">
+                                    <button
+                                        onClick={toggleAIToolsDropdown}
+                                        className="flex items-center justify-between w-full text-blue-400 py-2 px-3 hover:bg-blue-400 hover:text-gray-800 rounded transition-colors duration-300"
+                                    >
+                                        <span className="flex items-center">
+                                            <FaTools className="mr-3" />
+                                            Hộp Công Cụ
+                                        </span>
+                                        {isAIToolsDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
+                                    </button>
+                                    <AnimatePresence>
+                                        {isAIToolsDropdownOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                                className="mt-2 space-y-2 pl-6"
+                                            >
+                                                <button
+                                                    onClick={() => {
+                                                        setIsAIImageGenModalOpen(true);
+                                                        toggleSidebar();
+                                                    }}
+                                                    className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
+                                                >
+                                                    <FaImage className="mr-3" />
+                                                    Tạo Hình Ảnh
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                                 <button
                                     onClick={handleLeaderboardClick}
                                     className="nav-button w-full justify-center bg-gray-800 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-800"

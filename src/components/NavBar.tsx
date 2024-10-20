@@ -9,12 +9,15 @@ import { User } from 'firebase/auth';
 import { DocumentData } from 'firebase/firestore';
 import MobileNavBar from './MobileNavBar';
 import DesktopNavBar from './DesktopNavBar';
+import AIImageGenModal from './AIImageGenModal';
 
 const NavBar = () => {
     const router = useRouter();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isAIToolsDropdownOpen, setIsAIToolsDropdownOpen] = useState(false);
     const [user, setUser] = useState<DocumentData | null>(null);
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+    const [isAIImageGenModalOpen, setIsAIImageGenModalOpen] = useState(false);
     const { auth } = useFirebase();
     const { getUserFromFirestore } = useFirestoreOperations();
 
@@ -78,23 +81,35 @@ const NavBar = () => {
                         className='rounded-full'
                         width={60}
                         height={60}
+                        onMouseEnter={() => window.dispatchEvent(new CustomEvent('logoHover', { detail: 'Đây là logo của ShowAI, một nền tảng giúp bạn khám phá và tìm kiếm các công cụ AI hữu ích.' }))}
+                        onMouseLeave={() => window.dispatchEvent(new CustomEvent('logoLeave'))}
                     />
                 </div>
                 <MobileNavBar
                     isSidebarOpen={isSidebarOpen}
                     toggleSidebar={toggleSidebar}
+                    isAIToolsDropdownOpen={isAIToolsDropdownOpen}
+                    toggleAIToolsDropdown={() => setIsAIToolsDropdownOpen(!isAIToolsDropdownOpen)}
                     user={user ? { username: user.username } : null}
                     isUserDropdownOpen={isUserDropdownOpen}
                     toggleUserDropdown={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                     handleLogout={handleLogout}
+                    setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
                 />
                 <DesktopNavBar
+                    isAIToolsDropdownOpen={isAIToolsDropdownOpen}
+                    setIsAIToolsDropdownOpen={setIsAIToolsDropdownOpen}
+                    setIsAIDesignModalOpen={() => { }}
                     user={user ? { username: user.username } : null}
                     isUserDropdownOpen={isUserDropdownOpen}
                     setIsUserDropdownOpen={setIsUserDropdownOpen}
                     handleLogout={handleLogout}
+                    setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
                 />
             </div>
+            {isAIImageGenModalOpen && (
+                <AIImageGenModal isOpen={isAIImageGenModalOpen} onClose={() => setIsAIImageGenModalOpen(false)} />
+            )}
         </nav>
     );
 };

@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import NavFooter from "@/components/NavFooter";
 import ScrollToTopButton from "@/components/ScrollToTopButton";
+import GeminiChatIcon from "@/components/GeminiChatIcon";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -64,6 +65,7 @@ export default function RootLayout({
           </div>
         </NavFooter>
         <ScrollToTopButton />
+        <GeminiChatIcon />
         <div id="modal-root"></div>
         <Script id="structured-data" type="application/ld+json">
           {JSON.stringify({
