@@ -150,9 +150,9 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0F172A]">
-            <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-96 mx-4">
-                <h2 className="text-3xl font-bold mb-6 text-center text-blue-300">
+        <div className="min-h-screen flex items-center justify-center bg-[#0F172A] px-4">
+            <div className="bg-gray-800 p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-md">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center text-blue-300">
                     {isLogin ? 'Đăng nhập' : 'Đăng ký'}
                 </h2>
                 <form onSubmit={handleEmailAuth} className="space-y-4">
@@ -162,7 +162,7 @@ const LoginPage = () => {
                             placeholder="Tài khoản"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full p-3 pr-24 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
+                            className="w-full p-3 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
                             required
                         />
                     </div>
@@ -184,15 +184,15 @@ const LoginPage = () => {
                             required
                         />
                     )}
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                         <input
                             type="checkbox"
                             id="agreeToTerms"
                             checked={agreeToTerms}
                             onChange={(e) => setAgreeToTerms(e.target.checked)}
-                            className="mr-2"
+                            className="mt-1 mr-2"
                         />
-                        <label htmlFor="agreeToTerms" className="text-sm text-gray-300 whitespace-nowrap">
+                        <label htmlFor="agreeToTerms" className="text-sm text-gray-300">
                             Tôi đồng ý với{' '}
                             <button
                                 type="button"
@@ -211,7 +211,7 @@ const LoginPage = () => {
                         {isLogin ? 'Đăng nhập' : 'Đăng ký'}
                     </button>
                 </form>
-                <div className="mt-6">
+                <div className="mt-4 sm:mt-6">
                     <button
                         onClick={handleGoogleAuth}
                         className="w-full bg-red-500 text-white p-3 rounded-md hover:bg-red-600 transition duration-300 flex items-center justify-center"
@@ -219,7 +219,7 @@ const LoginPage = () => {
                         <FaGoogle className="mr-2" /> Đăng nhập với Google
                     </button>
                 </div>
-                <p className="mt-6 text-center text-gray-400">
+                <p className="mt-4 sm:mt-6 text-center text-gray-400 text-sm">
                     {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}
                     <button
                         onClick={() => {
