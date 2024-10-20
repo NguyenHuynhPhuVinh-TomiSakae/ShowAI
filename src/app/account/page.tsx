@@ -30,6 +30,9 @@ const AccountPage = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isGoogleUser, setIsGoogleUser] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [email, setEmail] = useState('');
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [receiveUpdates, setReceiveUpdates] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth?.onAuthStateChanged((currentUser) => {
@@ -42,6 +45,13 @@ const AccountPage = () => {
                 fetchUserData(currentUser.uid);
                 fetchHeartedWebsites(currentUser.uid);
                 checkAdminStatus(currentUser.uid);
+                if (currentUser.providerData[0]?.providerId === 'google.com') {
+                    setEmail(currentUser.email || '');
+                }
+                fetchUserEmail(currentUser.uid);
+                const storedReceiveUpdates = localStorage.getItem('receiveUpdates');
+                setReceiveUpdates(storedReceiveUpdates === 'true');
+                fetchUserPreferences(currentUser.uid);
             } else {
                 router.push('/login');
             }
@@ -203,6 +213,110 @@ const AccountPage = () => {
         router.push('/admin');
     };
 
+    const fetchUserPreferences = async (userId: string) => {
+        try {
+            if (db) {
+                const userDoc = doc(db, 'users', userId);
+                const userSnapshot = await getDoc(userDoc);
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.data();
+                    setReceiveUpdates(userData.receiveUpdates || false);
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi khi lấy tùy chọn người dùng:', error);
+        }
+    };
+
+    const handleToggleUpdates = async () => {
+        if (receiveUpdates) {
+            // Nếu đang bật và muốn tắt
+            await deleteUserEmail();
+        } else {
+            // Nếu đang tắt và muốn bật
+            if (isGoogleUser) {
+                await saveUserEmail(email);
+            } else {
+                setEmail(''); // Xóa email cũ
+                setShowEmailModal(true);
+            }
+        }
+    };
+
+    const saveUserEmail = async (emailToSave: string) => {
+        try {
+            const response = await fetch('/api/userEmail', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId: user?.uid, email: emailToSave }),
+            });
+
+            if (response.ok) {
+                setReceiveUpdates(true);
+                setSuccessMessage('Đã đăng ký nhận thông tin mới.');
+            } else {
+                setErrorMessage('Có lỗi xảy ra khi lưu email.');
+            }
+        } catch (error) {
+            console.error('Lỗi khi lưu email:', error);
+            setErrorMessage('Có lỗi xảy ra khi lưu email.');
+        }
+    };
+
+    const deleteUserEmail = async () => {
+        try {
+            const response = await fetch(`/api/userEmail?userId=${user?.uid}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                setReceiveUpdates(false);
+                if (!isGoogleUser) {
+                    setEmail('');
+                }
+                setSuccessMessage('Đã hủy đăng ký nhận thông tin mới.');
+            } else {
+                setErrorMessage('Có lỗi xảy ra khi xóa email.');
+            }
+        } catch (error) {
+            console.error('Lỗi khi xóa email:', error);
+            setErrorMessage('Có lỗi xảy ra khi xóa email.');
+        }
+    };
+
+    const validateEmail = (email: string) => {
+        const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return re.test(String(email).toLowerCase());
+    };
+
+    const handleEmailSubmit = async () => {
+        if (validateEmail(email)) {
+            setShowEmailModal(false);
+            await saveUserEmail(email);
+        } else {
+            setErrorMessage('Vui lòng nhập email hợp lệ.');
+        }
+    };
+
+    const fetchUserEmail = async (userId: string) => {
+        try {
+            const response = await fetch(`/api/userEmail?userId=${userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.email) {
+                    setEmail(data.email);
+                    setReceiveUpdates(true);
+                } else {
+                    setReceiveUpdates(false);
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi khi lấy email người dùng:', error);
+        }
+    };
+
     const SkeletonLoader = () => (
         <div className="bg-gray-800 p-6 rounded-lg shadow-md">
             <Skeleton width={200} height={24} baseColor="#1F2937" highlightColor="#374151" className="mb-4" />
@@ -316,6 +430,17 @@ const AccountPage = () => {
                                 initialName={user.displayName || ''}
                                 onSave={handleSaveName}
                             />
+                            <div className="mt-4">
+                                <label className="inline-flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={receiveUpdates}
+                                        onChange={handleToggleUpdates}
+                                        className="form-checkbox h-5 w-5 text-blue-600"
+                                    />
+                                    <span className="ml-2">Nhận thông tin AI mới qua email</span>
+                                </label>
+                            </div>
                             <div className="mt-6 flex flex-wrap gap-4">
                                 {!isGoogleUser && (
                                     <button
@@ -430,6 +555,38 @@ const AccountPage = () => {
                                         className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
                                     >
                                         Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showEmailModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+                            <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
+                                <h2 className="text-xl font-bold mb-4">Nhập Email</h2>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full p-2 rounded bg-gray-700 text-white mb-4"
+                                    placeholder="Nhập email của bạn"
+                                />
+                                <div className="flex justify-end space-x-4">
+                                    <button
+                                        onClick={() => {
+                                            setShowEmailModal(false);
+                                            setReceiveUpdates(false);
+                                        }}
+                                        className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        onClick={handleEmailSubmit}
+                                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                                    >
+                                        Xác nhận
                                     </button>
                                 </div>
                             </div>

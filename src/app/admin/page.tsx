@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
@@ -9,6 +8,7 @@ import AdminUI from './AdminUI'
 import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage'
 import { FirebaseStorage } from 'firebase/storage'
 import SkeletonLoader from './SkeletonLoader' // Giả sử bạn đã tạo file này
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth'
 
 interface DataItem {
     _id: string;
@@ -192,11 +192,42 @@ export default function Admin() {
             if (!response.ok) {
                 throw new Error(`Không thể ${formData._id ? 'cập nhật' : 'thêm'} mục`)
             }
+            if (!formData._id) {
+                // Nếu đây là một AI mới (không có _id), gửi thông báo
+                await sendNotificationForNewAI(formData.name || '');
+            }
             fetchData()
             setFormData({}) // Đặt lại form sau khi gửi thành công
         } catch (error) {
             console.error(`Lỗi ${formData._id ? 'cập nhật' : 'thêm'} mục:`, error)
             setError(`Đã xảy ra lỗi khi ${formData._id ? 'cập nhật' : 'thêm'} mục`)
+        }
+    }
+
+    const sendNotificationForNewAI = async (aiName: string) => {
+        try {
+            // Lấy danh sách email
+            const emailResponse = await fetch('/api/getEmail');
+            if (!emailResponse.ok) {
+                throw new Error('Không thể lấy danh sách email');
+            }
+            const emails = await emailResponse.json();
+
+            // Gửi email thông báo cho từng địa chỉ
+            const auth = getAuth(app);
+            for (const email of emails) {
+                try {
+                    await sendPasswordResetEmail(auth, email, {
+                        url: `${window.location.origin}/ai/${aiName}`,
+                        handleCodeInApp: true,
+                    });
+                    console.log(`Đã gửi thông báo đến ${email}`);
+                } catch (error) {
+                    console.error(`Lỗi khi gửi email đến ${email}:`, error);
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi khi gửi thông báo:', error);
         }
     }
 
