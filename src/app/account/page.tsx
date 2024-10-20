@@ -232,7 +232,6 @@ const AccountPage = () => {
 
     const handleToggleUpdates = async () => {
         const newSubscriptionState = !isSubscribed;
-        setIsSubscribed(newSubscriptionState);  // Cập nhật UI ngay lập tức
 
         if (newSubscriptionState) {
             if (isGoogleUser) {
@@ -240,10 +239,13 @@ const AccountPage = () => {
             } else {
                 setEmail('');
                 setShowEmailModal(true);
+                return; // Không cập nhật state ngay lập tức nếu cần nhập email
             }
         } else {
             await deleteUserEmail();
         }
+
+        setIsSubscribed(newSubscriptionState);  // Cập nhật UI sau khi xử lý xong
     };
 
     const saveUserEmail = async (emailToSave: string) => {
@@ -300,6 +302,7 @@ const AccountPage = () => {
         if (validateEmail(email)) {
             setShowEmailModal(false);
             await saveUserEmail(email);
+            setIsSubscribed(true); // Cập nhật state sau khi lưu email thành công
         } else {
             setErrorMessage('Vui lòng nhập email hợp lệ.');
         }
@@ -596,7 +599,7 @@ const AccountPage = () => {
                                     <button
                                         onClick={() => {
                                             setShowEmailModal(false);
-                                            setReceiveUpdates(false);
+                                            setIsSubscribed(false); // Đặt lại trạng thái khi hủy
                                         }}
                                         className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
                                     >
