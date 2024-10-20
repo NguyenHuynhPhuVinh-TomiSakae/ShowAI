@@ -115,66 +115,66 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className={`bg-[#0F172A] rounded-lg p-6 flex flex-col border border-[#3E52E8] transition-all duration-300 ${isExpanded ? 'w-[98%] h-[98%]' : 'w-full max-w-2xl h-3/4'}`}
+                        className={`bg-[#0F172A] rounded-lg p-4 sm:p-6 flex flex-col border border-[#3E52E8] transition-all duration-300 ${isExpanded ? 'w-full h-full' : 'w-full max-w-2xl h-[90vh] sm:h-3/4'}`}
                     >
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl md:text-2xl font-bold text-[#93C5FD]">Trò chuyện cùng AI</h2>
+                            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#93C5FD]">Trò chuyện cùng AI</h2>
                             <div className="flex items-center">
                                 <button
                                     onClick={copyAllText}
-                                    className="text-gray-400 hover:text-white transition-colors duration-300 mr-4 relative"
+                                    className="text-gray-400 hover:text-white transition-colors duration-300 mr-2 sm:mr-4 relative"
                                     title="Copy all text"
                                 >
-                                    <IoCopy className="h-5 w-5 md:h-6 md:w-6" />
+                                    <IoCopy className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
                                     {copiedIndex === -1 && (
                                         <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded whitespace-nowrap">Đã Sao Chép!</span>
                                     )}
                                 </button>
                                 <button
                                     onClick={handleClearMessages}
-                                    className="text-gray-400 hover:text-white transition-colors duration-300 mr-4"
+                                    className="text-gray-400 hover:text-white transition-colors duration-300 mr-2 sm:mr-4"
                                 >
-                                    <IoTrash className="h-5 w-5 md:h-6 md:w-6" />
+                                    <IoTrash className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
                                 </button>
                                 <button
                                     onClick={toggleExpand}
-                                    className="text-gray-400 hover:text-white transition-colors duration-300 mr-4"
+                                    className="text-gray-400 hover:text-white transition-colors duration-300 mr-2 sm:mr-4"
                                 >
-                                    {isExpanded ? <IoContract className="h-5 w-5 md:h-6 md:w-6" /> : <IoExpand className="h-5 w-5 md:h-6 md:w-6" />}
+                                    {isExpanded ? <IoContract className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" /> : <IoExpand className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />}
                                 </button>
                                 <button
                                     onClick={onClose}
                                     className="text-gray-400 hover:text-white transition-colors duration-300"
                                 >
-                                    <IoClose className="h-6 w-6 md:h-7 md:w-7" />
+                                    <IoClose className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7" />
                                 </button>
                             </div>
                         </div>
                         <div className="flex-grow overflow-hidden">
                             <div className="flex flex-col h-full">
-                                <div className="flex-grow overflow-y-auto p-4 space-y-4">
+                                <div className="flex-grow overflow-y-auto p-2 sm:p-4 space-y-4">
                                     {messages.map((message, index) => (
                                         <div key={index} className={`flex flex-col ${message.isUser || message.isSampleQuestion ? 'items-end' : 'items-start'}`}>
                                             <div className={`flex items-start ${message.isUser || message.isSampleQuestion ? 'flex-row-reverse' : 'flex-row'}`}>
-                                                <div className={`flex flex-col items-center mr-2 ${message.isUser || message.isSampleQuestion ? 'ml-2 mr-0' : ''}`}>
+                                                <div className={`flex flex-col items-center mr-1 sm:mr-2 ${message.isUser || message.isSampleQuestion ? 'ml-1 sm:ml-2 mr-0' : ''}`}>
                                                     {message.isUser || message.isSampleQuestion ? (
-                                                        <FaUser className="text-blue-500 text-xl mb-1" />
+                                                        <FaUser className="text-blue-500 text-lg sm:text-xl mb-1" />
                                                     ) : (
-                                                        <FaRobot className="text-green-500 text-xl mb-1" />
+                                                        <FaRobot className="text-green-500 text-lg sm:text-xl mb-1" />
                                                     )}
                                                     <span className="text-xs text-gray-400">
                                                         {message.isUser || message.isSampleQuestion ? 'User' : 'AI'}
                                                     </span>
                                                 </div>
                                                 <div
-                                                    className={`max-w-3/4 p-3 rounded-lg ${message.isUser
+                                                    className={`max-w-[85%] sm:max-w-3/4 p-2 sm:p-3 rounded-lg ${message.isUser
                                                         ? 'bg-blue-500 text-white'
                                                         : message.isError
                                                             ? 'bg-red-500 text-white'
                                                             : message.isSampleQuestion
                                                                 ? 'bg-green-500 text-white cursor-pointer'
                                                                 : 'bg-gray-200 text-black'
-                                                        } max-w-[80%] break-words ${!message.isUser && !message.isError && !message.isSampleQuestion ? 'markdown-body' : ''}`}
+                                                        } break-words ${!message.isUser && !message.isError && !message.isSampleQuestion ? 'markdown-body' : ''}`}
                                                     onClick={message.isSampleQuestion ? () => handleSampleQuestionClick(message.text) : undefined}
                                                 >
                                                     {message.isUser || message.isSampleQuestion ? (
@@ -334,13 +334,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                     )}
                                     <div ref={messagesEndRef} />
                                 </div>
-                                <form onSubmit={handleSubmit} className="p-4 border-t">
+                                <form onSubmit={handleSubmit} className="p-2 sm:p-4 border-t">
                                     <div className="flex space-x-2">
                                         <input
                                             type="text"
                                             value={input}
                                             onChange={(e) => setInput(e.target.value)}
-                                            className="flex-grow p-2 border rounded text-black"
+                                            className="flex-grow p-2 border rounded text-black text-sm sm:text-base"
                                             placeholder={isLoadingAIWebsites ? "Đang tải dữ liệu..." : "Nhập tin nhắn của bạn..."}
                                             disabled={isLoading || isTyping || isLoadingAIWebsites}
                                         />
@@ -348,26 +348,26 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                         {isLoadingAIWebsites ? (
                                             <button
                                                 type="button"
-                                                className="bg-gray-500 text-white px-3 py-2 rounded"
+                                                className="bg-gray-500 text-white px-2 sm:px-3 py-2 rounded"
                                                 disabled
                                             >
-                                                <FaSpinner className="animate-spin" />
+                                                <FaSpinner className="animate-spin h-4 w-4 sm:h-5 sm:w-5" />
                                             </button>
                                         ) : isTyping ? (
                                             <button
                                                 type="button"
-                                                className="bg-red-500 text-white px-3 py-2 rounded"
+                                                className="bg-red-500 text-white px-2 sm:px-3 py-2 rounded"
                                                 onClick={stopTyping}
                                             >
-                                                <IoStop />
+                                                <IoStop className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </button>
                                         ) : (
                                             <button
                                                 type="submit"
-                                                className="bg-blue-500 text-white px-3 py-2 rounded"
+                                                className="bg-blue-500 text-white px-2 sm:px-3 py-2 rounded"
                                                 disabled={isLoading || isTyping || isLoadingAIWebsites}
                                             >
-                                                <IoSend />
+                                                <IoSend className="h-4 w-4 sm:h-5 sm:w-5" />
                                             </button>
                                         )}
                                     </div>
