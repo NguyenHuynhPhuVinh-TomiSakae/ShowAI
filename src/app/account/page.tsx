@@ -32,7 +32,8 @@ const AccountPage = () => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [email, setEmail] = useState('');
     const [showEmailModal, setShowEmailModal] = useState(false);
-    const [receiveUpdates, setReceiveUpdates] = useState(false);
+    const [, setReceiveUpdates] = useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth?.onAuthStateChanged((currentUser) => {
@@ -52,6 +53,7 @@ const AccountPage = () => {
                 const storedReceiveUpdates = localStorage.getItem('receiveUpdates');
                 setReceiveUpdates(storedReceiveUpdates === 'true');
                 fetchUserPreferences(currentUser.uid);
+                checkEmailSubscription(currentUser.uid);
             } else {
                 router.push('/login');
             }
@@ -229,17 +231,18 @@ const AccountPage = () => {
     };
 
     const handleToggleUpdates = async () => {
-        if (receiveUpdates) {
-            // Nếu đang bật và muốn tắt
-            await deleteUserEmail();
-        } else {
-            // Nếu đang tắt và muốn bật
+        const newSubscriptionState = !isSubscribed;
+        setIsSubscribed(newSubscriptionState);  // Cập nhật UI ngay lập tức
+
+        if (newSubscriptionState) {
             if (isGoogleUser) {
                 await saveUserEmail(email);
             } else {
-                setEmail(''); // Xóa email cũ
+                setEmail('');
                 setShowEmailModal(true);
             }
+        } else {
+            await deleteUserEmail();
         }
     };
 
@@ -254,14 +257,15 @@ const AccountPage = () => {
             });
 
             if (response.ok) {
-                setReceiveUpdates(true);
                 setSuccessMessage('Đã đăng ký nhận thông tin mới.');
             } else {
                 setErrorMessage('Có lỗi xảy ra khi lưu email.');
+                setIsSubscribed(false);  // Revert UI if API call fails
             }
         } catch (error) {
             console.error('Lỗi khi lưu email:', error);
             setErrorMessage('Có lỗi xảy ra khi lưu email.');
+            setIsSubscribed(false);  // Revert UI if API call fails
         }
     };
 
@@ -272,17 +276,18 @@ const AccountPage = () => {
             });
 
             if (response.ok) {
-                setReceiveUpdates(false);
                 if (!isGoogleUser) {
                     setEmail('');
                 }
                 setSuccessMessage('Đã hủy đăng ký nhận thông tin mới.');
             } else {
                 setErrorMessage('Có lỗi xảy ra khi xóa email.');
+                setIsSubscribed(true);  // Revert UI if API call fails
             }
         } catch (error) {
             console.error('Lỗi khi xóa email:', error);
             setErrorMessage('Có lỗi xảy ra khi xóa email.');
+            setIsSubscribed(true);  // Revert UI if API call fails
         }
     };
 
@@ -314,6 +319,21 @@ const AccountPage = () => {
             }
         } catch (error) {
             console.error('Lỗi khi lấy email người dùng:', error);
+        }
+    };
+
+    const checkEmailSubscription = async (userId: string) => {
+        try {
+            const response = await fetch(`/api/getEmail?userId=${userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setIsSubscribed(data.isSubscribed);
+                if (data.email) {
+                    setEmail(data.email);
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra đăng ký email:', error);
         }
     };
 
@@ -434,7 +454,7 @@ const AccountPage = () => {
                                 <label className="inline-flex items-center">
                                     <input
                                         type="checkbox"
-                                        checked={receiveUpdates}
+                                        checked={isSubscribed}
                                         onChange={handleToggleUpdates}
                                         className="form-checkbox h-5 w-5 text-blue-600"
                                     />

@@ -17,17 +17,27 @@ async function connectToDatabase(): Promise<Db> {
     return database;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+        return NextResponse.json({ error: 'UserId không được cung cấp' }, { status: 400 });
+    }
+
     try {
         const db = await connectToDatabase();
         const collection = db.collection('emails');
 
-        const emails = await collection.find({}).project({ email: 1, _id: 0 }).toArray();
-        const emailList = emails.map(doc => doc.email);
+        const userEmail = await collection.findOne({ userId });
 
-        return NextResponse.json(emailList);
+        if (userEmail) {
+            return NextResponse.json({ isSubscribed: true, email: userEmail.email });
+        } else {
+            return NextResponse.json({ isSubscribed: false });
+        }
     } catch (error) {
-        console.error('Lỗi khi lấy danh sách email:', error);
+        console.error('Lỗi khi kiểm tra đăng ký email:', error);
         return NextResponse.json({ error: 'Lỗi server' }, { status: 500 });
     }
 }
