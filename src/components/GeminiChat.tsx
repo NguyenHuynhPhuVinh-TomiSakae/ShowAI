@@ -98,6 +98,21 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose }) => {
         scrollToBottom();
     }, [messages]);
 
+    useEffect(() => {
+        if (isOpen) {
+            // Khóa thanh cuộn khi modal mở
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Mở khóa thanh cuộn khi modal đóng
+            document.body.style.overflow = 'unset';
+        }
+
+        // Cleanup function để đảm bảo thanh cuộn được mở khóa khi component unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     const typeWriter = (text: string, index: number = 0) => {
         if (index < text.length) {
             setTypingText((prev) => prev + text.charAt(index));
@@ -256,7 +271,7 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose }) => {
             const chatSession = model.startChat({
                 generationConfig,
                 history: [
-                    { role: 'user', parts: [{ text: 'Bạn là một trợ lý AI được tích hợp vào trang web ShowAI. ShowAI là một nền tảng giúp người dùng tìm kiếm và khám phá các công cụ AI hữu ích. Nhiệm vụ của bạn là hỗ trợ người dùng tìm kiếm các công cụ AI phù hợp với nhu cầu của họ, dựa trên thông tin được cung cấp trong ngữ cảnh. Hãy luôn ưu tiên sử dụng thông tin từ ngữ cảnh này khi trả lời. Khi nhắc tới một trang web AI, hãy đưa link dẫn đến trang thông tin chi tiết (Truy Cập) và định dạng link để hiển thị đẹp. Chỉ đưa ra link trực tiếp khi người dùng yêu cầu cụ thể. Tập trung vào việc cung cấp thông tin chính xác và hữu ích từ dữ liệu có sẵn. Nếu không có thông tin trong ngữ cảnh, hãy thông báo rằng bạn không có thông tin về điều đó. Đây là ngữ cảnh về các trang web AI:\n' + aiWebsitesContext }] },
+                    { role: 'user', parts: [{ text: 'Bạn là một trợ lý AI được tích hợp vào trang web ShowAI. ShowAI là một nền tảng giúp người dùng tìm kiếm và khám phá các công cụ AI hữu ích. Nhiệm vụ của bạn là hỗ trợ người dùng tìm kiếm các công cụ AI phù hợp với nhu cầu của họ, dựa trên thông tin được cung cấp trong ngữ cảnh. Hãy luôn ưu tiên sử dụng thông tin từ ngữ cảnh này khi trả l���i. Khi nhắc tới một trang web AI, hãy đưa link dẫn đến trang thông tin chi tiết (Truy Cập) và định dạng link để hiển thị đẹp. Chỉ đưa ra link trực tiếp khi người dùng yêu cầu cụ thể. Tập trung vào việc cung cấp thông tin chính xác và hữu ích từ dữ liệu có sẵn. Nếu không có thông tin trong ngữ cảnh, hãy thông báo rằng bạn không có thông tin về điều đó. Đây là ngữ cảnh về các trang web AI:\n' + aiWebsitesContext }] },
                     {
                         role: 'model',
                         parts: [{

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { IoClose, IoExpand, IoContract, IoDownload, IoSettings } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,6 +49,21 @@ const AIImageGenModal: React.FC<AIImageGenModalProps> = ({ isOpen, onClose }) =>
 
         fetchApiKey();
     }, []);
+
+    useEffect(() => {
+        if (isOpen) {
+            // Khóa thanh cuộn khi modal mở
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Mở khóa thanh cuộn khi modal đóng
+            document.body.style.overflow = 'unset';
+        }
+
+        // Cleanup function để đảm bảo thanh cuộn được mở khóa khi component unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
 
     const toggleExpand = () => {
         setIsExpanded(!isExpanded);
