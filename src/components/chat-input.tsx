@@ -186,7 +186,7 @@ export function ChatInput({
         </div>
       </div>
       <p className="text-xs text-gray-400 mt-2 text-center">
-        Tạo web với ShowAI dựa vào mã nguồn mở của Fragments!
+        Tạo mã với ShowAI dựa vào mã nguồn mở của Fragments!
       </p>
     </form>
   )

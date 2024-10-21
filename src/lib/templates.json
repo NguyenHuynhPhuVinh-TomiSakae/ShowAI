@@ -12,5 +12,49 @@
     "file": "app.vue",
     "instructions": "Một ứng dụng Vue.js 3+ tự động tải lại. Chỉ khi được yêu cầu cụ thể cho một ứng dụng Vue.",
     "port": 3000
+  },
+  "code-interpreter-multilang": {
+    "name": "Tạo mã với Python",
+    "lib": ["python", "jupyter", "numpy", "pandas", "matplotlib", "seaborn", "plotly"],
+    "file": "script.py",
+    "instructions": "Chạy mã như một ô trong Jupyter notebook. Tập trung mạnh vào phân tích dữ liệu. Có thể sử dụng trực quan hóa phức tạp để giải thích kết quả.",
+    "port": null
+  },
+  "streamlit-developer": {
+    "name": "Tạo ứng dụng với Streamlit",
+    "lib": [
+      "streamlit",
+      "pandas",
+      "numpy",
+      "matplotlib",
+      "request",
+      "seaborn",
+      "plotly"
+    ],
+    "file": "app.py",
+    "instructions": "Một ứng dụng Streamlit tự động tải lại.",
+    "port": 8501
+  },
+  "gradio-developer": {
+    "name": "Tạo ứng dụng với Gradio",
+    "lib": [
+      "gradio",
+      "pandas",
+      "numpy",
+      "matplotlib",
+      "request",
+      "seaborn",
+      "plotly"
+    ],
+    "file": "app.py",
+    "instructions": "Một ứng dụng Gradio. Gradio Blocks/Interface nên được gọi là demo.",
+    "port": 7860
+  },
+  "auto-developer": {
+    "name": "Tạo tự động đa ngôn ngữ",
+    "lib": [],
+    "file": "auto_app",
+    "instructions": "Tự động phát hiện và tạo ứng dụng phù hợp nhất dựa trên yêu cầu của người dùng. Có thể sử dụng bất kỳ ngôn ngữ lập trình hoặc công nghệ nào được hỗ trợ.",
+    "port": null
   }
 }

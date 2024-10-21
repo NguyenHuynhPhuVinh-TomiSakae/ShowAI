@@ -24,7 +24,7 @@ export function NavBar({
   return (
     <nav className="w-full flex bg-[#0F172A] py-4 text-white">
       <div className="flex flex-1 items-center">
-        <h1 className="whitespace-pre">Tạo web với </h1>
+        <h1 className="whitespace-pre">Tạo mã với </h1>
         <span className="text-[#4ECCA3] text-lg font-bold">ShowAI</span>
       </div>
       <div className="flex items-center gap-1 md:gap-4">

@@ -11,6 +11,7 @@ import { LLMModel, LLMModelConfig } from '@/lib/models'
 import { TemplateId, Templates } from '@/lib/templates'
 import 'core-js/features/object/group-by.js'
 import Image from 'next/image'
+import { Sparkles } from 'lucide-react'
 
 export function ChatPicker({
   templates,
@@ -43,16 +44,27 @@ export function ChatPicker({
               <SelectLabel className="text-gray-400">Yêu cầu</SelectLabel>
               {Object.entries(templates).map(([templateId, template]) => (
                 <SelectItem key={templateId} value={templateId} className="text-gray-200 hover:bg-[#4B5EFF] hover:text-white">
-                  <div className="flex items-center space-x-2">
-                    <Image
-                      className="flex"
-                      src={`/thirdparty/templates/${templateId}.svg`}
-                      alt={templateId}
-                      width={14}
-                      height={14}
-                    />
-                    <span>{template.name}</span>
-                  </div>
+                  {templateId === 'auto-developer' ? (
+                    <div className="flex items-center space-x-2">
+                      <Sparkles
+                        className="flex text-[#a1a1aa]"
+                        width={14}
+                        height={14}
+                      />
+                      <span>{template.name}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <Image
+                        className="flex"
+                        src={`/thirdparty/templates/${templateId}.svg`}
+                        alt={templateId}
+                        width={14}
+                        height={14}
+                      />
+                      <span>{template.name}</span>
+                    </div>
+                  )}
                 </SelectItem>
               ))}
             </SelectGroup>
