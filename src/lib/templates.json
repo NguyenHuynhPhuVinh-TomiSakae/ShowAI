@@ -1,0 +1,16 @@
+{
+  "nextjs-developer": {
+    "name": "Tạo web với Next.js",
+    "lib": ["nextjs@14.2.5", "typescript", "@types/node", "@types/react", "@types/react-dom", "postcss", "tailwindcss", "shadcn"],
+    "file": "pages/index.tsx",
+    "instructions": "Một ứng dụng Next.js 13+ tự động tải lại. Sử dụng bộ định tuyến trang.",
+    "port": 3000
+  },
+  "vue-developer": {
+    "name": "Tạo web với Vue.js",
+    "lib": ["vue@latest", "nuxt@3.13.0", "tailwindcss"],
+    "file": "app.vue",
+    "instructions": "Một ứng dụng Vue.js 3+ tự động tải lại. Chỉ khi được yêu cầu cụ thể cho một ứng dụng Vue.",
+    "port": 3000
+  }
+}

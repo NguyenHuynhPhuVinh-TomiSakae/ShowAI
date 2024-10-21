@@ -5,6 +5,7 @@ import "./globals.css";
 import NavFooter from "@/components/NavFooter";
 import ScrollToTopButton from "@/components/ScrollToTopButton";
 import GeminiChatIcon from "@/components/GeminiChatIcon";
+import { Toaster } from '@/components/ui/toaster'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -46,6 +47,7 @@ export default function RootLayout({
       >
         <NavFooter>
           {children}
+          <Toaster />
           <div className="fixed inset-0 flex items-center justify-center bg-[#1A1A2E] -z-10">
             <div className="relative w-32 h-32">
               <div className="absolute inset-0 border border-[#4ECCA3] rounded-full animate-[pulse_1.5s_ease-in-out_infinite]"></div>

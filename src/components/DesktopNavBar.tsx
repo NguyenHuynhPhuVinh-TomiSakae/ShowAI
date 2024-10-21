@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaImage } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaImage, FaCode } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -72,6 +72,10 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                     <button onClick={() => router.push('/leaderboard')} className="nav-button bg-gray-800 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-800">
                         <FaTrophy className="mr-2" />
                         <span>Bảng Xếp Hạng</span>
+                    </button>
+                    <button onClick={() => router.push('/codebox')} className="nav-button bg-gray-800 border border-green-500 text-green-500 hover:bg-green-500 hover:text-gray-800">
+                        <FaCode className="mr-2" />
+                        <span>Tạo Mã</span>
                     </button>
                     <div
                         className="relative group"

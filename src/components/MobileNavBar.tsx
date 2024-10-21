@@ -1,10 +1,9 @@
 import { IoClose } from 'react-icons/io5';
 import { FaBars } from 'react-icons/fa';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { FaImage } from 'react-icons/fa';
 
 interface MobileNavBarProps {
     isSidebarOpen: boolean;
@@ -49,6 +48,11 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
 
     const handleLeaderboardClick = () => {
         router.push('/leaderboard');
+        toggleSidebar();
+    };
+
+    const handleCodeboxClick = () => {
+        router.push('/codebox');
         toggleSidebar();
     };
 
@@ -129,6 +133,13 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                 >
                                     <FaTrophy className="mr-4 text-xl" />
                                     Bảng Xếp Hạng
+                                </button>
+                                <button
+                                    onClick={handleCodeboxClick}
+                                    className="nav-button w-full justify-center bg-gray-800 border border-green-500 text-green-500 hover:bg-green-500 hover:text-gray-800"
+                                >
+                                    <FaCode className="mr-4 text-xl" />
+                                    Tạo Mã
                                 </button>
                                 {user ? (
                                     <div className="bg-gray-800 rounded-lg p-2 border border-teal-400">
