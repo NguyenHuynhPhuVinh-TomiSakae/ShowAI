@@ -29,14 +29,14 @@ export function ChatPicker({
   onLanguageModelChange: (config: LLMModelConfig) => void
 }) {
   return (
-    <div className="flex items-center space-x-2 bg-[#0F172A] text-white p-2 rounded-lg">
-      <div className="flex flex-col">
+    <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 bg-[#0F172A] text-white p-2 rounded-lg">
+      <div className="flex flex-col w-full sm:w-auto">
         <Select
           name="template"
           defaultValue={selectedTemplate}
           onValueChange={onSelectedTemplateChange}
         >
-          <SelectTrigger className="whitespace-nowrap border-none shadow-none focus:ring-0 px-2 py-1 h-8 text-xs bg-[#1A1A2E] text-gray-200 hover:bg-[#4B5EFF] transition-colors">
+          <SelectTrigger className="whitespace-nowrap border-none shadow-none focus:ring-0 px-2 py-1 h-8 text-xs bg-[#1A1A2E] text-gray-200 hover:bg-[#4B5EFF] transition-colors w-full sm:w-auto">
             <SelectValue placeholder="Chọn một yêu cầu" />
           </SelectTrigger>
           <SelectContent side="top" className="bg-[#1A1A2E] border-[#4B5EFF]">
@@ -71,13 +71,13 @@ export function ChatPicker({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col w-full sm:w-auto">
         <Select
           name="languageModel"
           defaultValue={languageModel.model}
           onValueChange={(e) => onLanguageModelChange({ model: e })}
         >
-          <SelectTrigger className="whitespace-nowrap border-none shadow-none focus:ring-0 px-2 py-1 h-8 text-xs bg-[#1A1A2E] text-gray-200 hover:bg-[#4B5EFF] transition-colors">
+          <SelectTrigger className="whitespace-nowrap border-none shadow-none focus:ring-0 px-2 py-1 h-8 text-xs bg-[#1A1A2E] text-gray-200 hover:bg-[#4B5EFF] transition-colors w-full sm:w-auto">
             <SelectValue placeholder="Mô hình ngôn ngữ" />
           </SelectTrigger>
           <SelectContent className="bg-[#1A1A2E] border-[#4B5EFF]">
