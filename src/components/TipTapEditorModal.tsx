@@ -179,46 +179,47 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
                                 top: `${modalPosition.y}px`,
                                 zIndex: 1000,
                             }}
-                            className="bg-[#0F172A] p-2 rounded-lg shadow-lg border border-[#2A3284]"
+                            className="bg-[#0F172A] p-2 rounded-lg shadow-lg border border-[#2A3284] sm:p-2 p-1"
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
                             transition={{ duration: 0.2 }}
                         >
-                            <div className="flex space-x-2">
+                            <div className="flex space-x-2 sm:space-x-2 space-x-1">
                                 <button
                                     onClick={handleOpenGeminiChat}
-                                    className="flex items-center justify-center bg-[#3B82F6] text-white px-3 py-1 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300"
+                                    className="flex items-center justify-center bg-[#3B82F6] text-white sm:px-3 sm:py-1 px-2 py-0.5 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300 sm:text-base text-sm"
                                     disabled={isLoading}
                                 >
                                     {isLoading ? (
-                                        <IoReloadOutline className="mr-2 text-[#93C5FD] animate-spin" />
+                                        <IoReloadOutline className="sm:mr-2 mr-1 text-[#93C5FD] animate-spin" />
                                     ) : (
-                                        <IoHelpCircle className="mr-2 text-[#93C5FD]" />
+                                        <IoHelpCircle className="sm:mr-2 mr-1 text-[#93C5FD]" />
                                     )}
-                                    <span className="text-white font-medium">Hỏi AI</span>
+                                    <span className="text-white font-medium sm:inline hidden">Hỏi AI</span>
+                                    <span className="text-white font-medium sm:hidden inline">AI</span>
                                 </button>
                                 <button
                                     onClick={handleExpand}
-                                    className="flex items-center justify-center bg-[#3B82F6] text-white px-3 py-1 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300"
+                                    className="flex items-center justify-center bg-[#3B82F6] text-white sm:px-3 sm:py-1 px-2 py-0.5 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300 sm:text-base text-sm"
                                     disabled={isLoading}
                                 >
                                     {isLoading ? (
-                                        <IoReloadOutline className="mr-2 text-[#93C5FD] animate-spin" />
+                                        <IoReloadOutline className="sm:mr-2 mr-1 text-[#93C5FD] animate-spin" />
                                     ) : (
-                                        <IoExpandOutline className="mr-2 text-[#93C5FD]" />
+                                        <IoExpandOutline className="sm:mr-2 mr-1 text-[#93C5FD]" />
                                     )}
                                     <span className="text-white font-medium">Chi Tiết</span>
                                 </button>
                                 <button
                                     onClick={handleSummarize}
-                                    className="flex items-center justify-center bg-[#3B82F6] text-white px-3 py-1 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300"
+                                    className="flex items-center justify-center bg-[#3B82F6] text-white sm:px-3 sm:py-1 px-2 py-0.5 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300 sm:text-base text-sm"
                                     disabled={isLoading}
                                 >
                                     {isLoading ? (
-                                        <IoReloadOutline className="mr-2 text-[#93C5FD] animate-spin" />
+                                        <IoReloadOutline className="sm:mr-2 mr-1 text-[#93C5FD] animate-spin" />
                                     ) : (
-                                        <IoContractOutline className="mr-2 text-[#93C5FD]" />
+                                        <IoContractOutline className="sm:mr-2 mr-1 text-[#93C5FD]" />
                                     )}
                                     <span className="text-white font-medium">Tóm Tắt</span>
                                 </button>
