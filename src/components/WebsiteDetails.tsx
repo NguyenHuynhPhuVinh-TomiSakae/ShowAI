@@ -13,6 +13,7 @@ import Comments from './Comments';
 import ShortCommentInput from './ShortCommentInput';
 import Image from 'next/image';
 import AICompare from './AICompare';
+import TipTapEditor from './TipTapEditorModal';
 
 interface AIWebsite {
     _id: string;
@@ -237,17 +238,10 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                 ))}
             </div>
 
-            <TypeAnimation
-                sequence={[
-                    Array.isArray(website.description)
-                        ? website.description.join('\n\n')
-                        : website.description,
-                    () => { },
-                ]}
-                wrapper="p"
-                speed={99}
-                className="text-gray-300 mb-6 sm:mb-8 whitespace-pre-wrap leading-relaxed text-base sm:text-lg"
-                cursor={false}
+            <TipTapEditor
+                content={Array.isArray(website.description)
+                    ? website.description.join('\n\n')
+                    : website.description}
             />
 
             {website.keyFeatures && website.keyFeatures.length > 0 && (

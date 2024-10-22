@@ -100,6 +100,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         regenerateResponse();
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit(e as unknown as React.FormEvent);
+        }
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -340,6 +347,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                             type="text"
                                             value={input}
                                             onChange={(e) => setInput(e.target.value)}
+                                            onKeyDown={handleKeyDown}
                                             className="flex-grow p-2 border rounded text-black text-sm sm:text-base"
                                             placeholder={isLoadingAIWebsites ? "Đang tải dữ liệu..." : "Nhập tin nhắn của bạn..."}
                                             disabled={isLoading || isTyping || isLoadingAIWebsites}
