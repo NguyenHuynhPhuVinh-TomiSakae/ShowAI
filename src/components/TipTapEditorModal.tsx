@@ -6,6 +6,7 @@ import ModalPortal from './ModalPortal'
 import { TypeAnimation } from 'react-type-animation'
 import GeminiChat from './GeminiChat'
 import { IoHelpCircle } from 'react-icons/io5'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface TipTapEditorProps {
     content: string
@@ -49,9 +50,10 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
         if (selection && selection.rangeCount > 0) {
             const range = selection.getRangeAt(0)
             const rect = range.getBoundingClientRect()
+            const isMobile = window.innerWidth <= 768
             setModalPosition({
                 x: rect.left + window.scrollX,
-                y: rect.top + window.scrollY - 60 // Điều chỉnh vị trí để modal nằm trên phần được tô
+                y: isMobile ? rect.top + window.scrollY - 100 : rect.top + window.scrollY - 60
             })
         }
     }
@@ -107,26 +109,32 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
                 />
             )}
             <ModalPortal>
-                {showModal && (
-                    <div
-                        ref={modalRef}
-                        style={{
-                            position: 'absolute',
-                            left: `${modalPosition.x}px`,
-                            top: `${modalPosition.y}px`,
-                            zIndex: 1000,
-                        }}
-                        className="bg-[#0F172A] p-2 rounded-lg shadow-lg border border-[#2A3284]"
-                    >
-                        <button
-                            onClick={handleOpenGeminiChat}
-                            className="flex items-center justify-center bg-[#3B82F6] text-white px-3 py-1 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300"
+                <AnimatePresence>
+                    {showModal && (
+                        <motion.div
+                            ref={modalRef}
+                            style={{
+                                position: 'absolute',
+                                left: `${modalPosition.x}px`,
+                                top: `${modalPosition.y}px`,
+                                zIndex: 1000,
+                            }}
+                            className="bg-[#0F172A] p-2 rounded-lg shadow-lg border border-[#2A3284]"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ duration: 0.2 }}
                         >
-                            <IoHelpCircle className="mr-2 text-[#93C5FD]" />
-                            <span className="text-white font-medium">Hỏi AI</span>
-                        </button>
-                    </div>
-                )}
+                            <button
+                                onClick={handleOpenGeminiChat}
+                                className="flex items-center justify-center bg-[#3B82F6] text-white px-3 py-1 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300"
+                            >
+                                <IoHelpCircle className="mr-2 text-[#93C5FD]" />
+                                <span className="text-white font-medium">Hỏi AI</span>
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
                 <GeminiChat
                     isOpen={showGeminiChat}
                     onClose={() => setShowGeminiChat(false)}
