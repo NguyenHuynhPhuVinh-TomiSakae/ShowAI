@@ -21,12 +21,12 @@ export default function Home() {
   const [chatInput, setChatInput] = useLocalStorage('chat', '')
   const [files, setFiles] = useState<File[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(
-    'nextjs-developer',
+    'auto-developer',
   )
   const [languageModel, setLanguageModel] = useLocalStorage<LLMModelConfig>(
     'languageModel',
     {
-      model: 'models/gemini-1.5-flash-002',
+      model: 'mistral-small-latest',
     },
   )
 

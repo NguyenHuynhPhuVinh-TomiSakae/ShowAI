@@ -6,6 +6,27 @@
       "providerId": "google",
       "name": "Gemini Flash",
       "multiModal": true
+    },
+    {
+      "id": "models/gemini-1.5-pro-002",
+      "provider": "Google Generative AI",
+      "providerId": "google",
+      "name": "Gemini Pro",
+      "multiModal": true
+    },
+    {
+      "id": "mistral-small-latest",
+      "provider": "Mistral",
+      "providerId": "mistral",
+      "name": "Mistral Small",
+      "multiModal": false
+    },
+    {
+      "id": "open-mistral-nemo",
+      "provider": "Mistral",
+      "providerId": "mistral",
+      "name": "Mistral Nemo",
+      "multiModal": false
     }
   ]
 }

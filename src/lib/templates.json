@@ -1,4 +1,11 @@
 {
+  "auto-developer": {
+    "name": "Tạo tự động đa ngôn ngữ",
+    "lib": [],
+    "file": "auto_app",
+    "instructions": "Tự động phát hiện và tạo ứng dụng phù hợp nhất dựa trên yêu cầu của người dùng. Có thể sử dụng bất kỳ ngôn ngữ lập trình hoặc công nghệ nào được hỗ trợ.",
+    "port": null
+  },
   "nextjs-developer": {
     "name": "Tạo web với Next.js",
     "lib": ["nextjs@14.2.5", "typescript", "@types/node", "@types/react", "@types/react-dom", "postcss", "tailwindcss", "shadcn"],
@@ -49,12 +56,5 @@
     "file": "app.py",
     "instructions": "Một ứng dụng Gradio. Gradio Blocks/Interface nên được gọi là demo.",
     "port": 7860
-  },
-  "auto-developer": {
-    "name": "Tạo tự động đa ngôn ngữ",
-    "lib": [],
-    "file": "auto_app",
-    "instructions": "Tự động phát hiện và tạo ứng dụng phù hợp nhất dựa trên yêu cầu của người dùng. Có thể sử dụng bất kỳ ngôn ngữ lập trình hoặc công nghệ nào được hỗ trợ.",
-    "port": null
   }
 }
