@@ -11,6 +11,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { IoExpandOutline, IoContractOutline } from 'react-icons/io5'
 // Thêm import cho biểu tượng loading
 import { IoReloadOutline } from 'react-icons/io5'
+import { ElevenLabsClient } from "elevenlabs";
+// Thêm import cho biểu tượng nghe
+import { IoVolumeHighOutline } from 'react-icons/io5'
 
 interface TipTapEditorProps {
     content: string
@@ -25,8 +28,10 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
     const [expandedText, setExpandedText] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [isTypingResponse, setIsTypingResponse] = useState(false)
+    const [isPlaying, setIsPlaying] = useState(false)
     const modalRef = useRef<HTMLDivElement>(null)
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const editor = useEditor({
         extensions: [StarterKit, TextStyle],
@@ -126,6 +131,68 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
         }
     }
 
+    const handleListen = async () => {
+        setIsLoading(true)
+        try {
+            // Lấy key từ API
+            const keyResponse = await fetch('/api/elevenlabs-key');
+            const { key } = await keyResponse.json();
+
+            const elevenlabs = new ElevenLabsClient({
+                apiKey: key,
+            });
+
+            // Giới hạn độ dài văn bản
+            const limitedText = selectedText.slice(0, 500);
+
+            const audio = await elevenlabs.generate({
+                voice: "Ly Hai", // Hoặc một giọng nói khác trong tài khoản của bạn
+                text: limitedText,
+                model_id: "eleven_turbo_v2_5",
+            });
+
+            const chunks = [];
+            for await (const chunk of audio) {
+                chunks.push(chunk);
+            }
+            const audioBuffer = Buffer.concat(chunks);
+
+            // Tạo Blob và URL
+            const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+            const url = URL.createObjectURL(blob);
+
+            if (audioRef.current) {
+                audioRef.current.src = url;
+                audioRef.current.play();
+                setIsPlaying(true);
+            }
+        } catch (error) {
+            console.error('Lỗi khi tạo âm thanh:', error)
+            alert('Có lỗi xảy ra khi tạo âm thanh. Vui lòng thử lại sau.')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        // Tạo một phần tử audio mới
+        audioRef.current = new Audio();
+
+        // Xử lý sự kiện khi audio kết thúc
+        const handleEnded = () => {
+            setIsPlaying(false);
+        };
+
+        audioRef.current.addEventListener('ended', handleEnded);
+
+        // Cleanup
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.removeEventListener('ended', handleEnded);
+            }
+        };
+    }, []);
+
     if (!editor) {
         return null
     }
@@ -197,7 +264,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
                                         <IoHelpCircle className="sm:mr-2 mr-1 text-[#93C5FD]" />
                                     )}
                                     <span className="text-white font-medium sm:inline hidden">Hỏi AI</span>
-                                    <span className="text-white font-medium sm:hidden inline">AI</span>
+                                    <span className="text-white font-medium text-xs sm:hidden inline">AI</span>
                                 </button>
                                 <button
                                     onClick={handleExpand}
@@ -209,7 +276,8 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
                                     ) : (
                                         <IoExpandOutline className="sm:mr-2 mr-1 text-[#93C5FD]" />
                                     )}
-                                    <span className="text-white font-medium">Chi Tiết</span>
+                                    <span className="text-white font-medium sm:inline hidden">Chi Tiết</span>
+                                    <span className="text-white font-medium text-xs sm:hidden inline">Chi Tiết</span>
                                 </button>
                                 <button
                                     onClick={handleSummarize}
@@ -221,7 +289,21 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
                                     ) : (
                                         <IoContractOutline className="sm:mr-2 mr-1 text-[#93C5FD]" />
                                     )}
-                                    <span className="text-white font-medium">Tóm Tắt</span>
+                                    <span className="text-white font-medium sm:inline hidden">Tóm Tắt</span>
+                                    <span className="text-white font-medium text-xs sm:hidden inline">Tóm Tắt</span>
+                                </button>
+                                <button
+                                    onClick={handleListen}
+                                    className="flex items-center justify-center bg-[#3B82F6] text-white sm:px-3 sm:py-1 px-2 py-0.5 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300 sm:text-base text-sm"
+                                    disabled={isLoading || isPlaying}
+                                >
+                                    {isLoading ? (
+                                        <IoReloadOutline className="sm:mr-2 mr-1 text-[#93C5FD] animate-spin" />
+                                    ) : (
+                                        <IoVolumeHighOutline className="sm:mr-2 mr-1 text-[#93C5FD]" />
+                                    )}
+                                    <span className="text-white font-medium sm:inline hidden">Nghe</span>
+                                    <span className="text-white font-medium text-xs sm:hidden inline">Nghe</span>
                                 </button>
                             </div>
                         </motion.div>

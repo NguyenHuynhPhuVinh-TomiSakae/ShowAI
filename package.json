@@ -43,6 +43,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "core-js": "^3.38.0",
+    "elevenlabs": "^0.17.1",
     "firebase": "^10.14.1",
     "framer-motion": "^11.11.7",
     "github-markdown-css": "^5.7.0",
