@@ -53,7 +53,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
             const isMobile = window.innerWidth <= 768
             setModalPosition({
                 x: rect.left + window.scrollX,
-                y: isMobile ? rect.top + window.scrollY - 100 : rect.top + window.scrollY - 60
+                y: isMobile ? rect.top + window.scrollY - 120 : rect.top + window.scrollY - 60
             })
         }
     }
