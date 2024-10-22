@@ -7,6 +7,10 @@ import { TypeAnimation } from 'react-type-animation'
 import GeminiChat from './GeminiChat'
 import { IoHelpCircle } from 'react-icons/io5'
 import { motion, AnimatePresence } from 'framer-motion'
+// Thêm import cho các biểu tượng mới
+import { IoExpandOutline, IoContractOutline } from 'react-icons/io5'
+// Thêm import cho biểu tượng loading
+import { IoReloadOutline } from 'react-icons/io5'
 
 interface TipTapEditorProps {
     content: string
@@ -18,6 +22,9 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
     const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 })
     const [isTypingComplete, setIsTypingComplete] = useState(false)
     const [showGeminiChat, setShowGeminiChat] = useState(false)
+    const [expandedText, setExpandedText] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
+    const [isTypingResponse, setIsTypingResponse] = useState(false)
     const modalRef = useRef<HTMLDivElement>(null)
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -81,13 +88,51 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
         setShowModal(false);
     };
 
+    const handleExpand = async () => {
+        setIsLoading(true)
+        try {
+            const response = await fetch('/api/ai', {
+                method: 'POST',
+                body: JSON.stringify({ messages: [{ role: 'user', content: `Giải thích chi tiết đoạn văn bản sau: "${selectedText}" không dùng markdown và chỉ ghi trên 1 dòng với số lượng từ nhiều trong khoảng 400-500 từ!` }] }),
+            })
+            const data = await response.text()
+            setExpandedText(data)
+            setIsTypingResponse(true)
+            editor?.commands.setTextSelection({ from: editor.state.selection.from, to: editor.state.selection.to })
+        } catch (error) {
+            console.error('Lỗi khi gọi API:', error)
+            setExpandedText('Đã xảy ra lỗi khi xử lý yêu cầu.')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleSummarize = async () => {
+        setIsLoading(true)
+        try {
+            const response = await fetch('/api/ai', {
+                method: 'POST',
+                body: JSON.stringify({ messages: [{ role: 'user', content: `Tóm tắt ngắn gọn đoạn văn bản sau: "${selectedText}" không dùng markdown và chỉ ghi trên 1 dòng với số lượng từ ít!` }] }),
+            })
+            const data = await response.text()
+            setExpandedText(data)
+            setIsTypingResponse(true)
+            editor?.commands.setTextSelection({ from: editor.state.selection.from, to: editor.state.selection.to })
+        } catch (error) {
+            console.error('Lỗi khi gọi API:', error)
+            setExpandedText('Đã xảy ra lỗi khi xử lý yêu cầu.')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     if (!editor) {
         return null
     }
 
     return (
         <div className="relative">
-            {isTypingComplete && (
+            {isTypingComplete && !isTypingResponse && (
                 <EditorContent
                     editor={editor}
                     className="text-gray-300 mb-6 sm:mb-8 whitespace-pre-wrap leading-relaxed text-base sm:text-lg"
@@ -100,6 +145,21 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
                         () => {
                             editor?.commands.setContent(content)
                             setIsTypingComplete(true)
+                        },
+                    ]}
+                    wrapper="p"
+                    speed={99}
+                    className="text-gray-300 mb-6 sm:mb-8 whitespace-pre-wrap leading-relaxed text-base sm:text-lg"
+                    cursor={false}
+                />
+            )}
+            {isTypingResponse && (
+                <TypeAnimation
+                    sequence={[
+                        expandedText,
+                        () => {
+                            editor?.commands.setContent(expandedText)
+                            setIsTypingResponse(false)
                         },
                     ]}
                     wrapper="p"
@@ -125,13 +185,44 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
                             exit={{ opacity: 0, scale: 0.9 }}
                             transition={{ duration: 0.2 }}
                         >
-                            <button
-                                onClick={handleOpenGeminiChat}
-                                className="flex items-center justify-center bg-[#3B82F6] text-white px-3 py-1 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300"
-                            >
-                                <IoHelpCircle className="mr-2 text-[#93C5FD]" />
-                                <span className="text-white font-medium">Hỏi AI</span>
-                            </button>
+                            <div className="flex space-x-2">
+                                <button
+                                    onClick={handleOpenGeminiChat}
+                                    className="flex items-center justify-center bg-[#3B82F6] text-white px-3 py-1 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <IoReloadOutline className="mr-2 text-[#93C5FD] animate-spin" />
+                                    ) : (
+                                        <IoHelpCircle className="mr-2 text-[#93C5FD]" />
+                                    )}
+                                    <span className="text-white font-medium">Hỏi AI</span>
+                                </button>
+                                <button
+                                    onClick={handleExpand}
+                                    className="flex items-center justify-center bg-[#3B82F6] text-white px-3 py-1 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <IoReloadOutline className="mr-2 text-[#93C5FD] animate-spin" />
+                                    ) : (
+                                        <IoExpandOutline className="mr-2 text-[#93C5FD]" />
+                                    )}
+                                    <span className="text-white font-medium">Chi Tiết</span>
+                                </button>
+                                <button
+                                    onClick={handleSummarize}
+                                    className="flex items-center justify-center bg-[#3B82F6] text-white px-3 py-1 rounded-md hover:bg-[#4B5EFF] transition-colors duration-300"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <IoReloadOutline className="mr-2 text-[#93C5FD] animate-spin" />
+                                    ) : (
+                                        <IoContractOutline className="mr-2 text-[#93C5FD]" />
+                                    )}
+                                    <span className="text-white font-medium">Tóm Tắt</span>
+                                </button>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
