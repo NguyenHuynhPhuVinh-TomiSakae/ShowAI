@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server';
 import { MongoClient, ObjectId, Db, Sort } from 'mongodb';
@@ -242,7 +241,7 @@ export async function POST(request: Request) {
         const db = await connectToDatabase();
         const collection = db.collection('data_web_ai');
 
-        // Thêm các trường mới với giá trị mặc định, bao gồm cả trường image
+        // Thêm các trường mới với giá trị mặc định, bao gồm cả trường image và createdAt
         const newData = {
             ...data,
             heart: 0,
@@ -251,7 +250,8 @@ export async function POST(request: Request) {
             evaluation: 0,
             comments: [],
             shortComments: [],
-            image: data.image || '' // Thêm trường image, sử dụng giá trị từ dữ liệu đầu vào hoặc chuỗi rỗng nếu không có
+            image: data.image || '', // Thêm trường image, sử dụng giá trị từ dữ liệu đầu vào hoặc chuỗi rỗng nếu không có
+            createdAt: new Date().toISOString() // Thêm trường createdAt với thời gian hiện tại
         };
 
         const result = await collection.insertOne(newData);

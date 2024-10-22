@@ -19,6 +19,7 @@ interface AIWebsite {
     labelColor?: string;
     labelIcon?: React.ReactNode;
     image?: string;
+    createdAt?: string; // Thêm trường này
 }
 
 interface WebsiteListProps {
@@ -47,6 +48,14 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
         });
     };
 
+    const isNewWebsite = (createdAt?: string) => {
+        if (!createdAt) return false;
+        const createdDate = new Date(createdAt);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - createdDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 1;
+    };
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -106,9 +115,16 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                     )}
                     <div className="p-5">
                         <div className="flex justify-between items-center mb-3">
-                            <h2 className="text-xl font-bold text-blue-300 truncate">
-                                {website.name}
-                            </h2>
+                            <div className="flex items-center">
+                                <h2 className="text-xl font-bold text-blue-300 truncate mr-2">
+                                    {website.name}
+                                </h2>
+                                {isNewWebsite(website.createdAt) && (
+                                    <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-500 text-white">
+                                        Mới
+                                    </div>
+                                )}
+                            </div>
                             <a
                                 href={website.link}
                                 target="_blank"
@@ -120,9 +136,11 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                             </a>
                         </div>
                         {website.label && (
-                            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold mb-2 ${website.labelColor || 'bg-blue-500 text-white'}`}>
-                                {website.labelIcon && <span className="mr-1">{website.labelIcon}</span>}
-                                {website.label}
+                            <div className="mb-2">
+                                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${website.labelColor || 'bg-blue-500 text-white'}`}>
+                                    {website.labelIcon && <span className="mr-1">{website.labelIcon}</span>}
+                                    {website.label}
+                                </div>
                             </div>
                         )}
                         <p className="text-gray-300 mb-4 line-clamp-3">
