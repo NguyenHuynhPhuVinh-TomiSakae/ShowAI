@@ -17,6 +17,7 @@ export async function GET() {
         smStream.write({ url: '/login', changefreq: 'monthly', priority: 0.6 });
         smStream.write({ url: '/account', changefreq: 'weekly', priority: 0.6 });
         smStream.write({ url: '/show', changefreq: 'daily', priority: 0.8 });
+        smStream.write({ url: '/codebox', changefreq: 'daily', priority: 0.8 });
 
         smStream.end();
 
