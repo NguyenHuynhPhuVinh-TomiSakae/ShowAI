@@ -6,6 +6,7 @@ import NavFooter from "@/components/NavFooter";
 import ScrollToTopButton from "@/components/ScrollToTopButton";
 import GeminiChatIcon from "@/components/GeminiChatIcon";
 import { Toaster } from '@/components/ui/toaster'
+import { Analytics } from "@vercel/analytics/react"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -45,6 +46,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#1A1A2E] text-gray-200`}
       >
+        <Analytics />
         <NavFooter>
           {children}
           <Toaster />
