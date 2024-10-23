@@ -7,6 +7,7 @@ import ScrollToTopButton from "@/components/ScrollToTopButton";
 import GeminiChatIcon from "@/components/GeminiChatIcon";
 import { Toaster } from '@/components/ui/toaster'
 import { Analytics } from "@vercel/analytics/react"
+import VoiceCallIcon from "@/components/VoiceCallIcon";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -70,6 +71,7 @@ export default function RootLayout({
         </NavFooter>
         <ScrollToTopButton />
         <GeminiChatIcon />
+        <VoiceCallIcon />
         <div id="modal-root"></div>
         <Script id="structured-data" type="application/ld+json">
           {JSON.stringify({

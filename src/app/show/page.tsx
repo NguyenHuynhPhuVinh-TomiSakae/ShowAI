@@ -267,7 +267,7 @@ function ShowContent() {
                         <motion.button
                             initial={{ y: 0, opacity: 1 }}
                             animate={{
-                                y: isScrollButtonVisible ? -125 : 0,
+                                y: isScrollButtonVisible ? -190 : 0,
                                 opacity: 1
                             }}
                             transition={{ duration: 0.3 }}
