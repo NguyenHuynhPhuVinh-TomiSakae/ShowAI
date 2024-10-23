@@ -12,6 +12,11 @@ import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 
 import ModalPortal from '@/components/ModalPortal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import type { MotionProps } from 'framer-motion';
+
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
 
 const AccountPage = () => {
     const [activeTab, setActiveTab] = useState('info');
@@ -395,10 +400,12 @@ const AccountPage = () => {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-[#0F172A] text-white min-h-screen pb-4"
+            {...{
+                initial: { opacity: 0, y: 20 },
+                animate: { opacity: 1, y: 0 },
+                transition: { duration: 0.5 },
+                className: "bg-[#0F172A] text-white min-h-screen pb-4"
+            } as ModalBackdropProps}
         >
             <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold mb-4">Tài khoản của bạn</h1>
@@ -440,13 +447,15 @@ const AccountPage = () => {
                 <AnimatePresence mode="wait">
                     {activeTab === 'info' && user && (
                         <motion.div
-                            key="info"
-                            variants={tabVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            transition={{ duration: 0.5 }}
-                            className="bg-gray-800 p-6 rounded-lg shadow-md"
+                            {...{
+                                key: "info",
+                                variants: tabVariants,
+                                initial: "hidden",
+                                animate: "visible",
+                                exit: "exit",
+                                transition: { duration: 0.5 },
+                                className: "bg-gray-800 p-6 rounded-lg shadow-md"
+                            } as ModalBackdropProps}
                         >
                             <h2 className="text-xl font-semibold mb-4 text-blue-300">Thông tin cá nhân</h2>
                             <DisplayNameEditor
@@ -491,13 +500,15 @@ const AccountPage = () => {
 
                     {activeTab === 'favorites' && (
                         <motion.div
-                            key="favorites"
-                            variants={tabVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            transition={{ duration: 0.5 }}
-                            className="bg-gray-800 p-6 rounded-lg shadow-md"
+                            {...{
+                                key: "favorites",
+                                variants: tabVariants,
+                                initial: "hidden",
+                                animate: "visible",
+                                exit: "exit",
+                                transition: { duration: 0.5 },
+                                className: "bg-gray-800 p-6 rounded-lg shadow-md"
+                            } as ModalBackdropProps}
                         >
                             <h2 className="text-xl font-semibold mb-4 text-blue-300">Trang web yêu thích</h2>
                             {isHeartedLoading ? (

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbopack --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -54,16 +54,16 @@
     "ioredis": "^5.4.1",
     "lucide-react": "^0.396.0",
     "mongodb": "^6.9.0",
-    "next": "^14.2.13",
+    "next": "15.0.1",
     "next-themes": "^0.3.0",
     "node-cache": "^5.1.2",
     "ollama-ai-provider": "^0.12.0",
     "pixi-live2d-display": "^0.3.1",
     "pixi.js": "^6.5.10",
     "posthog-js": "^1.158.3",
-    "react": "^18.3.1",
+    "react": "19.0.0-rc-69d4b800-20241021",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "^18.3.1",
+    "react-dom": "19.0.0-rc-69d4b800-20241021",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^5.3.0",
     "react-loading-skeleton": "^3.5.0",
@@ -88,14 +88,18 @@
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/node": "^20.16.13",
     "@types/prismjs": "^1.26.4",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "npm:types-react@19.0.0-rc.1",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/uuid": "^10.0.0",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.13",
+    "eslint-config-next": "15.0.1",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.6.3"
+  },
+  "overrides": {
+    "@types/react": "npm:types-react@19.0.0-rc.1",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1"
   }
 }

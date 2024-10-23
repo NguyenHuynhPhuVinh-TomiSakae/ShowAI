@@ -6,6 +6,11 @@ import { FaSync } from 'react-icons/fa';
 import { toast, Toaster } from 'react-hot-toast';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import ModalPortal from '@/components/ModalPortal';
+import type { MotionProps } from 'framer-motion';
+
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
 
 interface Word {
     word: string;
@@ -262,15 +267,17 @@ export default function WordMatchingGame() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-8">
                     {words.map((word, index) => (
                         <motion.div
-                            key={`word-${index}`}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            onClick={() => !isLoading && handleWordClick(word)}
-                            className={`p-4 rounded-lg transition-all ${selectedWords.includes(word) ? 'bg-blue-600' :
-                                word.isBase ? 'bg-purple-600 hover:bg-purple-700' :
-                                    'bg-gray-800 hover:bg-gray-700'
-                                } cursor-pointer`}
+                            {...{
+                                key: `word-${index}`,
+                                initial: { opacity: 0, y: 20 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { delay: index * 0.1 },
+                                onClick: () => !isLoading && handleWordClick(word),
+                                className: `p-4 rounded-lg transition-all ${selectedWords.includes(word) ? 'bg-blue-600' :
+                                    word.isBase ? 'bg-purple-600 hover:bg-purple-700' :
+                                        'bg-gray-800 hover:bg-gray-700'
+                                    } cursor-pointer`
+                            } as ModalBackdropProps}
                         >
                             <div>
                                 <div className="font-bold">{word.word}</div>

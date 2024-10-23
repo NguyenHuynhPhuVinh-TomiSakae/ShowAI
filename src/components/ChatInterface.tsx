@@ -7,6 +7,11 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { motion, AnimatePresence } from 'framer-motion';
 import 'github-markdown-css/github-markdown-light.css';
+import type { MotionProps } from 'framer-motion';
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
+
 
 interface Message {
     text: string;
@@ -111,18 +116,22 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    {...{
+                        initial: { opacity: 0 },
+                        animate: { opacity: 1 },
+                        exit: { opacity: 0 },
+                        transition: { duration: 0.3 },
+                        className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    } as ModalBackdropProps}
                 >
                     <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className={`bg-[#0F172A] rounded-lg p-4 sm:p-6 flex flex-col border border-[#3E52E8] transition-all duration-300 ${isExpanded ? 'w-full h-full' : 'w-full max-w-2xl h-[90vh] sm:h-3/4'}`}
+                        {...{
+                            initial: { scale: 0.9, opacity: 0 },
+                            animate: { scale: 1, opacity: 1 },
+                            exit: { scale: 0.9, opacity: 0 },
+                            transition: { duration: 0.3 },
+                            className: `bg-[#0F172A] rounded-lg p-4 sm:p-6 flex flex-col border border-[#3E52E8] transition-all duration-300 ${isExpanded ? 'w-full h-full' : 'w-full max-w-2xl h-[90vh] sm:h-3/4'}`
+                        } as ModalBackdropProps}
                     >
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#93C5FD]">Trò chuyện cùng AI</h2>

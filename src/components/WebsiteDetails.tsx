@@ -14,6 +14,12 @@ import ShortCommentInput from './ShortCommentInput';
 import Image from 'next/image';
 import AICompare from './AICompare';
 import TipTapEditor from './TipTapEditorModal';
+import type { MotionProps } from 'framer-motion';
+
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
+
 
 interface AIWebsite {
     _id: string;
@@ -159,10 +165,12 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
 
     return (
         <motion.div
-            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-4 sm:p-8 shadow-2xl border border-gray-700 overflow-hidden"
-            initial="hidden"
-            animate={isVisible ? "visible" : "hidden"}
-            variants={containerVariants}
+            {...{
+                className: "bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-4 sm:p-8 shadow-2xl border border-gray-700 overflow-hidden",
+                initial: "hidden",
+                animate: isVisible ? "visible" : "hidden",
+                variants: containerVariants
+            } as ModalBackdropProps}
         >
             {website.image && (
                 <div className="mb-6 sm:mb-8 relative w-full h-48 sm:h-96 overflow-hidden rounded-2xl">

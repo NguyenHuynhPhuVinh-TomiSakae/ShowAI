@@ -3,6 +3,11 @@
 import { motion } from 'framer-motion';
 import { FaTools, FaGamepad } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import type { MotionProps } from 'framer-motion';
+
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
 
 export default function GamesPage() {
     const router = useRouter();
@@ -19,11 +24,13 @@ export default function GamesPage() {
             <div className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700"
-                        onClick={() => router.push('/games/word-matching')}
+                        {...{
+                            initial: { opacity: 0, y: 20 },
+                            animate: { opacity: 1, y: 0 },
+                            transition: { duration: 0.5 },
+                            className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                            onClick: () => router.push('/games/word-matching')
+                        } as ModalBackdropProps}
                     >
                         <FaGamepad className="text-6xl sm:text-7xl text-green-400 mx-auto mb-6" />
                         <h2 className="text-xl sm:text-2xl font-bold text-green-300 mb-4">
@@ -35,10 +42,12 @@ export default function GamesPage() {
                     </motion.div>
 
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="bg-gray-800 p-8 rounded-lg shadow-lg text-center"
+                        {...{
+                            initial: { opacity: 0, y: 20 },
+                            animate: { opacity: 1, y: 0 },
+                            transition: { duration: 0.5 },
+                            className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center"
+                        } as ModalBackdropProps}
                     >
                         <FaTools className="text-6xl sm:text-7xl text-blue-400 mx-auto mb-6" />
                         <h2 className="text-xl sm:text-2xl font-bold text-blue-300 mb-4">

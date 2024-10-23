@@ -3,6 +3,11 @@ import { useRouter } from 'next/navigation';
 import { FaExternalLinkAlt, FaEye, FaHeart, FaStar } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import type { MotionProps } from 'framer-motion';
+
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
 
 interface AIWebsite {
     _id: string;
@@ -80,27 +85,31 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
 
     return (
         <motion.div
-            className={`grid gap-6 ${isSidebar
-                ? "grid-cols-1"
-                : isRandom
-                    ? "grid-cols-1 sm:grid-cols-2"
-                    : isShuffled
-                        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                        : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                }`}
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
+            {...{
+                className: `grid gap-6 ${isSidebar
+                    ? "grid-cols-1"
+                    : isRandom
+                        ? "grid-cols-1 sm:grid-cols-2"
+                        : isShuffled
+                            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    }`,
+                variants: containerVariants,
+                initial: "hidden",
+                animate: "visible"
+            } as ModalBackdropProps}
         >
             {websites.map((website, index) => (
                 <motion.div
                     key={index}
-                    ref={(el: HTMLDivElement | null) => {
-                        if (el) websiteRefs.current[index] = el;
-                    }}
-                    variants={itemVariants}
-                    onClick={() => handleWebsiteClick(website.id)}
-                    className="cursor-pointer bg-gray-800 border-2 border-gray-700 rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-blue-500"
+                    {...{
+                        ref: (el: HTMLDivElement | null) => {
+                            if (el) websiteRefs.current[index] = el;
+                        },
+                        variants: itemVariants,
+                        onClick: () => handleWebsiteClick(website.id),
+                        className: "cursor-pointer bg-gray-800 border-2 border-gray-700 rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-blue-500"
+                    } as ModalBackdropProps}
                 >
                     {website.image && !isSidebar && (
                         <div className="relative w-full h-48 overflow-hidden">

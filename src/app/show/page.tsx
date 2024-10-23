@@ -11,7 +11,11 @@ import { useStarredWebsites } from '@/hooks/useStarredWebsites';
 import { motion, AnimatePresence } from 'framer-motion';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import type { MotionProps } from 'framer-motion';
 
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
 interface AIWebsite {
     _id: string;
     id: string;
@@ -265,14 +269,16 @@ function ShowContent() {
                 <ModalPortal>
                     <AnimatePresence>
                         <motion.button
-                            initial={{ y: 0, opacity: 1 }}
-                            animate={{
-                                y: isScrollButtonVisible ? -190 : 0,
-                                opacity: 1
-                            }}
-                            transition={{ duration: 0.3 }}
-                            className="fixed bottom-5 right-5 bg-blue-500 text-white p-3 rounded-full"
-                            onClick={toggleStarredModal}
+                            {...{
+                                initial: { y: 0, opacity: 1 },
+                                animate: {
+                                    y: isScrollButtonVisible ? -190 : 0,
+                                    opacity: 1
+                                },
+                                transition: { duration: 0.3 },
+                                className: "fixed bottom-5 right-5 bg-blue-500 text-white p-3 rounded-full",
+                                onClick: toggleStarredModal
+                            } as ModalBackdropProps}
                         >
                             <FaThumbtack />
                         </motion.button>

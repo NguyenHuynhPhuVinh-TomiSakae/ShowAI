@@ -3,11 +3,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { IoClose, IoMicOutline, IoStopOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from 'framer-motion';
 import { ElevenLabsClient } from "elevenlabs";
+import type { MotionProps } from 'framer-motion';
 
 interface VoiceCallModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
+
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
 
 const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
     const [isListening, setIsListening] = useState(false);
@@ -132,16 +137,20 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+                    {...{
+                        initial: { opacity: 0 },
+                        animate: { opacity: 1 },
+                        exit: { opacity: 0 },
+                        className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+                    } as ModalBackdropProps}
                 >
                     <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
-                        className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-2xl w-full max-w-md relative border border-gray-700"
+                        {...{
+                            initial: { scale: 0.9, opacity: 0 },
+                            animate: { scale: 1, opacity: 1 },
+                            exit: { scale: 0.9, opacity: 0 },
+                            className: "bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-2xl w-full max-w-md relative border border-gray-700"
+                        } as ModalBackdropProps}
                     >
                         <div className="p-8">
                             <button

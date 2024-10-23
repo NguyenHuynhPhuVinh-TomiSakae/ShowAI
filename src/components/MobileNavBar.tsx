@@ -4,6 +4,11 @@ import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import type { MotionProps } from 'framer-motion';
+
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
 
 interface MobileNavBarProps {
     isSidebarOpen: boolean;
@@ -85,12 +90,13 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                 {isSidebarOpen && (
                     <motion.div
                         ref={sidebarRef}
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: 'tween', duration: 0.3 }}
-                        // Thay đổi width từ w-64 thành w-[85%] hoặc w-[90%]
-                        className="fixed top-0 right-0 h-full w-80 bg-gray-900 z-40 overflow-y-auto border-l border-gray-700 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                        {...{
+                            initial: { x: '100%' },
+                            animate: { x: 0 },
+                            exit: { x: '100%' },
+                            transition: { type: 'tween', duration: 0.3 },
+                            className: "fixed top-0 right-0 h-full w-80 bg-gray-900 z-40 overflow-y-auto border-l border-gray-700 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                        } as ModalBackdropProps}
                     >
                         {/* Điều chỉnh padding và spacing cho nội dung */}
                         <div className="flex flex-col h-full">
@@ -114,11 +120,13 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                     <AnimatePresence>
                                         {isAIToolsDropdownOpen && (
                                             <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                transition={{ duration: 0.3 }}
-                                                className="mt-2 space-y-2 pl-6"
+                                                {...{
+                                                    initial: { opacity: 0, height: 0 },
+                                                    animate: { opacity: 1, height: 'auto' },
+                                                    exit: { opacity: 0, height: 0 },
+                                                    transition: { duration: 0.3 },
+                                                    className: "mt-2 space-y-2 pl-6"
+                                                } as ModalBackdropProps}
                                             >
                                                 <button
                                                     onClick={() => {
@@ -172,11 +180,13 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                     <AnimatePresence>
                                         {isAIDropdownOpen && (
                                             <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                transition={{ duration: 0.3 }}
-                                                className="mt-2 space-y-2 pl-6"
+                                                {...{
+                                                    initial: { opacity: 0, height: 0 },
+                                                    animate: { opacity: 1, height: 'auto' },
+                                                    exit: { opacity: 0, height: 0 },
+                                                    transition: { duration: 0.3 },
+                                                    className: "mt-2 space-y-2 pl-6"
+                                                } as ModalBackdropProps}
                                             >
                                                 <button
                                                     onClick={() => {
@@ -214,11 +224,13 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                         <AnimatePresence>
                                             {isUserDropdownOpen && (
                                                 <motion.div
-                                                    initial={{ opacity: 0, height: 0 }}
-                                                    animate={{ opacity: 1, height: 'auto' }}
-                                                    exit={{ opacity: 0, height: 0 }}
-                                                    transition={{ duration: 0.3 }}
-                                                    className="mt-2"
+                                                    {...{
+                                                        initial: { opacity: 0, height: 0 },
+                                                        animate: { opacity: 1, height: 'auto' },
+                                                        exit: { opacity: 0, height: 0 },
+                                                        transition: { duration: 0.3 },
+                                                        className: "mt-2"
+                                                    } as ModalBackdropProps}
                                                 >
                                                     <button
                                                         onClick={handleAccountClick}

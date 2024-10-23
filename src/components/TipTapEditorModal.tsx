@@ -14,6 +14,11 @@ import { IoReloadOutline } from 'react-icons/io5'
 import { ElevenLabsClient } from "elevenlabs";
 // Thêm import cho biểu tượng nghe
 import { IoVolumeHighOutline } from 'react-icons/io5'
+import type { MotionProps } from 'framer-motion';
+
+type ModalBackdropProps = MotionProps & {
+    className?: string;
+};
 
 interface TipTapEditorProps {
     content: string
@@ -240,17 +245,19 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content }) => {
                     {showModal && (
                         <motion.div
                             ref={modalRef}
-                            style={{
-                                position: 'absolute',
-                                left: `${modalPosition.x}px`,
-                                top: `${modalPosition.y}px`,
-                                zIndex: 1000,
-                            }}
-                            className="bg-[#0F172A] p-2 rounded-lg shadow-lg border border-[#2A3284] sm:p-2 p-1"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ duration: 0.2 }}
+                            {...{
+                                style: {
+                                    position: 'absolute',
+                                    left: `${modalPosition.x}px`,
+                                    top: `${modalPosition.y}px`,
+                                    zIndex: 1000,
+                                },
+                                className: "bg-[#0F172A] p-2 rounded-lg shadow-lg border border-[#2A3284] sm:p-2 p-1",
+                                initial: { opacity: 0, scale: 0.9 },
+                                animate: { opacity: 1, scale: 1 },
+                                exit: { opacity: 0, scale: 0.9 },
+                                transition: { duration: 0.2 }
+                            } as ModalBackdropProps}
                         >
                             <div className="flex space-x-2 sm:space-x-2 space-x-1">
                                 <button
