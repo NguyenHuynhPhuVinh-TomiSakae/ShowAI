@@ -69,7 +69,7 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                         </button>
                                         <button onClick={() => { setIsFileConversionModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
                                             <FaExchangeAlt className="mr-3" />
-                                            Chuyển Đổi File
+                                            Chuyển Đổi Ảnh
                                         </button>
                                     </div>
                                 </motion.div>

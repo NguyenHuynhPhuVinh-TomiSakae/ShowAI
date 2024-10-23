@@ -129,7 +129,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                     className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
                                                 >
                                                     <FaExchangeAlt className="mr-3" />
-                                                    Chuyển Đổi File
+                                                    Chuyển Đổi Ảnh
                                                 </button>
                                             </motion.div>
                                         )}

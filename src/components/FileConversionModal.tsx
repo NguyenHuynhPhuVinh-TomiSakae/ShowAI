@@ -85,7 +85,7 @@ const FileConversionModal: React.FC<FileConversionModalProps> = ({ isOpen, onClo
             };
             setConvertedFiles(prevFiles => [newConvertedFile, ...prevFiles]);
         } catch (error) {
-            console.error("Lỗi khi chuyển đổi file:", error);
+            console.error("Lỗi khi Chuyển Đổi Ảnh:", error);
         } finally {
             setIsLoading(false);
         }
@@ -126,7 +126,7 @@ const FileConversionModal: React.FC<FileConversionModalProps> = ({ isOpen, onClo
                         className={`bg-[#0F172A] rounded-lg p-4 sm:p-6 flex flex-col border border-[#3E52E8] transition-all duration-300 ${isExpanded ? 'w-full h-full' : 'w-full max-w-2xl h-[90vh] sm:h-3/4'}`}
                     >
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#93C5FD]">Chuyển Đổi File</h2>
+                            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#93C5FD]">Chuyển Đổi Ảnh</h2>
                             <div className="flex items-center">
                                 <button
                                     onClick={toggleExpand}
@@ -191,7 +191,7 @@ const FileConversionModal: React.FC<FileConversionModalProps> = ({ isOpen, onClo
                                             Đang chuyển đổi...
                                         </>
                                     ) : (
-                                        'Chuyển đổi file'
+                                        'Chuyển Đổi Ảnh'
                                     )}
                                 </button>
                                 {convertedFiles.length > 0 && (
