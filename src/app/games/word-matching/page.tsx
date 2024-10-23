@@ -24,12 +24,20 @@ const toastStyle = {
     },
 };
 
+// Thêm interface mới
+interface AddWordModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onAddWord: (word: string) => void;
+}
+
 export default function WordMatchingGame() {
     const [words, setWords] = useState<Word[]>([]);
     const [selectedWords, setSelectedWords] = useState<Word[]>([]);
     const [score, setScore] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [discoveredCombinations, setDiscoveredCombinations] = useState<string[]>([]);
+    const [showAddWordModal, setShowAddWordModal] = useState(false);
 
     useEffect(() => {
         initializeGame();
@@ -88,7 +96,7 @@ export default function WordMatchingGame() {
             Ví dụ: 
             - nếu input là "Đất" và "Nước" thì output là "Bùn"
             - nếu input là "Lửa" và "Gió" thì output là "Nhiệt"
-            Nếu không thể tạo ra từ mới có ý nghĩa, hãy trả về "không thể"`;
+            Nếu không thể tạo ra từ mới có ý nghĩa tiếng việt không hán tự, hãy trả về "không thể"`;
 
             const result = await model.generateContent(prompt);
             const combination = result.response.text().trim();
@@ -164,6 +172,20 @@ export default function WordMatchingGame() {
         processCombination();
     }, [selectedWords]);
 
+    // Thêm hàm xử lý thêm từ mới
+    const handleAddNewWord = (newWord: string) => {
+        if (score >= 5) {
+            setWords(prev => [...prev, {
+                word: newWord,
+                isMatched: false,
+                isBase: true
+            }]);
+            setScore(prev => prev - 5);
+            setShowAddWordModal(false);
+            toast.success('Đã thêm từ mới thành công!', toastStyle);
+        }
+    };
+
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
             <ModalPortal>
@@ -177,7 +199,7 @@ export default function WordMatchingGame() {
             </div>
 
             <div className="container mx-auto px-4 py-8">
-                <div className="flex justify-center mb-8">
+                <div className="flex justify-center gap-4 mb-8">
                     <button
                         onClick={initializeGame}
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
@@ -186,6 +208,14 @@ export default function WordMatchingGame() {
                         <FaSync className={isLoading ? 'animate-spin' : ''} />
                         Chơi lại
                     </button>
+                    {score >= 5 && (
+                        <button
+                            onClick={() => setShowAddWordModal(true)}
+                            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg"
+                        >
+                            Đổi từ mới (5 điểm)
+                        </button>
+                    )}
                 </div>
 
                 <div className="text-center mb-8">
@@ -214,6 +244,62 @@ export default function WordMatchingGame() {
                         </motion.div>
                     ))}
                 </div>
+            </div>
+
+            {/* Thêm Modal component */}
+            {showAddWordModal && (
+                <ModalPortal>
+                    <AddWordModal
+                        isOpen={showAddWordModal}
+                        onClose={() => setShowAddWordModal(false)}
+                        onAddWord={handleAddNewWord}
+                    />
+                </ModalPortal>
+            )}
+        </div>
+    );
+}
+
+// Thêm component Modal
+function AddWordModal({ onClose, onAddWord }: AddWordModalProps) {
+    const [newWord, setNewWord] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newWord.trim()) {
+            onAddWord(newWord.trim());
+            setNewWord('');
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-lg w-96">
+                <h2 className="text-xl font-bold mb-4">Thêm từ mới</h2>
+                <form onSubmit={handleSubmit}>
+                    <input
+                        type="text"
+                        value={newWord}
+                        onChange={(e) => setNewWord(e.target.value)}
+                        className="w-full p-2 mb-4 rounded bg-gray-700 text-white"
+                        placeholder="Nhập từ mới..."
+                    />
+                    <div className="flex justify-end gap-2">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700"
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
+                        >
+                            Thêm
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
