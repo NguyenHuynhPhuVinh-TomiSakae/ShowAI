@@ -1,9 +1,9 @@
 import { IoClose } from 'react-icons/io5';
 import { FaBars } from 'react-icons/fa';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface MobileNavBarProps {
     isSidebarOpen: boolean;
@@ -30,6 +30,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
 }) => {
     const router = useRouter();
     const sidebarRef = useRef<HTMLDivElement>(null);
+    const [isAIDropdownOpen, setIsAIDropdownOpen] = useState(false);
 
     const handleLoginClick = () => {
         router.push('/login');
@@ -48,11 +49,6 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
 
     const handleLeaderboardClick = () => {
         router.push('/leaderboard');
-        toggleSidebar();
-    };
-
-    const handleCodeboxClick = () => {
-        router.push('/codebox');
         toggleSidebar();
     };
 
@@ -134,13 +130,50 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                     <FaTrophy className="mr-4 text-xl" />
                                     Bảng Xếp Hạng
                                 </button>
-                                <button
-                                    onClick={handleCodeboxClick}
-                                    className="nav-button w-full justify-center bg-gray-800 border border-green-500 text-green-500 hover:bg-green-500 hover:text-gray-800"
-                                >
-                                    <FaCode className="mr-4 text-xl" />
-                                    Tạo Mã
-                                </button>
+                                <div className="bg-gray-800 rounded-lg p-2 border border-green-500">
+                                    <button
+                                        onClick={() => setIsAIDropdownOpen(!isAIDropdownOpen)}
+                                        className="flex items-center justify-between w-full text-green-500 py-2 px-3 hover:bg-green-500 hover:text-gray-800 rounded transition-colors duration-300"
+                                    >
+                                        <span className="flex items-center">
+                                            <FaRobot className="mr-3" />
+                                            AI
+                                        </span>
+                                        {isAIDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
+                                    </button>
+                                    <AnimatePresence>
+                                        {isAIDropdownOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                                className="mt-2 space-y-2 pl-6"
+                                            >
+                                                <button
+                                                    onClick={() => {
+                                                        router.push('/codebox');
+                                                        toggleSidebar();
+                                                    }}
+                                                    className="dropdown-item text-green-500 hover:bg-green-500 hover:text-gray-800"
+                                                >
+                                                    <FaCode className="mr-3" />
+                                                    Tạo Mã
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        router.push('/chatbox');
+                                                        toggleSidebar();
+                                                    }}
+                                                    className="dropdown-item text-green-500 hover:bg-green-500 hover:text-gray-800"
+                                                >
+                                                    <FaComments className="mr-3" />
+                                                    Trò Chuyện
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                                 {user ? (
                                     <div className="bg-gray-800 rounded-lg p-2 border border-teal-400">
                                         <button

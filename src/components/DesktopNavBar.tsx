@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaImage, FaCode } from 'react-icons/fa';
+import React, { useRef, useState } from 'react';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -26,6 +26,7 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
     const router = useRouter();
     const aiToolsRef = useRef<HTMLDivElement>(null);
     const userDropdownRef = useRef<HTMLDivElement>(null);
+    const [isAIDropdownOpen, setIsAIDropdownOpen] = useState(false);
 
     const handleMouseEnter = (setDropdown: (isOpen: boolean) => void) => {
         setDropdown(true);
@@ -73,10 +74,39 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                         <FaTrophy className="mr-2" />
                         <span>Bảng Xếp Hạng</span>
                     </button>
-                    <button onClick={() => router.push('/codebox')} className="nav-button bg-gray-800 border border-green-500 text-green-500 hover:bg-green-500 hover:text-gray-800">
-                        <FaCode className="mr-2" />
-                        <span>Tạo Mã</span>
-                    </button>
+                    <div
+                        className="relative group"
+                        onMouseEnter={() => setIsAIDropdownOpen(true)}
+                        onMouseLeave={() => setIsAIDropdownOpen(false)}
+                    >
+                        <button className="nav-button bg-gray-800 border border-green-500 text-green-500 hover:bg-green-500 hover:text-gray-800">
+                            <FaRobot className="mr-2" />
+                            <span>AI</span>
+                            {isAIDropdownOpen ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />}
+                        </button>
+                        <AnimatePresence>
+                            {isAIDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute top-full right-0 w-64 bg-gray-800 border border-green-500 rounded-md shadow-lg z-50 mt-2"
+                                >
+                                    <div className="p-4 space-y-2">
+                                        <button onClick={() => { router.push('/codebox'); setIsAIDropdownOpen(false); }} className="dropdown-item hover:bg-green-500 hover:text-gray-800">
+                                            <FaCode className="mr-3" />
+                                            Tạo Mã
+                                        </button>
+                                        <button onClick={() => { router.push('/chatbox'); setIsAIDropdownOpen(false); }} className="dropdown-item hover:bg-green-500 hover:text-gray-800">
+                                            <FaComments className="mr-3" />
+                                            Trò Chuyện
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                     <div
                         className="relative group"
                         ref={userDropdownRef}
