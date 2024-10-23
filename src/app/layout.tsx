@@ -8,6 +8,7 @@ import GeminiChatIcon from "@/components/GeminiChatIcon";
 import { Toaster } from '@/components/ui/toaster'
 import { Analytics } from "@vercel/analytics/react"
 import VoiceCallIcon from "@/components/VoiceCallIcon";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -48,6 +49,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#1A1A2E] text-gray-200`}
       >
         <Analytics />
+        <SpeedInsights />
         <NavFooter>
           {children}
           <Toaster />
