@@ -32,31 +32,39 @@ interface AddWordModalProps {
 }
 
 export default function WordMatchingGame() {
+    // Thêm state mới
+    const [gameStarted, setGameStarted] = useState(false);
+
+    // Sửa lại các state hiện có
     const [words, setWords] = useState<Word[]>([]);
     const [selectedWords, setSelectedWords] = useState<Word[]>([]);
     const [score, setScore] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [discoveredCombinations, setDiscoveredCombinations] = useState<string[]>([]);
     const [showAddWordModal, setShowAddWordModal] = useState(false);
+    const [showCustomWordsModal, setShowCustomWordsModal] = useState(false);
 
-    useEffect(() => {
-        initializeGame();
-    }, []);
-
-    const initializeGame = () => {
-        const baseWords: Word[] = [
-            { word: "Đất", isMatched: false, isBase: true },
-            { word: "Nước", isMatched: false, isBase: true },
-            { word: "Lửa", isMatched: false, isBase: true },
-            { word: "Gió", isMatched: false, isBase: true },
-        ];
+    // Sửa lại hàm initializeGame
+    const initializeGame = (customWords?: string[]) => {
+        const baseWords: Word[] = customWords ?
+            customWords.map(word => ({ word, isMatched: false, isBase: true })) :
+            [
+                { word: "Đất", isMatched: false, isBase: true },
+                { word: "Nước", isMatched: false, isBase: true },
+                { word: "Lửa", isMatched: false, isBase: true },
+                { word: "Gió", isMatched: false, isBase: true },
+            ];
 
         setWords(baseWords);
         setSelectedWords([]);
         setScore(0);
         setDiscoveredCombinations([]);
+        setGameStarted(true);
     };
 
+    // Xóa useEffect ban đầu vì chúng ta không muốn tự động khởi tạo game nữa
+
+    // Thêm component màn hình bắt đầu
     const generateCombination = async (word1: string, word2: string) => {
         try {
             const apiKeyResponse = await fetch('/api/Gemini');
@@ -172,6 +180,43 @@ export default function WordMatchingGame() {
         processCombination();
     }, [selectedWords]);
 
+    if (!gameStarted) {
+        return (
+            <div className="bg-[#0F172A] text-white min-h-screen">
+                <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
+                    <h1 className="text-2xl sm:text-3xl font-bold mb-4">Trò Chơi Ghép Từ AI</h1>
+                </div>
+                <div className="container mx-auto px-4 py-8 text-center">
+                    <div className="max-w-md mx-auto space-y-4">
+                        <button
+                            onClick={() => initializeGame()}
+                            className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-lg"
+                        >
+                            Chơi với từ mặc định
+                        </button>
+                        <button
+                            onClick={() => setShowCustomWordsModal(true)}
+                            className="w-full bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg text-lg"
+                        >
+                            Tự nhập từ của bạn
+                        </button>
+                    </div>
+                </div>
+
+                {showCustomWordsModal && (
+                    <CustomWordsModal
+                        onClose={() => setShowCustomWordsModal(false)}
+                        onSubmit={(words) => {
+                            initializeGame(words);
+                            setShowCustomWordsModal(false);
+                        }}
+                    />
+                )}
+            </div>
+        );
+    }
+
+
     // Thêm hàm xử lý thêm từ mới
     const handleAddNewWord = (newWord: string) => {
         if (score >= 5) {
@@ -201,28 +246,20 @@ export default function WordMatchingGame() {
             <div className="container mx-auto px-4 py-8">
                 <div className="flex justify-center gap-4 mb-8">
                     <button
-                        onClick={initializeGame}
+                        onClick={() => initializeGame()}
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
                         disabled={isLoading}
                     >
                         <FaSync className={isLoading ? 'animate-spin' : ''} />
                         Chơi lại
                     </button>
-                    {score >= 5 && (
-                        <button
-                            onClick={() => setShowAddWordModal(true)}
-                            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg"
-                        >
-                            Đổi từ mới (5 điểm)
-                        </button>
-                    )}
                 </div>
 
                 <div className="text-center mb-8">
                     <p className="text-xl font-bold">Điểm: {score}</p>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-8">
                     {words.map((word, index) => (
                         <motion.div
                             key={`word-${index}`}
@@ -237,13 +274,23 @@ export default function WordMatchingGame() {
                         >
                             <div>
                                 <div className="font-bold">{word.word}</div>
-                                {!word.isBase && (
-                                    <div className="text-sm text-gray-300">{word.combination}</div>
-                                )}
+                                {/* Xóa phần hiển thị combination */}
                             </div>
                         </motion.div>
                     ))}
                 </div>
+
+                {/* Di chuyển nút thêm từ mới xuống đây */}
+                {score >= 5 && (
+                    <div className="flex justify-center mt-4">
+                        <button
+                            onClick={() => setShowAddWordModal(true)}
+                            className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg text-lg"
+                        >
+                            Đổi từ mới (5 điểm)
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Thêm Modal component */}
@@ -297,6 +344,63 @@ function AddWordModal({ onClose, onAddWord }: AddWordModalProps) {
                             className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
                         >
                             Thêm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// Thêm component modal nhập từ tùy chỉnh
+interface CustomWordsModalProps {
+    onClose: () => void;
+    onSubmit: (words: string[]) => void;
+}
+
+function CustomWordsModal({ onClose, onSubmit }: CustomWordsModalProps) {
+    const [customWords, setCustomWords] = useState(['', '', '', '']);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (customWords.every(word => word.trim())) {
+            onSubmit(customWords.map(w => w.trim()));
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-lg w-96">
+                <h2 className="text-xl font-bold mb-4">Nhập 4 từ của bạn</h2>
+                <form onSubmit={handleSubmit}>
+                    {customWords.map((word, index) => (
+                        <input
+                            key={index}
+                            type="text"
+                            value={word}
+                            onChange={(e) => {
+                                const newWords = [...customWords];
+                                newWords[index] = e.target.value;
+                                setCustomWords(newWords);
+                            }}
+                            className="w-full p-2 mb-4 rounded bg-gray-700 text-white"
+                            placeholder={`Từ ${index + 1}...`}
+                            required
+                        />
+                    ))}
+                    <div className="flex justify-end gap-2">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700"
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
+                        >
+                            Bắt đầu
                         </button>
                     </div>
                 </form>
