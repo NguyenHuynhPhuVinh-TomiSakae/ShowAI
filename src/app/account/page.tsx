@@ -447,8 +447,8 @@ const AccountPage = () => {
                 <AnimatePresence mode="wait">
                     {activeTab === 'info' && user && (
                         <motion.div
+                            key="info"
                             {...{
-                                key: "info",
                                 variants: tabVariants,
                                 initial: "hidden",
                                 animate: "visible",
@@ -500,8 +500,8 @@ const AccountPage = () => {
 
                     {activeTab === 'favorites' && (
                         <motion.div
+                            key="favorites"
                             {...{
-                                key: "favorites",
                                 variants: tabVariants,
                                 initial: "hidden",
                                 animate: "visible",
