@@ -72,7 +72,7 @@ const NavBar = () => {
 
     return (
         <nav className="bg-blue-600 text-white p-4 border-b border-white border-opacity-20 shadow-lg">
-            <div className="container md:mx-4 flex justify-between items-center">
+            <div className="lg:mx-4 flex justify-between items-center">
                 <div
                     className="text-3xl font-bold cursor-pointer"
                     onClick={() => router.push('/')}

@@ -1,6 +1,6 @@
 import { IoClose } from 'react-icons/io5';
 import { FaBars } from 'react-icons/fa';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -54,6 +54,11 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
         toggleSidebar();
     };
 
+    const handleGamesClick = () => {
+        router.push('/games');
+        toggleSidebar();
+    };
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node) && isSidebarOpen) {
@@ -68,7 +73,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     }, [isSidebarOpen, toggleSidebar]);
 
     return (
-        <div className="md:hidden">
+        <div className="lg:hidden">
             <button
                 onClick={toggleSidebar}
                 className="fixed top-4 right-4 z-50 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors duration-300"
@@ -141,6 +146,13 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                 >
                                     <FaTrophy className="mr-4 text-xl" />
                                     Bảng Xếp Hạng
+                                </button>
+                                <button
+                                    onClick={handleGamesClick}
+                                    className="nav-button w-full justify-center bg-gray-800 border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-gray-800"
+                                >
+                                    <FaGamepad className="mr-4 text-xl" />
+                                    Trò Chơi
                                 </button>
                                 <div className="bg-gray-800 rounded-lg p-2 border border-green-500">
                                     <button

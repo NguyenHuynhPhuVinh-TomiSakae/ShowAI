@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -39,8 +39,8 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
     };
 
     return (
-        <div className="hidden md:flex md:items-center">
-            <div className="md:relative md:w-auto md:bg-transparent md:flex md:items-center">
+        <div className="hidden lg:flex lg:items-center">
+            <div className="lg:relative lg:w-auto lg:bg-transparent lg:flex lg:items-center">
                 <div className="flex flex-row p-0 space-x-4">
                     <div
                         className="relative group"
@@ -79,6 +79,11 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                     <button onClick={() => router.push('/leaderboard')} className="nav-button bg-gray-800 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-800">
                         <FaTrophy className="mr-2" />
                         <span>Bảng Xếp Hạng</span>
+                    </button>
+                    {/* Thêm nút Games mới */}
+                    <button onClick={() => router.push('/games')} className="nav-button bg-gray-800 border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-gray-800">
+                        <FaGamepad className="mr-2" />
+                        <span>Trò Chơi</span>
                     </button>
                     <div
                         className="relative group"
