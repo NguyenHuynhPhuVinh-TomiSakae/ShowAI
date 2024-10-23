@@ -10,6 +10,7 @@ import { DocumentData } from 'firebase/firestore';
 import MobileNavBar from './MobileNavBar';
 import DesktopNavBar from './DesktopNavBar';
 import AIImageGenModal from './AIImageGenModal';
+import FileConversionModal from './FileConversionModal';
 
 const NavBar = () => {
     const router = useRouter();
@@ -18,6 +19,7 @@ const NavBar = () => {
     const [user, setUser] = useState<DocumentData | null>(null);
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
     const [isAIImageGenModalOpen, setIsAIImageGenModalOpen] = useState(false);
+    const [isFileConversionModalOpen, setIsFileConversionModalOpen] = useState(false);
     const { auth } = useFirebase();
     const { getUserFromFirestore } = useFirestoreOperations();
 
@@ -95,6 +97,7 @@ const NavBar = () => {
                     toggleUserDropdown={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                     handleLogout={handleLogout}
                     setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
+                    setIsFileConversionModalOpen={setIsFileConversionModalOpen}
                 />
                 <DesktopNavBar
                     isAIToolsDropdownOpen={isAIToolsDropdownOpen}
@@ -105,10 +108,14 @@ const NavBar = () => {
                     setIsUserDropdownOpen={setIsUserDropdownOpen}
                     handleLogout={handleLogout}
                     setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
+                    setIsFileConversionModalOpen={setIsFileConversionModalOpen}
                 />
             </div>
             {isAIImageGenModalOpen && (
                 <AIImageGenModal isOpen={isAIImageGenModalOpen} onClose={() => setIsAIImageGenModalOpen(false)} />
+            )}
+            {isFileConversionModalOpen && (
+                <FileConversionModal isOpen={isFileConversionModalOpen} onClose={() => setIsFileConversionModalOpen(false)} />
             )}
         </nav>
     );

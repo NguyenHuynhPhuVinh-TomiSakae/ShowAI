@@ -1,6 +1,6 @@
 import { IoClose } from 'react-icons/io5';
 import { FaBars } from 'react-icons/fa';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -15,6 +15,7 @@ interface MobileNavBarProps {
     toggleUserDropdown: () => void;
     handleLogout: () => void;
     setIsAIImageGenModalOpen: (isOpen: boolean) => void;
+    setIsFileConversionModalOpen: (isOpen: boolean) => void;
 }
 
 const MobileNavBar: React.FC<MobileNavBarProps> = ({
@@ -26,7 +27,8 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     isUserDropdownOpen,
     toggleUserDropdown,
     handleLogout,
-    setIsAIImageGenModalOpen
+    setIsAIImageGenModalOpen,
+    setIsFileConversionModalOpen
 }) => {
     const router = useRouter();
     const sidebarRef = useRef<HTMLDivElement>(null);
@@ -118,6 +120,16 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                 >
                                                     <FaImage className="mr-3" />
                                                     Tạo Hình Ảnh
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setIsFileConversionModalOpen(true);
+                                                        toggleSidebar();
+                                                    }}
+                                                    className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
+                                                >
+                                                    <FaExchangeAlt className="mr-3" />
+                                                    Chuyển Đổi File
                                                 </button>
                                             </motion.div>
                                         )}
