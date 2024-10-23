@@ -89,14 +89,18 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'tween', duration: 0.3 }}
-                        className="fixed top-0 right-0 h-full w-64 bg-gray-900 z-40 overflow-y-auto border-l border-gray-700 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                        // Thay đổi width từ w-64 thành w-[85%] hoặc w-[90%]
+                        className="fixed top-0 right-0 h-full w-80 bg-gray-900 z-40 overflow-y-auto border-l border-gray-700 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
                     >
+                        {/* Điều chỉnh padding và spacing cho nội dung */}
                         <div className="flex flex-col h-full">
-                            <div className="flex items-center px-6 py-3 mt-3 border-b border-gray-700">
+                            <div className="flex items-center px-8 py-4 mt-3 border-b border-gray-700">
                                 <p className="text-2xl font-bold text-white">ShowAI</p>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                                <div className="bg-gray-800 rounded-lg p-2 border border-blue-400">
+                            {/* Tăng padding và khoảng cách giữa các phần tử */}
+                            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+                                {/* Các button và dropdown giữ nguyên nội dung nhưng điều chỉnh padding */}
+                                <div className="bg-gray-800 rounded-lg p-3 border border-blue-400">
                                     <button
                                         onClick={toggleAIToolsDropdown}
                                         className="flex items-center justify-between w-full text-blue-400 py-2 px-3 hover:bg-blue-400 hover:text-gray-800 rounded transition-colors duration-300"
@@ -142,19 +146,19 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                 </div>
                                 <button
                                     onClick={handleLeaderboardClick}
-                                    className="nav-button w-full justify-center bg-gray-800 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-800"
+                                    className="nav-button w-full justify-center py-4 bg-gray-800 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-800"
                                 >
                                     <FaTrophy className="mr-4 text-xl" />
                                     Bảng Xếp Hạng
                                 </button>
                                 <button
                                     onClick={handleGamesClick}
-                                    className="nav-button w-full justify-center bg-gray-800 border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-gray-800"
+                                    className="nav-button w-full justify-center py-4 bg-gray-800 border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-gray-800"
                                 >
                                     <FaGamepad className="mr-4 text-xl" />
                                     Trò Chơi
                                 </button>
-                                <div className="bg-gray-800 rounded-lg p-2 border border-green-500">
+                                <div className="bg-gray-800 rounded-lg p-3 border border-green-500">
                                     <button
                                         onClick={() => setIsAIDropdownOpen(!isAIDropdownOpen)}
                                         className="flex items-center justify-between w-full text-green-500 py-2 px-3 hover:bg-green-500 hover:text-gray-800 rounded transition-colors duration-300"
@@ -199,7 +203,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                     </AnimatePresence>
                                 </div>
                                 {user ? (
-                                    <div className="bg-gray-800 rounded-lg p-2 border border-teal-400">
+                                    <div className="bg-gray-800 rounded-lg p-3 border border-teal-400">
                                         <button
                                             onClick={toggleUserDropdown}
                                             className="flex items-center justify-between w-full text-teal-400 py-2 px-3 hover:bg-teal-400 hover:text-gray-800 rounded transition-colors duration-300"
@@ -237,7 +241,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                 ) : (
                                     <button
                                         onClick={handleLoginClick}
-                                        className="nav-button w-full justify-center bg-gray-800 border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-800"
+                                        className="nav-button w-full justify-center py-4 bg-gray-800 border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-800"
                                     >
                                         <FaUserCircle className="mr-4 text-xl" />
                                         Đăng Nhập
