@@ -19,6 +19,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import SimpleMarkdown from '@/components/SimpleMarkdown';
+import { useMediaQuery } from 'react-responsive';
 
 const modelGroups = [
     {
@@ -108,6 +109,8 @@ export default function ChatBox() {
     const [isLoading, setIsLoading] = useState(false);
     const [isAIResponding, setIsAIResponding] = useState(false);
     const [files, setFiles] = useState<{ file: File; base64: string }[]>([]);
+    const [chatHistory, setChatHistory] = useState<Array<{ role: string; content: any }>>([]);
+    const isMobile = useMediaQuery({ maxWidth: 767 });
 
     const scrollToBottom = () => {
         if (chatContainerRef.current) {
@@ -146,7 +149,24 @@ export default function ChatBox() {
         e.preventDefault();
         if (message.trim() !== '' && !isLoading) {
             const imageBases64 = files.map(f => f.base64);
-            setMessages([...messages, { text: message, isUser: true, images: imageBases64 }]);
+            const newUserMessage = { text: message, isUser: true, images: imageBases64 };
+            setMessages(prevMessages => [...prevMessages, newUserMessage]);
+
+            // Cập nhật lịch sử chat
+            let messageContent: any = message;
+            if (selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && files.length > 0) {
+                messageContent = [
+                    { type: "text", text: message },
+                    ...imageBases64.map(img => ({ type: "image_url", image_url: { url: img } }))
+                ];
+            }
+
+            const newChatHistory = [
+                ...chatHistory,
+                { role: "user", content: messageContent }
+            ];
+            setChatHistory(newChatHistory);
+
             setMessage('');
             setIsLoading(true);
             setIsAIResponding(true);
@@ -160,25 +180,6 @@ export default function ChatBox() {
                     throw new Error('Không thể lấy khóa OPENROUTER');
                 }
 
-                let messageContent: any = message;
-
-                if (selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && files.length > 0) {
-                    const imageContents = files.map(({ base64 }) => ({
-                        type: "image_url",
-                        image_url: {
-                            url: base64
-                        }
-                    }));
-
-                    messageContent = [
-                        {
-                            type: "text",
-                            text: message
-                        },
-                        ...imageContents
-                    ];
-                }
-
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: {
@@ -189,12 +190,7 @@ export default function ChatBox() {
                     },
                     body: JSON.stringify({
                         "model": selectedModel.modal,
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": messageContent
-                            }
-                        ]
+                        "messages": newChatHistory
                     })
                 });
 
@@ -207,6 +203,9 @@ export default function ChatBox() {
                 if (data && data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
                     const aiResponse = data.choices[0].message.content.trim();
                     setMessages(prevMessages => [...prevMessages, { text: aiResponse, isUser: false }]);
+
+                    // Cập nhật lịch sử chat với phản hồi của AI
+                    setChatHistory(prevHistory => [...prevHistory, { role: "assistant", content: aiResponse }]);
                 } else if (data && data.error) {
                     console.error("Lỗi từ API:", data.error);
                     throw new Error(data.error.message || 'Lỗi không xác định từ API');
@@ -221,25 +220,26 @@ export default function ChatBox() {
             } finally {
                 setIsLoading(false);
                 setIsAIResponding(false);
-                setFiles([]); // Xóa files sau khi gửi
+                setFiles([]);
             }
         }
     };
 
     const handleClearMessages = () => {
         setMessages([]);
+        setChatHistory([]); // Xóa cả lịch sử chat
     };
 
     const handleUndo = () => {
         if (messages.length > 0) {
-            // Xóa 2 tin nhắn cuối cùng (nếu có)
             const newMessages = messages.slice(0, -2);
             setMessages(newMessages);
+            setChatHistory(prevHistory => prevHistory.slice(0, -2)); // Xóa 2 tin nhắn cuối cùng khỏi lịch sử chat
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (!isMobile && e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSubmit(e);
         }
