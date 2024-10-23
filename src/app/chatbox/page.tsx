@@ -18,6 +18,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import SimpleMarkdown from '@/components/SimpleMarkdown';
 
 const modelGroups = [
     {
@@ -245,203 +246,213 @@ export default function ChatBox() {
     };
 
     return (
-        <main className="flex min-h-screen max-h-screen bg-[#0F172A] text-white">
-            <div className="grid w-full">
-                <div className="flex flex-col w-full h-screen max-w-[800px] mx-auto px-4">
-                    {/* NavBar */}
-                    <nav className="w-full flex bg-[#0F172A] py-4 text-white">
-                        <div className="flex flex-1 items-center">
-                            <h1 className="whitespace-pre">Trò chuyện với </h1>
-                            <span className="text-[#4ECCA3] text-lg font-bold">ShowAI</span>
-                        </div>
-                        <div className="flex items-center gap-1 md:gap-4">
-                            <button
-                                onClick={handleUndo}
-                                disabled={messages.length === 0 || isLoading}
-                                className="text-white hover:bg-[#1A1A2E] hover:text-[#4B5EFF] p-2 rounded"
-                            >
-                                <IoArrowUndo className="h-4 w-4 md:h-5 md:w-5" />
-                            </button>
-                            <button
-                                onClick={handleClearMessages}
-                                disabled={messages.length === 0}
-                                className="text-white hover:bg-[#1A1A2E] hover:text-[#4B5EFF] p-2 rounded"
-                            >
-                                <IoTrash className="h-4 w-4 md:h-5 md:w-5" />
-                            </button>
-                        </div>
-                    </nav>
-
-                    {/* Messages */}
-                    <div
-                        ref={chatContainerRef}
-                        id="chat-container"
-                        className="flex flex-col pb-4 gap-4 overflow-y-auto flex-grow bg-[#0F172A] text-white"
-                    >
-                        {messages.length === 0 ? (
-                            <h1 className="text-4xl font-bold text-center mb-8">Hỏi bất cứ điều gì</h1>
-                        ) : (
-                            messages.map((message, index) => (
-                                <div
-                                    key={index}
-                                    className={`flex flex-col ${!message.isUser
-                                        ? 'bg-[#1A1A2E] border border-[#3E52E8] text-gray-200 py-4 px-4 rounded-2xl'
-                                        : 'text-white'
-                                        } w-full`}
-                                >
-                                    <span className={`inline-block ${message.isUser ? 'text-lg' : 'text-base'} whitespace-pre-wrap`}>
-                                        {message.text}
-                                    </span>
-                                    {message.images && message.images.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mt-2">
-                                            {message.images.map((img, imgIndex) => (
-                                                <img
-                                                    key={imgIndex}
-                                                    src={img}
-                                                    alt={`Attached image ${imgIndex + 1}`}
-                                                    className="w-24 h-24 object-cover rounded-md border border-[#4ECCA3]"
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            ))
-                        )}
-                        {isAIResponding && (
-                            <div className="flex items-center gap-1 text-sm text-gray-400">
-                                <LoaderIcon strokeWidth={2} className="animate-spin w-4 h-4" />
-                                <span>Đang tạo...</span>
+        <>
+            <div className="bg-[#2A3284] text-center py-8 px-4">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-4">Trò Chuyện</h1>
+                <p className="text-base sm:text-lg max-w-3xl mx-auto">
+                    Hỏi bất cứ điều gì với ShowAI.
+                </p>
+            </div>
+            <main className="flex min-h-screen max-h-screen bg-[#0F172A] text-white">
+                <div className="grid w-full">
+                    <div className="flex flex-col w-full h-screen max-w-[800px] mx-auto px-4">
+                        {/* NavBar */}
+                        <nav className="w-full flex bg-[#0F172A] py-4 text-white">
+                            <div className="flex flex-1 items-center">
+                                <h1 className="whitespace-pre">Trò chuyện với </h1>
+                                <span className="text-[#4ECCA3] text-lg font-bold">ShowAI</span>
                             </div>
-                        )}
-                    </div>
-
-                    {/* Chat Input */}
-                    <form onSubmit={handleSubmit} className="mb-2 mt-auto bg-[#0F172A]">
-                        <div className="shadow-md rounded-2xl border border-[#4ECCA3]">
-                            <div className="flex items-center px-3 py-2 gap-2">
-                                {/* Provider Selector */}
-                                <Select
-                                    value={selectedProvider}
-                                    onValueChange={(value) => {
-                                        setSelectedProvider(value);
-                                        setSelectedModel(modelGroups.find(group => group.provider === value)?.models[0] || modelGroups[0].models[0]);
-                                    }}
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Chọn nhà cung cấp" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {modelGroups.map((group) => (
-                                            <SelectItem key={group.provider} value={group.provider}>
-                                                {group.provider}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                {/* Model Selector */}
-                                <Select
-                                    value={selectedModel.modal}
-                                    onValueChange={(value) => {
-                                        const newModel = modelGroups
-                                            .find(group => group.provider === selectedProvider)
-                                            ?.models.find(model => model.modal === value);
-                                        if (newModel) {
-                                            setSelectedModel(newModel);
-                                        }
-                                    }}
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Chọn mô hình" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {modelGroups
-                                            .find(group => group.provider === selectedProvider)
-                                            ?.models.map((model) => (
-                                                <SelectItem key={model.modal} value={model.modal}>
-                                                    <span className="mr-2">{model.icon}</span>
-                                                    {model.name}
-                                                </SelectItem>
-                                            ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <TextareaAutosize
-                                autoFocus={true}
-                                minRows={1}
-                                maxRows={5}
-                                className="text-normal px-3 resize-none ring-0 bg-inherit w-full m-0 outline-none text-white"
-                                required={true}
-                                placeholder="Hỏi bất cứ điều gì..."
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                            />
-                            <div className="flex p-3 gap-2 items-center">
-                                <div className="flex items-center flex-1 gap-2">
-                                    {selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && (
-                                        <>
-                                            <TooltipProvider>
-                                                <Tooltip delayDuration={0}>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="icon"
-                                                            className="rounded-xl h-10 w-10 bg-[#1A1A2E] text-white border-[#4ECCA3] hover:bg-[#3E52E8]"
-                                                            onClick={() => document.getElementById('file-input')?.click()}
-                                                        >
-                                                            <Paperclip className="h-5 w-5" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent className="bg-[#1A1A2E] text-white border-[#4ECCA3]">Thêm tệp đính kèm</TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                            <input
-                                                id="file-input"
-                                                type="file"
-                                                accept="image/*"
-                                                multiple
-                                                className="hidden"
-                                                onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
-                                            />
-                                        </>
-                                    )}
-                                    {files.map(({ file }, index) => (
-                                        <div key={index} className="relative">
-                                            <img
-                                                src={URL.createObjectURL(file)}
-                                                alt={file.name}
-                                                className="w-10 h-10 object-cover rounded-md border border-[#4ECCA3]"
-                                            />
-                                            <button
-                                                onClick={() => handleFileRemove(file)}
-                                                className="absolute -top-2 -right-2 bg-[#1A1A2E] rounded-full p-1 border border-[#4ECCA3]"
-                                            >
-                                                <IoClose className="h-3 w-3 text-[#4ECCA3]" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
+                            <div className="flex items-center gap-1 md:gap-4">
                                 <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="rounded-xl h-10 w-10 bg-[#3E52E8] hover:bg-[#4B5EFF] text-white flex items-center justify-center"
+                                    onClick={handleUndo}
+                                    disabled={messages.length === 0 || isLoading}
+                                    className="text-white hover:bg-[#1A1A2E] hover:text-[#4B5EFF] p-2 rounded"
                                 >
-                                    {isLoading ? (
-                                        <Square className="h-5 w-5" onClick={(e) => {
-                                            e.preventDefault();
-                                            // Thêm hàm dừng tạo ở đây
-                                        }} />
-                                    ) : (
-                                        <ArrowUp className="h-5 w-5" />
-                                    )}
+                                    <IoArrowUndo className="h-4 w-4 md:h-5 md:w-5" />
+                                </button>
+                                <button
+                                    onClick={handleClearMessages}
+                                    disabled={messages.length === 0}
+                                    className="text-white hover:bg-[#1A1A2E] hover:text-[#4B5EFF] p-2 rounded"
+                                >
+                                    <IoTrash className="h-4 w-4 md:h-5 md:w-5" />
                                 </button>
                             </div>
+                        </nav>
+
+                        {/* Messages */}
+                        <div
+                            ref={chatContainerRef}
+                            id="chat-container"
+                            className="flex flex-col pb-4 gap-4 overflow-y-auto flex-grow bg-[#0F172A] text-white"
+                        >
+                            {messages.length === 0 ? (
+                                <h1 className="text-4xl font-bold text-center mb-8">Hỏi bất cứ điều gì</h1>
+                            ) : (
+                                messages.map((message, index) => (
+                                    <div
+                                        key={index}
+                                        className={`flex flex-col ${!message.isUser
+                                            ? 'bg-[#1A1A2E] border border-[#3E52E8] text-gray-200 py-4 px-4 rounded-2xl'
+                                            : 'text-white'
+                                            } w-full`}
+                                    >
+                                        {message.isUser ? (
+                                            <span className="text-lg whitespace-pre-wrap">{message.text}</span>
+                                        ) : (
+                                            <SimpleMarkdown content={message.text} />
+                                        )}
+                                        {message.images && message.images.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {message.images.map((img, imgIndex) => (
+                                                    <img
+                                                        key={imgIndex}
+                                                        src={img}
+                                                        alt={`Attached image ${imgIndex + 1}`}
+                                                        className="w-24 h-24 object-cover rounded-md border border-[#4ECCA3]"
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                            {isAIResponding && (
+                                <div className="flex items-center gap-1 text-sm text-gray-400">
+                                    <LoaderIcon strokeWidth={2} className="animate-spin w-4 h-4" />
+                                    <span>Đang tạo...</span>
+                                </div>
+                            )}
                         </div>
-                    </form>
+
+                        {/* Chat Input */}
+                        <form onSubmit={handleSubmit} className="mb-2 mt-auto bg-[#0F172A]">
+                            <div className="shadow-md rounded-2xl border border-[#4ECCA3]">
+                                <div className="flex items-center px-3 py-2 gap-2">
+                                    {/* Provider Selector */}
+                                    <Select
+                                        value={selectedProvider}
+                                        onValueChange={(value) => {
+                                            setSelectedProvider(value);
+                                            setSelectedModel(modelGroups.find(group => group.provider === value)?.models[0] || modelGroups[0].models[0]);
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Chọn nhà cung cấp" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {modelGroups.map((group) => (
+                                                <SelectItem key={group.provider} value={group.provider}>
+                                                    {group.provider}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+
+                                    {/* Model Selector */}
+                                    <Select
+                                        value={selectedModel.modal}
+                                        onValueChange={(value) => {
+                                            const newModel = modelGroups
+                                                .find(group => group.provider === selectedProvider)
+                                                ?.models.find(model => model.modal === value);
+                                            if (newModel) {
+                                                setSelectedModel(newModel);
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Chọn mô hình" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {modelGroups
+                                                .find(group => group.provider === selectedProvider)
+                                                ?.models.map((model) => (
+                                                    <SelectItem key={model.modal} value={model.modal}>
+                                                        <span className="mr-2">{model.icon}</span>
+                                                        {model.name}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <TextareaAutosize
+                                    autoFocus={true}
+                                    minRows={1}
+                                    maxRows={5}
+                                    className="text-normal px-3 resize-none ring-0 bg-inherit w-full m-0 outline-none text-white"
+                                    required={true}
+                                    placeholder="Hỏi bất cứ điều gì..."
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                />
+                                <div className="flex p-3 gap-2 items-center">
+                                    <div className="flex items-center flex-1 gap-2">
+                                        {selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && (
+                                            <>
+                                                <TooltipProvider>
+                                                    <Tooltip delayDuration={0}>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="rounded-xl h-10 w-10 bg-[#1A1A2E] text-white border-[#4ECCA3] hover:bg-[#3E52E8]"
+                                                                onClick={() => document.getElementById('file-input')?.click()}
+                                                            >
+                                                                <Paperclip className="h-5 w-5" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent className="bg-[#1A1A2E] text-white border-[#4ECCA3]">Thêm tệp đính kèm</TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                                <input
+                                                    id="file-input"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    multiple
+                                                    className="hidden"
+                                                    onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
+                                                />
+                                            </>
+                                        )}
+                                        {files.map(({ file }, index) => (
+                                            <div key={index} className="relative">
+                                                <img
+                                                    src={URL.createObjectURL(file)}
+                                                    alt={file.name}
+                                                    className="w-10 h-10 object-cover rounded-md border border-[#4ECCA3]"
+                                                />
+                                                <button
+                                                    onClick={() => handleFileRemove(file)}
+                                                    className="absolute -top-2 -right-2 bg-[#1A1A2E] rounded-full p-1 border border-[#4ECCA3]"
+                                                >
+                                                    <IoClose className="h-3 w-3 text-[#4ECCA3]" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="rounded-xl h-10 w-10 bg-[#3E52E8] hover:bg-[#4B5EFF] text-white flex items-center justify-center"
+                                    >
+                                        {isLoading ? (
+                                            <Square className="h-5 w-5" onClick={(e) => {
+                                                e.preventDefault();
+                                                // Thêm hàm dừng tạo ở đây
+                                            }} />
+                                        ) : (
+                                            <ArrowUp className="h-5 w-5" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        </main>
+            </main>
+        </>
     );
 }
