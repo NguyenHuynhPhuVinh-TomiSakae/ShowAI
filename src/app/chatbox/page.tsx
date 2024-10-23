@@ -1,29 +1,151 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
-import { IoChevronDown, IoSend, IoReload } from "react-icons/io5";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { IoTrash, IoArrowUndo, IoClose } from "react-icons/io5";
+import { ArrowUp, Square, LoaderIcon, Paperclip } from 'lucide-react';
+import TextareaAutosize from 'react-textarea-autosize';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+const modelGroups = [
+    {
+        provider: 'Meta',
+        models: [
+            { name: 'Llama 3.1 405B', icon: '🦙', modal: 'meta-llama/llama-3.1-405b-instruct:free' },
+            { name: 'Llama 3.1 70B', icon: '🦙', modal: 'meta-llama/llama-3.1-70b-instruct:free' },
+            { name: 'Llama 3.2 3B', icon: '🦙', modal: 'meta-llama/llama-3.2-3b-instruct:free' },
+            { name: 'Llama 3.2 1B', icon: '🦙', modal: 'meta-llama/llama-3.2-1b-instruct:free' },
+            { name: 'Llama 3.1 8B', icon: '🦙', modal: 'meta-llama/llama-3.1-8b-instruct:free' },
+            { name: 'Llama 3 8B', icon: '🦙', modal: 'meta-llama/llama-3-8b-instruct:free' },
+            { name: 'Llama 3.2 11B Vision', icon: '👁️', modal: 'meta-llama/llama-3.2-11b-vision-instruct:free' },
+        ]
+    },
+    {
+        provider: 'Nous',
+        models: [
+            { name: 'Hermes 3 405B', icon: '🧠', modal: 'nousresearch/hermes-3-llama-3.1-405b:free' },
+        ]
+    },
+    {
+        provider: 'Mistral AI',
+        models: [
+            { name: 'Mistral 7B', icon: '🌪️', modal: 'mistralai/mistral-7b-instruct:free' },
+            { name: 'Codestral Mamba', icon: '🐍', modal: 'mistralai/codestral-mamba' },
+        ]
+    },
+    {
+        provider: 'Microsoft',
+        models: [
+            { name: 'Phi-3 Medium', icon: '🔬', modal: 'microsoft/phi-3-medium-128k-instruct:free' },
+            { name: 'Phi-3 Mini', icon: '🔬', modal: 'microsoft/phi-3-mini-128k-instruct:free' },
+        ]
+    },
+    {
+        provider: 'Hugging Face',
+        models: [
+            { name: 'Zephyr 7B', icon: '🌬️', modal: 'huggingfaceh4/zephyr-7b-beta:free' },
+        ]
+    },
+    {
+        provider: 'Liquid',
+        models: [
+            { name: 'LFM 40B', icon: '💧', modal: 'liquid/lfm-40b:free' },
+        ]
+    },
+    {
+        provider: 'Qwen',
+        models: [
+            { name: 'Qwen 2 7B', icon: '🐼', modal: 'qwen/qwen-2-7b-instruct:free' },
+        ]
+    },
+    {
+        provider: 'Google',
+        models: [
+            { name: 'Gemma 2 9B', icon: '💎', modal: 'google/gemma-2-9b-it:free' },
+        ]
+    },
+    {
+        provider: 'OpenChat',
+        models: [
+            { name: 'OpenChat 7B', icon: '💬', modal: 'openchat/openchat-7b:free' },
+        ]
+    },
+    {
+        provider: 'Gryphe',
+        models: [
+            { name: 'Mythomist 7B', icon: '🧙', modal: 'gryphe/mythomist-7b:free' },
+            { name: 'Mythomax L2 13B', icon: '🧙', modal: 'gryphe/mythomax-l2-13b:free' },
+        ]
+    },
+    {
+        provider: 'Undi95',
+        models: [
+            { name: 'Toppy M 7B', icon: '🔝', modal: 'undi95/toppy-m-7b:free' },
+        ]
+    },
+
+];
 
 export default function ChatBox() {
     const [message, setMessage] = useState('');
-    const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-    const [selectedModel, setSelectedModel] = useState({ name: 'Llama 3.1 405B', description: 'Meta', icon: '🌟', modal: 'meta-llama/llama-3.1-405b-instruct:free' });
-    const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean }>>([]);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [selectedProvider, setSelectedProvider] = useState('Google');
+    const [selectedModel, setSelectedModel] = useState(modelGroups.find(group => group.provider === 'Google')?.models[0] || modelGroups[0].models[0]);
+    const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean; images?: string[] }>>([]);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isAIResponding, setIsAIResponding] = useState(false);
+    const [files, setFiles] = useState<{ file: File; base64: string }[]>([]);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (chatContainerRef.current) {
+            const scrollHeight = chatContainerRef.current.scrollHeight;
+            const height = chatContainerRef.current.clientHeight;
+            const maxScrollTop = scrollHeight - height;
+            chatContainerRef.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+        }
     };
 
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
+    const handleFileChange = useCallback((newFiles: File[]) => {
+        Promise.all(
+            newFiles.map((file) =>
+                new Promise<{ file: File; base64: string }>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        resolve({ file, base64: reader.result as string });
+                    };
+                    reader.readAsDataURL(file);
+                })
+            )
+        ).then((results) => {
+            setFiles(results);
+        });
+    }, []);
+
+    const handleFileRemove = useCallback((fileToRemove: File) => {
+        setFiles((prevFiles) => prevFiles.filter(({ file }) => file !== fileToRemove));
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (message.trim() !== '') {
-            setMessages([...messages, { text: message, isUser: true }]);
+        if (message.trim() !== '' && !isLoading) {
+            const imageBases64 = files.map(f => f.base64);
+            setMessages([...messages, { text: message, isUser: true, images: imageBases64 }]);
             setMessage('');
             setIsLoading(true);
             setIsAIResponding(true);
@@ -35,6 +157,25 @@ export default function ChatBox() {
 
                 if (!key) {
                     throw new Error('Không thể lấy khóa OPENROUTER');
+                }
+
+                let messageContent: any = message;
+
+                if (selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && files.length > 0) {
+                    const imageContents = files.map(({ base64 }) => ({
+                        type: "image_url",
+                        image_url: {
+                            url: base64
+                        }
+                    }));
+
+                    messageContent = [
+                        {
+                            type: "text",
+                            text: message
+                        },
+                        ...imageContents
+                    ];
                 }
 
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -50,7 +191,7 @@ export default function ChatBox() {
                         "messages": [
                             {
                                 "role": "user",
-                                "content": message
+                                "content": messageContent
                             }
                         ]
                     })
@@ -62,9 +203,8 @@ export default function ChatBox() {
 
                 const data = await response.json();
 
-                // Kiểm tra cấu trúc dữ liệu trước khi sử dụng
                 if (data && data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
-                    const aiResponse = data.choices[0].message.content;
+                    const aiResponse = data.choices[0].message.content.trim();
                     setMessages(prevMessages => [...prevMessages, { text: aiResponse, isUser: false }]);
                 } else if (data && data.error) {
                     console.error("Lỗi từ API:", data.error);
@@ -80,124 +220,228 @@ export default function ChatBox() {
             } finally {
                 setIsLoading(false);
                 setIsAIResponding(false);
+                setFiles([]); // Xóa files sau khi gửi
             }
         }
     };
 
-    const models = [
-        { name: 'Llama 3.1 405B', description: 'Meta', icon: '🌟', modal: 'meta-llama/llama-3.1-405b-instruct:free' },
-        { name: 'Hermes 3 405B', description: 'Nous', icon: '🧠', modal: 'nousresearch/hermes-3-llama-3.1-405b:free' },
-        { name: 'Llama 3.1 70B', description: 'Meta', icon: '🦙', modal: 'meta-llama/llama-3.1-70b-instruct:free' },
-        { name: 'Mistral 7B', description: 'Mistral AI', icon: '🌪️', modal: 'mistralai/mistral-7b-instruct:free' },
-        { name: 'Llama 3.2 3B', description: 'Meta', icon: '🦙', modal: 'meta-llama/llama-3.2-3b-instruct:free' },
-        { name: 'Llama 3.2 1B', description: 'Meta', icon: '🦙', modal: 'meta-llama/llama-3.2-1b-instruct:free' },
-        { name: 'Llama 3.1 8B', description: 'Meta', icon: '🦙', modal: 'meta-llama/llama-3.1-8b-instruct:free' },
-        { name: 'Phi-3 Medium', description: 'Microsoft', icon: '🔬', modal: 'microsoft/phi-3-medium-128k-instruct:free' },
-        { name: 'Llama 3 8B', description: 'Meta', icon: '🦙', modal: 'meta-llama/llama-3-8b-instruct:free' },
-        { name: 'Phi-3 Mini', description: 'Microsoft', icon: '🔬', modal: 'microsoft/phi-3-mini-128k-instruct:free' },
-        { name: 'Zephyr 7B', description: 'Hugging Face H4', icon: '🌬️', modal: 'huggingfaceh4/zephyr-7b-beta:free' },
-        { name: 'LFM 40B', description: 'Liquid', icon: '💧', modal: 'liquid/lfm-40b:free' },
-        { name: 'Qwen 2 7B', description: 'Qwen', icon: '🐼', modal: 'qwen/qwen-2-7b-instruct:free' },
-        { name: 'Gemma 2 9B', description: 'Google', icon: '💎', modal: 'google/gemma-2-9b-it:free' },
-        { name: 'OpenChat 7B', description: 'OpenChat', icon: '💬', modal: 'openchat/openchat-7b:free' },
-        { name: 'Mythomist 7B', description: 'Gryphe', icon: '🧙', modal: 'gryphe/mythomist-7b:free' },
-        { name: 'Mythomax L2 13B', description: 'Gryphe', icon: '🧙', modal: 'gryphe/mythomax-l2-13b:free' },
-        { name: 'Toppy M 7B', description: 'Undi95', icon: '🔝', modal: 'undi95/toppy-m-7b:free' },
-        { name: 'Codestral Mamba', description: 'Mistral AI', icon: '🐍', modal: 'mistralai/codestral-mamba' },
-    ];
+    const handleClearMessages = () => {
+        setMessages([]);
+    };
+
+    const handleUndo = () => {
+        if (messages.length > 0) {
+            // Xóa 2 tin nhắn cuối cùng (nếu có)
+            const newMessages = messages.slice(0, -2);
+            setMessages(newMessages);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit(e);
+        }
+    };
 
     return (
-        <>
-            <div className="bg-[#2A3284] text-center py-8 px-4">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-4">Trò Chuyện</h1>
-                <p className="text-base sm:text-lg max-w-3xl mx-auto">
-                    Hỏi bất cứ điều gì bạn muốn.
-                </p>
-            </div>
-            <div className="flex flex-col h-screen bg-[#0E0E0E] text-white">
-                <div className="p-4">
-                    <div className="relative">
-                        <button
-                            type="button"
-                            className="flex items-center space-x-2 px-4 py-2 text-sm bg-[#2A2A2A] rounded-lg hover:bg-[#3A3A3A] transition-colors duration-200"
-                            onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                        >
-                            <span className="text-xl">{selectedModel.icon}</span>
-                            <span>{selectedModel.name.split(' ')[0]}</span>
-                            <IoChevronDown className={`ml-2 transition-transform duration-200 ${isModelDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        {isModelDropdownOpen && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#1E1E1E] rounded-lg shadow-lg z-10 overflow-hidden">
-                                <div className="max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-300">
-                                    {models.map((model) => (
-                                        <button
-                                            key={model.name}
-                                            className="w-full text-left px-4 py-3 hover:bg-[#2A2A2A] flex items-center space-x-3 text-sm transition-colors duration-200"
-                                            onClick={() => {
-                                                setSelectedModel(model);
-                                                setIsModelDropdownOpen(false);
-                                            }}
-                                        >
-                                            <span className="text-2xl">{model.icon}</span>
-                                            <div>
-                                                <div className="font-medium">{model.name}</div>
-                                                <div className="text-xs text-gray-400">{model.description}</div>
-                                            </div>
-                                        </button>
-                                    ))}
+        <main className="flex min-h-screen max-h-screen bg-[#0F172A] text-white">
+            <div className="grid w-full">
+                <div className="flex flex-col w-full h-screen max-w-[800px] mx-auto px-4">
+                    {/* NavBar */}
+                    <nav className="w-full flex bg-[#0F172A] py-4 text-white">
+                        <div className="flex flex-1 items-center">
+                            <h1 className="whitespace-pre">Trò chuyện với </h1>
+                            <span className="text-[#4ECCA3] text-lg font-bold">ShowAI</span>
+                        </div>
+                        <div className="flex items-center gap-1 md:gap-4">
+                            <button
+                                onClick={handleUndo}
+                                disabled={messages.length === 0 || isLoading}
+                                className="text-white hover:bg-[#1A1A2E] hover:text-[#4B5EFF] p-2 rounded"
+                            >
+                                <IoArrowUndo className="h-4 w-4 md:h-5 md:w-5" />
+                            </button>
+                            <button
+                                onClick={handleClearMessages}
+                                disabled={messages.length === 0}
+                                className="text-white hover:bg-[#1A1A2E] hover:text-[#4B5EFF] p-2 rounded"
+                            >
+                                <IoTrash className="h-4 w-4 md:h-5 md:w-5" />
+                            </button>
+                        </div>
+                    </nav>
+
+                    {/* Messages */}
+                    <div
+                        ref={chatContainerRef}
+                        id="chat-container"
+                        className="flex flex-col pb-4 gap-4 overflow-y-auto flex-grow bg-[#0F172A] text-white"
+                    >
+                        {messages.length === 0 ? (
+                            <h1 className="text-4xl font-bold text-center mb-8">Hỏi bất cứ điều gì</h1>
+                        ) : (
+                            messages.map((message, index) => (
+                                <div
+                                    key={index}
+                                    className={`flex flex-col ${!message.isUser
+                                        ? 'bg-[#1A1A2E] border border-[#3E52E8] text-gray-200 py-4 px-4 rounded-2xl'
+                                        : 'text-white'
+                                        } w-full`}
+                                >
+                                    <span className={`inline-block ${message.isUser ? 'text-lg' : 'text-base'} whitespace-pre-wrap`}>
+                                        {message.text}
+                                    </span>
+                                    {message.images && message.images.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {message.images.map((img, imgIndex) => (
+                                                <img
+                                                    key={imgIndex}
+                                                    src={img}
+                                                    alt={`Attached image ${imgIndex + 1}`}
+                                                    className="w-24 h-24 object-cover rounded-md border border-[#4ECCA3]"
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
+                            ))
+                        )}
+                        {isAIResponding && (
+                            <div className="flex items-center gap-1 text-sm text-gray-400">
+                                <LoaderIcon strokeWidth={2} className="animate-spin w-4 h-4" />
+                                <span>Đang tạo...</span>
                             </div>
                         )}
                     </div>
-                </div>
-                <div className="flex-grow overflow-y-auto p-4 md:px-[20vw]">
-                    {messages.length === 0 ? (
-                        <h1 className="text-4xl font-bold text-center mb-8">Hỏi bất cứ điều gì</h1>
-                    ) : (
-                        messages.map((msg, index) => (
-                            <div key={index} className="mb-4">
-                                <div className="mb-2">
-                                    <span className={`inline-block ${msg.isUser ? 'text-lg font-semibold' : 'text-base'} max-w-[80%]`}>
-                                        {msg.text}
-                                    </span>
-                                </div>
-                                {!msg.isUser && index > 0 && messages[index - 1].isUser && (
-                                    <div className="border-b border-gray-700 my-4"></div>
-                                )}
+
+                    {/* Chat Input */}
+                    <form onSubmit={handleSubmit} className="mb-2 mt-auto bg-[#0F172A]">
+                        <div className="shadow-md rounded-2xl border border-[#4ECCA3]">
+                            <div className="flex items-center px-3 py-2 gap-2">
+                                {/* Provider Selector */}
+                                <Select
+                                    value={selectedProvider}
+                                    onValueChange={(value) => {
+                                        setSelectedProvider(value);
+                                        setSelectedModel(modelGroups.find(group => group.provider === value)?.models[0] || modelGroups[0].models[0]);
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Chọn nhà cung cấp" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {modelGroups.map((group) => (
+                                            <SelectItem key={group.provider} value={group.provider}>
+                                                {group.provider}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Model Selector */}
+                                <Select
+                                    value={selectedModel.modal}
+                                    onValueChange={(value) => {
+                                        const newModel = modelGroups
+                                            .find(group => group.provider === selectedProvider)
+                                            ?.models.find(model => model.modal === value);
+                                        if (newModel) {
+                                            setSelectedModel(newModel);
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Chọn mô hình" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {modelGroups
+                                            .find(group => group.provider === selectedProvider)
+                                            ?.models.map((model) => (
+                                                <SelectItem key={model.modal} value={model.modal}>
+                                                    <span className="mr-2">{model.icon}</span>
+                                                    {model.name}
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
-                        ))
-                    )}
-                    {isAIResponding && (
-                        <div className="mb-4">
-                            <span className="inline-block">
-                                <IoReload className="animate-spin text-2xl" />
-                            </span>
-                        </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                </div>
-                <div className="p-4 md:px-20">
-                    <form onSubmit={handleSubmit} className="w-full max-w-3xl mx-auto">
-                        <div className="relative bg-[#1E1E1E] rounded-full">
-                            <input
-                                type="text"
+                            <TextareaAutosize
+                                autoFocus={true}
+                                minRows={1}
+                                maxRows={5}
+                                className="text-normal px-3 resize-none ring-0 bg-inherit w-full m-0 outline-none text-white"
+                                required={true}
+                                placeholder="Hỏi bất cứ điều gì..."
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
-                                className="w-full px-6 py-4 pr-16 bg-transparent focus:outline-none text-lg rounded-full"
-                                placeholder="Hỏi bất cứ điều gì..."
-                                disabled={isLoading}
+                                onKeyDown={handleKeyDown}
                             />
-                            <button type="submit" className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200 bg-[#2A3284] rounded-full p-2" disabled={isLoading}>
-                                {isLoading ? (
-                                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                                ) : (
-                                    <IoSend size={20} />
-                                )}
-                            </button>
+                            <div className="flex p-3 gap-2 items-center">
+                                <div className="flex items-center flex-1 gap-2">
+                                    {selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && (
+                                        <>
+                                            <TooltipProvider>
+                                                <Tooltip delayDuration={0}>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="rounded-xl h-10 w-10 bg-[#1A1A2E] text-white border-[#4ECCA3] hover:bg-[#3E52E8]"
+                                                            onClick={() => document.getElementById('file-input')?.click()}
+                                                        >
+                                                            <Paperclip className="h-5 w-5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent className="bg-[#1A1A2E] text-white border-[#4ECCA3]">Thêm tệp đính kèm</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <input
+                                                id="file-input"
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                className="hidden"
+                                                onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
+                                            />
+                                        </>
+                                    )}
+                                    {files.map(({ file }, index) => (
+                                        <div key={index} className="relative">
+                                            <img
+                                                src={URL.createObjectURL(file)}
+                                                alt={file.name}
+                                                className="w-10 h-10 object-cover rounded-md border border-[#4ECCA3]"
+                                            />
+                                            <button
+                                                onClick={() => handleFileRemove(file)}
+                                                className="absolute -top-2 -right-2 bg-[#1A1A2E] rounded-full p-1 border border-[#4ECCA3]"
+                                            >
+                                                <IoClose className="h-3 w-3 text-[#4ECCA3]" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="rounded-xl h-10 w-10 bg-[#3E52E8] hover:bg-[#4B5EFF] text-white flex items-center justify-center"
+                                >
+                                    {isLoading ? (
+                                        <Square className="h-5 w-5" onClick={(e) => {
+                                            e.preventDefault();
+                                            // Thêm hàm dừng tạo ở đây
+                                        }} />
+                                    ) : (
+                                        <ArrowUp className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
-        </>
+        </main>
     );
 }
