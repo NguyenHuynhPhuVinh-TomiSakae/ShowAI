@@ -8,6 +8,7 @@ import { toast, Toaster } from 'react-hot-toast';
 import ModalPortal from '@/components/ModalPortal';
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
+import { NavigationGuard } from '@/components/NavigationGuard'
 
 // Thêm cấu hình toast style
 const toastStyle = {
@@ -153,6 +154,8 @@ export default function SentimentGuessGame() {
 
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
+            <NavigationGuard isBlocked={loading} />
+
             <ModalPortal>
                 <Toaster position="top-center" />
             </ModalPortal>
