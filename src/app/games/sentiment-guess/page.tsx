@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { TextClassifier, FilesetResolver } from '@mediapipe/tasks-text';
+import { TextClassifier } from '@mediapipe/tasks-text';
 import { toast, Toaster } from 'react-hot-toast';
 import ModalPortal from '@/components/ModalPortal';
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { NavigationGuard } from '@/components/NavigationGuard'
+import MediaPipeService from '@/services/MediaPipeService';
 
 // Thêm cấu hình toast style
 const toastStyle = {
@@ -33,22 +34,20 @@ export default function SentimentGuessGame() {
     const [streak, setStreak] = useState<number>(0);
     const [wrongAttempts, setWrongAttempts] = useState<number>(0);
 
-    // Khởi tạo MediaPipe TextClassifier
+    // Cập nhật useEffect
     useEffect(() => {
-        const initializeClassifier = async () => {
-            const text = await FilesetResolver.forTextTasks(
-                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-text@0.10.0/wasm"
-            );
-            const classifier = await TextClassifier.createFromOptions(text, {
-                baseOptions: {
-                    modelAssetPath: `https://storage.googleapis.com/mediapipe-models/text_classifier/bert_classifier/float32/1/bert_classifier.tflite`
-                },
-                maxResults: 5
-            });
-            setTextClassifier(classifier);
+        const initClassifier = async () => {
+            try {
+                const service = MediaPipeService.getInstance();
+                const classifier = await service.getClassifier();
+                setTextClassifier(classifier);
+            } catch (error) {
+                console.error('Lỗi khi lấy classifier:', error);
+                toast.error('Không thể khởi tạo hệ thống phân tích. Vui lòng thử lại!', toastStyle);
+            }
         };
 
-        initializeClassifier();
+        initClassifier();
     }, []);
 
     const generateSentences = async () => {
@@ -91,15 +90,16 @@ export default function SentimentGuessGame() {
             setSentences(newSentences);
 
             // Phân tích sentiment cho mỗi câu
-            if (textClassifier) {
-                const sentimentScores = newSentences.map((sentence: string) => {
-                    const result = textClassifier.classify(sentence);
-                    return result.classifications[0].categories.find(
-                        cat => cat.categoryName === 'positive'
-                    )?.score || 0;
-                });
-                setScores(sentimentScores);
-            }
+            const service = MediaPipeService.getInstance();
+            const classifier = await service.getClassifier();
+
+            const sentimentScores = newSentences.map((sentence: string) => {
+                const result = classifier.classify(sentence);
+                return result.classifications[0].categories.find(
+                    cat => cat.categoryName === 'positive'
+                )?.score || 0;
+            });
+            setScores(sentimentScores);
         } catch (error) {
             console.error('Lỗi khi tạo câu:', error);
             toast.error('Có lỗi xảy ra khi tạo câu. Vui lòng thử lại!');
@@ -179,7 +179,9 @@ export default function SentimentGuessGame() {
                             </div>
                         </div>
 
+                        {/* Thêm thông báo loading ở đây */}
                         <div className="mb-8 text-center">
+                            <p className="text-lg text-gray-300">Đang tải mô hình, vui lòng đợi trong giây lát...</p>
                             <Skeleton width={400} height={24} baseColor="#374151" highlightColor="#4B5563" />
                         </div>
 
