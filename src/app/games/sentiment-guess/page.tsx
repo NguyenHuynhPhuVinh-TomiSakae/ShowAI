@@ -6,6 +6,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { TextClassifier, FilesetResolver } from '@mediapipe/tasks-text';
 import { toast, Toaster } from 'react-hot-toast';
 import ModalPortal from '@/components/ModalPortal';
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 // Thêm cấu hình toast style
 const toastStyle = {
@@ -164,10 +166,32 @@ export default function SentimentGuessGame() {
 
             <div className="container mx-auto px-4 py-8">
                 {loading ? (
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
-                        <p className="mt-4">Đang tải...</p>
-                    </div>
+                    <>
+                        <div className="flex justify-center gap-8 mb-8">
+                            <div className="bg-gray-800 px-6 py-3 rounded-lg">
+                                <Skeleton width={100} height={24} baseColor="#374151" highlightColor="#4B5563" />
+                            </div>
+                            <div className="bg-gray-800 px-6 py-3 rounded-lg">
+                                <Skeleton width={120} height={24} baseColor="#374151" highlightColor="#4B5563" />
+                            </div>
+                        </div>
+
+                        <div className="mb-8 text-center">
+                            <Skeleton width={400} height={24} baseColor="#374151" highlightColor="#4B5563" />
+                        </div>
+
+                        <div className="space-y-4">
+                            {[...Array(5)].map((_, index) => (
+                                <Skeleton
+                                    key={index}
+                                    height={60}
+                                    baseColor="#374151"
+                                    highlightColor="#4B5563"
+                                    className="rounded-lg"
+                                />
+                            ))}
+                        </div>
+                    </>
                 ) : (
                     <>
                         {/* Di chuyển phần hiển thị điểm và chuỗi thắng vào đây */}
