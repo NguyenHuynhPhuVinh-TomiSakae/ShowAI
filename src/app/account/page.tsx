@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirebase } from '@/components/FirebaseConfig';
-import { FaUser, FaHeart } from 'react-icons/fa';
+import { FaUser, FaHeart, FaPlus } from 'react-icons/fa';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signOut, deleteUser } from 'firebase/auth';
 import WebsiteList from '@/components/WebsiteList';
@@ -13,6 +13,7 @@ import ModalPortal from '@/components/ModalPortal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import type { MotionProps } from 'framer-motion';
+import PostSubmission from '@/components/PostSubmission';
 
 type ModalBackdropProps = MotionProps & {
     className?: string;
@@ -399,14 +400,7 @@ const AccountPage = () => {
     };
 
     return (
-        <motion.div
-            {...{
-                initial: { opacity: 0, y: 20 },
-                animate: { opacity: 1, y: 0 },
-                transition: { duration: 0.5 },
-                className: "bg-[#0F172A] text-white min-h-screen pb-4"
-            } as ModalBackdropProps}
-        >
+        <motion.div className="bg-[#0F172A] text-white min-h-screen pb-4">
             <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold mb-4">Tài khoản của bạn</h1>
                 {isAdmin && (
@@ -429,18 +423,30 @@ const AccountPage = () => {
                         {successMessage}
                     </div>
                 )}
-                <div className="flex mb-6">
+                <div className="flex flex-wrap mb-6 gap-2">
                     <button
-                        className={`mr-4 py-2 px-4 rounded-t-lg ${activeTab === 'info' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'}`}
+                        className={`py-2 px-4 rounded-lg flex items-center ${activeTab === 'info' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'
+                            }`}
                         onClick={() => setActiveTab('info')}
                     >
-                        <FaUser className="inline-block mr-2" /> Thông tin
+                        <FaUser className="mr-2" />
+                        <span className="hidden sm:inline">Thông tin</span>
                     </button>
                     <button
-                        className={`py-2 px-4 rounded-t-lg ${activeTab === 'favorites' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'}`}
+                        className={`py-2 px-4 rounded-lg flex items-center ${activeTab === 'favorites' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'
+                            }`}
                         onClick={() => setActiveTab('favorites')}
                     >
-                        <FaHeart className="inline-block mr-2" /> Yêu thích
+                        <FaHeart className="mr-2" />
+                        <span className="hidden sm:inline">Yêu thích</span>
+                    </button>
+                    <button
+                        className={`py-2 px-4 rounded-lg flex items-center ${activeTab === 'post' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'
+                            }`}
+                        onClick={() => setActiveTab('post')}
+                    >
+                        <FaPlus className="mr-2" />
+                        <span className="hidden sm:inline">Đăng bài</span>
                     </button>
                 </div>
 
@@ -523,6 +529,19 @@ const AccountPage = () => {
                             ) : (
                                 <p>Bạn chưa có trang web yêu thích nào.</p>
                             )}
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'post' && (
+                        <motion.div
+                            key="post"
+                            variants={tabVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            transition={{ duration: 0.5 }}
+                        >
+                            <PostSubmission />
                         </motion.div>
                     )}
                 </AnimatePresence>

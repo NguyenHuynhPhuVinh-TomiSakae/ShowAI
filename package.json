@@ -49,6 +49,7 @@
     "core-js": "^3.38.0",
     "elevenlabs": "^0.17.1",
     "firebase": "^10.14.1",
+    "firebase-admin": "^12.6.0",
     "framer-motion": "^11.11.7",
     "github-markdown-css": "^5.7.0",
     "gsap": "^3.12.5",
