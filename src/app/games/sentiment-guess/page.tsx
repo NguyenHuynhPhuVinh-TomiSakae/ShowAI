@@ -172,17 +172,18 @@ export default function SentimentGuessGame() {
                     <>
                         <div className="flex justify-center gap-8 mb-8">
                             <div className="bg-gray-800 px-6 py-3 rounded-lg">
-                                <Skeleton width={100} height={24} baseColor="#374151" highlightColor="#4B5563" />
+                                <Skeleton width={80} height={24} baseColor="#374151" highlightColor="#4B5563" />
                             </div>
                             <div className="bg-gray-800 px-6 py-3 rounded-lg">
-                                <Skeleton width={120} height={24} baseColor="#374151" highlightColor="#4B5563" />
+                                <Skeleton width={100} height={24} baseColor="#374151" highlightColor="#4B5563" />
                             </div>
                         </div>
 
-                        {/* Thêm thông báo loading ở đây */}
-                        <div className="mb-8 text-center">
+                        <div className="mb-8 text-center px-4">
                             <p className="text-lg text-gray-300">Đang tải mô hình, vui lòng đợi trong giây lát...</p>
-                            <Skeleton width={400} height={24} baseColor="#374151" highlightColor="#4B5563" />
+                            <div className="max-w-[400px] w-full mx-auto">
+                                <Skeleton height={24} baseColor="#374151" highlightColor="#4B5563" />
+                            </div>
                         </div>
 
                         <div className="space-y-4">
