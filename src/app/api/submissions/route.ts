@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server';
-import { Db, MongoClient } from 'mongodb';
+import { Db, MongoClient, ObjectId } from 'mongodb';
 import * as admin from 'firebase-admin';
+import Redis from 'ioredis';
 
 // Kết nối MongoDB
 const uri = process.env.MONGODB_URI;
 if (!uri) {
     throw new Error('MONGODB_URI không được định nghĩa trong biến môi trường');
 }
+
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
 const client = new MongoClient(uri, {
     maxPoolSize: 10,
@@ -24,6 +27,14 @@ async function connectToDatabase(): Promise<Db> {
     return database;
 }
 
+// Thêm hàm helper để xóa cache
+async function clearCache() {
+    const keys = await redis.keys('data:*');
+    if (keys.length > 0) {
+        await redis.del(...keys);
+    }
+}
+
 // Khởi tạo Firebase Admin SDK nếu chưa được khởi tạo
 if (!admin.apps.length) {
     admin.initializeApp({
@@ -33,6 +44,15 @@ if (!admin.apps.length) {
             privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
         })
     });
+}
+
+// Hàm helper để tạo response với CORS headers
+function createCorsResponse(data: unknown, status = 200) {
+    const response = NextResponse.json(data, { status });
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return response;
 }
 
 export async function POST(request: Request) {
@@ -72,19 +92,83 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-    try {
+    const url = new URL(request.url);
+    const submissionId = url.searchParams.get('_id');
+
+    if (submissionId) {
+        // Xử lý logic của PATCH khi có submissionId
+        if (!ObjectId.isValid(submissionId)) {
+            return createCorsResponse(
+                { error: 'ID không hợp lệ' },
+                400
+            );
+        }
+
         const db = await connectToDatabase();
+        const submission = await db.collection("submissions").findOne({
+            _id: new ObjectId(submissionId)
+        });
 
-        const submissions = await db.collection("submissions")
-            .find({ status: "pending" })
-            .toArray();
+        if (!submission) {
+            return createCorsResponse(
+                { error: 'Không tìm thấy bài đăng' },
+                404
+            );
+        }
 
-        return NextResponse.json({ submissions });
-    } catch (error) {
-        console.error('Lỗi khi lấy danh sách bài đăng:', error);
-        return NextResponse.json(
-            { error: 'Có lỗi xảy ra khi lấy danh sách bài đăng' },
-            { status: 500 }
-        );
+        // Lấy toàn bộ dữ liệu từ showai để tính maxId
+        const allData = await db.collection("data_web_ai").find().toArray();
+        const maxId = allData.reduce((max, doc) => {
+            const id = parseInt(doc.id, 10) || 0;
+            return id > max ? id : max;
+        }, 0);
+        const newId = (maxId + 1).toString(); // Chuyển đổi id mới thành chuỗi
+
+        const { _id, status, ...submissionData } = submission;
+        const newData = {
+            ...submissionData,
+            id: newId, // Gán id mới
+            heart: 0,
+            star: 0,
+            view: 0,
+            evaluation: 0,
+            comments: [],
+            shortComments: [],
+            image: submission.image || '',
+            createdAt: new Date().toISOString()
+        };
+
+        await db.collection("data_web_ai").insertOne(newData);
+        await db.collection("submissions").deleteOne({
+            _id: new ObjectId(submissionId)
+        });
+
+        // Xóa cache sau khi thêm dữ liệu mới
+        await clearCache();
+
+        return createCorsResponse({
+            message: "Đã chuyển bài đăng thành công",
+            data: newData
+        });
+    } else {
+        // Xử lý logic của GET khi không có submissionId
+        try {
+            const db = await connectToDatabase();
+            const submissions = await db.collection("submissions")
+                .find({ status: "pending" })
+                .toArray();
+
+            return NextResponse.json({ submissions });
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách bài đăng:', error);
+            return NextResponse.json(
+                { error: 'Có lỗi xảy ra khi lấy danh sách bài đăng' },
+                { status: 500 }
+            );
+        }
     }
+}
+
+export async function OPTIONS() {
+    return createCorsResponse(null, 204);
 }
