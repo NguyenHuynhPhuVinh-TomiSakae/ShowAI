@@ -46,6 +46,24 @@ export default function GamesPage() {
                             initial: { opacity: 0, y: 20 },
                             animate: { opacity: 1, y: 0 },
                             transition: { duration: 0.5 },
+                            className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                            onClick: () => router.push('/games/sentiment-guess')
+                        } as ModalBackdropProps}
+                    >
+                        <FaGamepad className="text-6xl sm:text-7xl text-purple-400 mx-auto mb-6" />
+                        <h2 className="text-xl sm:text-2xl font-bold text-purple-300 mb-4">
+                            Phán Đoán Cảm Xúc
+                        </h2>
+                        <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
+                            Thử thách khả năng nhận biết cảm xúc trong câu văn cùng AI.
+                        </p>
+                    </motion.div>
+
+                    <motion.div
+                        {...{
+                            initial: { opacity: 0, y: 20 },
+                            animate: { opacity: 1, y: 0 },
+                            transition: { duration: 0.5 },
                             className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center"
                         } as ModalBackdropProps}
                     >
