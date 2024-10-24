@@ -35,6 +35,9 @@ export const metadata: Metadata = {
   },
   verification: {
     google: "ULMnsGmjmo7o0bGjwjkW7UDPlGKwJii5L8t6nOtJ49o",
+    other: {
+      'zalo-platform-site-verification': 'MjI_0fd25pXcie8mkuTI4q6g-KIjt2aIC3Cr'
+    }
   },
 };
 
