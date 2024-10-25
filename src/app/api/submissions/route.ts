@@ -94,6 +94,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
     const url = new URL(request.url);
     const submissionId = url.searchParams.get('_id');
+    const action = url.searchParams.get('action'); // Thêm tham số action
 
     if (submissionId) {
         // Xử lý logic của PATCH khi có submissionId
@@ -138,17 +139,23 @@ export async function GET(request: Request) {
             createdAt: new Date().toISOString()
         };
 
-        await db.collection("data_web_ai").insertOne(newData);
+        // Kiểm tra action trước khi thêm vào data_web_ai
+        if (action === 'add') {
+            await db.collection("data_web_ai").insertOne(newData);
+        }
+        // Luôn xóa submission bất kể action là gì
         await db.collection("submissions").deleteOne({
             _id: new ObjectId(submissionId)
         });
 
-        // Xóa cache sau khi thêm dữ liệu mới
-        await clearCache();
+        // Xóa cache chỉ khi thêm dữ liệu mới
+        if (action === 'add') {
+            await clearCache();
+        }
 
         return createCorsResponse({
-            message: "Đã chuyển bài đăng thành công",
-            data: newData
+            message: action === 'add' ? "Đã chuyển bài đăng thành công" : "Đã xóa bài đăng thành công",
+            data: action === 'add' ? newData : null
         });
     } else {
         // Xử lý logic của GET khi không có submissionId

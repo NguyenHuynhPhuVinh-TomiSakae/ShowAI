@@ -5,6 +5,7 @@ import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage'
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import WebsiteDetails from '@/components/WebsiteDetails';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 interface FormData {
     name: string;
@@ -54,6 +55,11 @@ const PostSubmission = () => {
             if (!auth?.currentUser) {
                 throw new Error('Vui lòng đăng nhập để đăng bài');
             }
+            // Lấy displayName từ Firestore
+            const db = getFirestore(app!);
+            const userRef = doc(db, 'users', auth.currentUser.uid);
+            const userSnap = await getDoc(userRef);
+            const displayName = userSnap.exists() ? userSnap.data().displayName : 'Người dùng ẩn danh';
 
             let imageUrl = formData.image;
             if (formData.image && formData.image.startsWith('data:image')) {
@@ -65,7 +71,8 @@ const PostSubmission = () => {
                 ...formData,
                 image: imageUrl,
                 userId: auth.currentUser.uid,
-                status: 'pending', // pending, approved, rejected
+                displayName: displayName, // Sử dụng displayName từ Firestore
+                status: 'pending',
                 submittedAt: new Date().toISOString(),
             };
 
@@ -134,6 +141,7 @@ const PostSubmission = () => {
                         isPinned={false}
                         onPinClick={() => { }}
                         onTagClick={() => { }}
+                        isPreviewMode={true}
                     />
                     <div className="flex justify-end space-x-4">
                         <button

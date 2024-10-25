@@ -41,9 +41,10 @@ interface WebsiteDetailsProps {
     isPinned: boolean;
     onPinClick: () => void;
     onTagClick: (tag: string) => void;
+    isPreviewMode?: boolean; // Thêm prop mới
 }
 
-const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPinClick, onTagClick }) => {
+const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPinClick, onTagClick, isPreviewMode }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [viewCount] = useState(website.view || 0);
     const [isHearted, setIsHearted] = useState(false);
@@ -84,6 +85,7 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
     };
 
     const handleHeartClick = async () => {
+        if (isPreviewMode) return;
         if (!user) {
             router.push('/login');
             return;
@@ -163,6 +165,16 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
         return [...comments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     };
 
+    const handlePinClick = () => {
+        if (isPreviewMode) return;
+        onPinClick();
+    };
+
+    const handleTagClick = (tag: string) => {
+        if (isPreviewMode) return;
+        onTagClick(tag);
+    };
+
     return (
         <motion.div
             {...{
@@ -195,14 +207,15 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                     </div>
                     <div className="flex items-center">
                         <FaHeart
-                            className={`text-xl sm:text-2xl mr-2 ${isHearted ? 'text-red-500' : 'text-gray-400 hover:text-red-400 cursor-pointer'} transition-colors`}
+                            className={`text-xl sm:text-2xl mr-2 ${isHearted ? 'text-red-500' : 'text-gray-400 hover:text-red-400 cursor-pointer'} 
+                            ${isPreviewMode ? 'cursor-default' : 'cursor-pointer'} transition-colors`}
                             onClick={handleHeartClick}
                         />
                         <span className="text-base sm:text-lg text-gray-400">{heartCount}</span>
                     </div>
                     <button
-                        onClick={onPinClick}
-                        className={`text-2xl ${isPinned ? 'text-green-400' : 'text-gray-400'} hover:text-green-400 transition-colors duration-200`}
+                        onClick={handlePinClick}
+                        className={`text-2xl ${isPinned ? 'text-green-400' : 'text-gray-400'} hover:text-green-400 transition-colors duration-200 ${isPreviewMode ? 'cursor-default pointer-events-none' : ''}`}
                     >
                         <FaThumbtack />
                     </button>
@@ -218,19 +231,21 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
             </div>
 
             <div className="mb-6 sm:mb-8">
-                {isRating ? (
-                    <p className="text-gray-400 flex items-center">
-                        <FaSpinner className="animate-spin mr-2" />
-                        Đang phản hồi...
-                    </p>
-                ) : (
-                    <Rating
-                        websiteId={website.id}
-                        initialRating={websiteRating}
-                        user={user}
-                        onRatingUpdate={handleRatingUpdate}
-                        onRatingStart={handleRatingStart}
-                    />
+                {!isPreviewMode && (
+                    isRating ? (
+                        <p className="text-gray-400 flex items-center">
+                            <FaSpinner className="animate-spin mr-2" />
+                            Đang phản hồi...
+                        </p>
+                    ) : (
+                        <Rating
+                            websiteId={website.id}
+                            initialRating={websiteRating}
+                            user={user}
+                            onRatingUpdate={handleRatingUpdate}
+                            onRatingStart={handleRatingStart}
+                        />
+                    )
                 )}
             </div>
 
@@ -238,7 +253,7 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                 {website.tags && website.tags.map((tag, index) => (
                     <span
                         key={index}
-                        onClick={() => onTagClick(tag)}
+                        onClick={() => handleTagClick(tag)}
                         className="bg-blue-900 text-blue-200 text-xs sm:text-sm font-medium px-3 py-1 sm:px-4 sm:py-2 rounded-full cursor-pointer hover:bg-blue-800 transition-colors duration-300"
                     >
                         {tag}
@@ -274,22 +289,23 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                 </div>
             )}
 
-            <AdditionalInfoButton websiteData={JSON.stringify(website)} />
-
-            <AICompare currentWebsite={website} />
-
-            <div className="mt-8 sm:mt-12">
-                <ShortCommentInput
-                    websiteId={website.id}
-                    user={user}
-                />
-
-                <Comments
-                    websiteId={website.id}
-                    comments={sortComments(website.comments || [])}
-                    user={user}
-                />
-            </div>
+            {!isPreviewMode && (
+                <>
+                    <AdditionalInfoButton websiteData={JSON.stringify(website)} />
+                    <AICompare currentWebsite={website} />
+                    <div className="mt-8 sm:mt-12">
+                        <ShortCommentInput
+                            websiteId={website.id}
+                            user={user}
+                        />
+                        <Comments
+                            websiteId={website.id}
+                            comments={sortComments(website.comments || [])}
+                            user={user}
+                        />
+                    </div>
+                </>
+            )}
         </motion.div>
     );
 };
