@@ -139,10 +139,10 @@ const PostSubmission = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-4xl mx-auto p-6 md:p-8"
+            className="w-full min-h-screen md:max-w-4xl mx-auto p-2 md:p-8"
         >
-            <div className="bg-gray-800/90 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-xl border border-gray-700">
-                <h2 className="text-3xl font-bold mb-8 text-blue-300 text-center">
+            <div className="bg-gray-800/90 backdrop-blur-sm p-4 md:p-8 rounded-2xl shadow-xl border border-gray-700">
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-blue-300 text-center">
                     Chia sẻ công cụ AI mới
                 </h2>
 
@@ -364,18 +364,18 @@ const PostSubmission = () => {
                             </div>
                         </div>
 
-                        <div className="flex justify-end space-x-4 pt-6">
+                        <div className="flex justify-end space-x-2 md:space-x-4 pt-4 md:pt-6">
                             <button
                                 type="button"
                                 onClick={() => setIsPreviewMode(false)}
-                                className="px-6 py-3 text-gray-300 hover:text-white transition-colors"
+                                className="px-4 md:px-6 py-2 md:py-3 text-sm md:text-base text-gray-300 hover:text-white transition-colors"
                                 disabled={isSubmitting}
                             >
                                 Hủy
                             </button>
                             <button
                                 type="submit"
-                                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-8 py-3 rounded-lg text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 md:px-8 py-2 md:py-3 text-sm md:text-base rounded-lg text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? (
