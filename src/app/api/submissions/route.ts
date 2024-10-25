@@ -62,23 +62,27 @@ export async function POST(request: Request) {
 
         await db.collection("submissions").insertOne(submission);
 
-        // Gửi thông báo FCM
+        // Gửi thông báo FCM với thông tin chính xác từ submission
         try {
             const message = {
-                topic: 'all', // Gửi cho những người đăng ký topic 'admin'
+                topic: 'all',
                 notification: {
-                    title: 'Yêu cầu mới',
-                    body: 'Có một yêu cầu mới cần được xem xét'
+                    title: 'Yêu cầu đăng bài mới',
+                    body: `${submission.name || 'Không có tên'} - ${submission.displayName || 'Không có người gửi'}`
                 },
                 data: {
-                    type: 'new_submission'
+                    type: 'new_submission',
+                    name: submission.name || '',
+                    displayName: submission.displayName || '',
+                    submissionId: submission._id?.toString() || '',
+                    image: submission.image || '',
+                    submittedAt: submission.submittedAt || ''
                 }
             };
 
             await admin.messaging().send(message);
         } catch (fcmError) {
             console.error('Lỗi khi gửi thông báo FCM:', fcmError);
-            // Không throw lỗi để vẫn tiếp tục xử lý API
         }
 
         return NextResponse.json({ message: "Bài đăng đã được gửi thành công" });
@@ -92,13 +96,28 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-    const url = new URL(request.url);
-    const submissionId = url.searchParams.get('_id');
-    const action = url.searchParams.get('action'); // Thêm tham số action
+    try {
+        const db = await connectToDatabase();
+        const submissions = await db.collection("submissions")
+            .find({ status: "pending" })
+            .toArray();
 
-    if (submissionId) {
-        // Xử lý logic của PATCH khi có submissionId
-        if (!ObjectId.isValid(submissionId)) {
+        return NextResponse.json({ submissions });
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách bài đăng:', error);
+        return NextResponse.json(
+            { error: 'Có lỗi xảy ra khi lấy danh sách bài đăng' },
+            { status: 500 }
+        );
+    }
+}
+
+// Thêm endpoint PATCH mới để xử lý việc chuyển/xóa submission
+export async function PATCH(request: Request) {
+    try {
+        const { submissionId, action } = await request.json();
+
+        if (!submissionId || !ObjectId.isValid(submissionId)) {
             return createCorsResponse(
                 { error: 'ID không hợp lệ' },
                 400
@@ -123,12 +142,12 @@ export async function GET(request: Request) {
             const id = parseInt(doc.id, 10) || 0;
             return id > max ? id : max;
         }, 0);
-        const newId = (maxId + 1).toString(); // Chuyển đổi id mới thành chuỗi
+        const newId = (maxId + 1).toString();
 
         const { _id, status, ...submissionData } = submission;
         const newData = {
             ...submissionData,
-            id: newId, // Gán id mới
+            id: newId,
             heart: 0,
             star: 0,
             view: 0,
@@ -139,16 +158,14 @@ export async function GET(request: Request) {
             createdAt: new Date().toISOString()
         };
 
-        // Kiểm tra action trước khi thêm vào data_web_ai
         if (action === 'add') {
             await db.collection("data_web_ai").insertOne(newData);
         }
-        // Luôn xóa submission bất kể action là gì
+
         await db.collection("submissions").deleteOne({
             _id: new ObjectId(submissionId)
         });
 
-        // Xóa cache chỉ khi thêm dữ liệu mới
         if (action === 'add') {
             await clearCache();
         }
@@ -157,22 +174,12 @@ export async function GET(request: Request) {
             message: action === 'add' ? "Đã chuyển bài đăng thành công" : "Đã xóa bài đăng thành công",
             data: action === 'add' ? newData : null
         });
-    } else {
-        // Xử lý logic của GET khi không có submissionId
-        try {
-            const db = await connectToDatabase();
-            const submissions = await db.collection("submissions")
-                .find({ status: "pending" })
-                .toArray();
-
-            return NextResponse.json({ submissions });
-        } catch (error) {
-            console.error('Lỗi khi lấy danh sách bài đăng:', error);
-            return NextResponse.json(
-                { error: 'Có lỗi xảy ra khi lấy danh sách bài đăng' },
-                { status: 500 }
-            );
-        }
+    } catch (error) {
+        console.error('Lỗi khi xử lý yêu cầu:', error);
+        return createCorsResponse(
+            { error: 'Có lỗi xảy ra khi xử lý yêu cầu' },
+            500
+        );
     }
 }
 
