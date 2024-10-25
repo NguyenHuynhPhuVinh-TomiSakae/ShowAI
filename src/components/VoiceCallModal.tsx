@@ -4,6 +4,7 @@ import { IoClose, IoMicOutline, IoStopOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from 'framer-motion';
 import { ElevenLabsClient } from "elevenlabs";
 import type { MotionProps } from 'framer-motion';
+import { useClient } from '@/hooks/useClient';
 
 interface VoiceCallModalProps {
     isOpen: boolean;
@@ -22,10 +23,13 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
     const [, setIsPlaying] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [toggleListening, setToggleListening] = useState(() => () => { });
+    const isClient = useClient();
 
     useEffect(() => {
-        // Khởi tạo Web Speech API
-        const recognition = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
+        if (!isClient) return;
+
+        const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+        const recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.lang = 'vi-VN';
 
@@ -116,7 +120,7 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
             }
         });
 
-    }, [isListening]);
+    }, [isListening, isClient]);
 
     useEffect(() => {
         audioRef.current = new Audio();
