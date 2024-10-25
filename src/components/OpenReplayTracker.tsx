@@ -1,56 +1,65 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import Tracker from '@openreplay/tracker';
-import trackerAssist from '@openreplay/tracker-assist';
 import { useFirebase } from '@/components/FirebaseConfig';
 
-const OpenReplayTracker: React.FC = () => {
-    const { auth } = useFirebase();
-    const [tracker, setTracker] = useState<Tracker | null>(null);
+// Dynamic import để đảm bảo các module chỉ được load ở client
+const TrackerComponent = dynamic(() =>
+    Promise.resolve().then(() => {
+        const OpenReplayTracker: React.FC = () => {
+            const { auth } = useFirebase();
+            const [tracker, setTracker] = useState<any>(null);
 
-    useEffect(() => {
-        // Khởi tạo tracker chỉ khi ở phía client
-        if (typeof window !== 'undefined') {
-            const initTracker = async () => {
-                try {
-                    const response = await fetch('/api/openreplay-config');
-                    const config = await response.json();
+            useEffect(() => {
+                // Async import các module cần thiết
+                const initTracker = async () => {
+                    try {
+                        const [TrackerModule, trackerAssistModule] = await Promise.all([
+                            import('@openreplay/tracker'),
+                            import('@openreplay/tracker-assist')
+                        ]);
 
-                    const trackerInstance = new Tracker({
-                        projectKey: config.projectKey,
-                    });
+                        const response = await fetch('/api/openreplay-config');
+                        const config = await response.json();
 
-                    trackerInstance.use(trackerAssist({
-                        confirmText: "Bạn có muốn bắt đầu phiên hỗ trợ không?",
-                    }));
+                        const trackerInstance = new TrackerModule.default({
+                            projectKey: config.projectKey,
+                        });
 
-                    setTracker(trackerInstance);
-                } catch (error) {
-                    console.error('Failed to initialize OpenReplay:', error);
-                }
-            };
+                        trackerInstance.use(trackerAssistModule.default({
+                            confirmText: "Bạn có muốn bắt đầu phiên hỗ trợ không?",
+                        }));
 
-            initTracker();
-        }
-    }, []);
+                        setTracker(trackerInstance);
+                    } catch (error) {
+                        console.error('Failed to initialize OpenReplay:', error);
+                    }
+                };
 
-    useEffect(() => {
-        if (!tracker || !auth) return;
+                initTracker();
+            }, []);
 
-        auth.onAuthStateChanged((user) => {
-            tracker.start()
-                .then(() => {
-                    console.log('OpenReplay started successfully');
-                    tracker.setUserID(user ? (user.email || user.uid) : 'anonymous');
-                })
-                .catch((error) => {
-                    console.error('OpenReplay failed to start:', error);
+            useEffect(() => {
+                if (!tracker || !auth) return;
+
+                auth.onAuthStateChanged((user) => {
+                    tracker.start()
+                        .then(() => {
+                            console.log('OpenReplay started successfully');
+                            tracker.setUserID(user ? (user.email || user.uid) : 'anonymous');
+                        })
+                        .catch((error: Error) => {
+                            console.error('OpenReplay failed to start:', error);
+                        });
                 });
-        });
-    }, [tracker, auth]);
+            }, [tracker, auth]);
 
-    return null;
-}
+            return null;
+        }
+        return OpenReplayTracker;
+    }),
+    { ssr: false }
+);
 
-export default OpenReplayTracker;
+export default TrackerComponent;
