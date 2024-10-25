@@ -55,6 +55,28 @@ function createCorsResponse(data: unknown, status = 200) {
     return response;
 }
 
+// Thêm hàm helper để gửi email thông báo
+async function sendNotificationEmails(name: string) {
+    try {
+        const db = await connectToDatabase();
+        const emails = await db.collection("emails").find().toArray();
+
+        for (const emailDoc of emails) {
+            try {
+                await admin.auth().generatePasswordResetLink(emailDoc.email, {
+                    url: `${process.env.NEXT_PUBLIC_BASE_URL}/ai/${name}`,
+                    handleCodeInApp: true,
+                });
+                console.log(`Đã gửi thông báo đến ${emailDoc.email}`);
+            } catch (error) {
+                console.error(`Lỗi khi gửi email đến ${emailDoc.email}:`, error);
+            }
+        }
+    } catch (error) {
+        console.error('Lỗi khi gửi thông báo email:', error);
+    }
+}
+
 export async function POST(request: Request) {
     try {
         const db = await connectToDatabase();
@@ -160,6 +182,8 @@ export async function PATCH(request: Request) {
 
         if (action === 'add') {
             await db.collection("data_web_ai").insertOne(newData);
+            // Thêm gọi hàm gửi email thông báo
+            await sendNotificationEmails(newData.id);
         }
 
         await db.collection("submissions").deleteOne({
