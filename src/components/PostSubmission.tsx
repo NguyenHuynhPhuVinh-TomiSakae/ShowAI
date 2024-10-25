@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFirebase } from '@/components/FirebaseConfig';
 import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
@@ -32,6 +32,22 @@ const PostSubmission = () => {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const { app, auth } = useFirebase();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [availableTags, setAvailableTags] = useState<string[]>([]);
+
+    // Thêm useEffect để fetch tags từ API
+    useEffect(() => {
+        const fetchTags = async () => {
+            try {
+                const response = await fetch('/api/showai');
+                if (!response.ok) throw new Error('Không thể lấy danh sách tags');
+                const data = await response.json();
+                setAvailableTags(data.tags || []);
+            } catch (error) {
+                console.error('Lỗi khi lấy tags:', error);
+            }
+        };
+        fetchTags();
+    }, []);
 
     const uploadImage = async (imageData: string, id: string): Promise<string> => {
         const storage = getStorage(app);
@@ -49,6 +65,38 @@ const PostSubmission = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation cho tất cả các trường
+        if (!formData.name.trim()) {
+            setErrorMessage('Vui lòng nhập tên trang web/công cụ AI');
+            return;
+        }
+
+        if (formData.description.length === 0 || formData.description.some(desc => !desc.trim())) {
+            setErrorMessage('Vui lòng nhập ít nhất một mô tả');
+            return;
+        }
+
+        if (formData.tags.length === 0 || formData.tags.some(tag => !tag.trim())) {
+            setErrorMessage('Vui lòng nhập ít nhất một tag');
+            return;
+        }
+
+        if (!formData.link.trim()) {
+            setErrorMessage('Vui lòng nhập liên kết');
+            return;
+        }
+
+        if (formData.keyFeatures.length === 0 || formData.keyFeatures.some(feature => !feature.trim())) {
+            setErrorMessage('Vui lòng nhập ít nhất một tính năng chính');
+            return;
+        }
+
+        if (!formData.image) {
+            setErrorMessage('Vui lòng tải lên hình ảnh');
+            return;
+        }
+
         if (!isPreviewMode) {
             setIsPreviewMode(true);
             return;
@@ -132,6 +180,16 @@ const PostSubmission = () => {
             ...prev,
             [field]: prev[field].map((item, i) => i === index ? value : item)
         }));
+    };
+
+    // Thay đổi hàm xử lý chọn tag
+    const handleTagToggle = (tag: string) => {
+        setFormData(prev => {
+            const newTags = prev.tags.includes(tag)
+                ? prev.tags.filter(t => t !== tag)
+                : [...prev.tags, tag];
+            return { ...prev, tags: newTags };
+        });
     };
 
     return (
@@ -226,39 +284,36 @@ const PostSubmission = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-blue-300 text-sm font-semibold">
-                                Tags
+                            <label className="block text-blue-300 text-sm font-semibold mb-3">
+                                Tags <span className="text-red-400">*</span>
                             </label>
-                            {formData.tags.map((tag, index) => (
-                                <div key={index} className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={tag}
-                                        onChange={(e) => handleFieldChange('tags', index, e.target.value)}
-                                        className="flex-1 px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all text-white"
-                                        placeholder="Nhập tag..."
-                                    />
+                            <div className="flex flex-wrap gap-2">
+                                {availableTags.map((tag) => (
                                     <button
+                                        key={tag}
                                         type="button"
-                                        onClick={() => handleRemoveField('tags', index)}
-                                        className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg"
+                                        onClick={() => handleTagToggle(tag)}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${formData.tags?.includes(tag)
+                                                ? 'bg-blue-500 text-white'
+                                                : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
+                                            }`}
                                     >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
+                                        {formData.tags?.includes(tag) ? (
+                                            <span className="flex items-center gap-1">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                {tag}
+                                            </span>
+                                        ) : (
+                                            tag
+                                        )}
                                     </button>
-                                </div>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={() => handleAddField('tags')}
-                                className="mt-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg flex items-center gap-2"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Thêm tag
-                            </button>
+                                ))}
+                            </div>
+                            {(!formData.tags || formData.tags.length === 0) && (
+                                <p className="text-red-400 text-sm mt-2">Vui lòng chọn ít nhất một tag</p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -284,7 +339,7 @@ const PostSubmission = () => {
 
                         <div className="space-y-2">
                             <label className="block text-blue-300 text-sm font-semibold">
-                                Tính năng chính
+                                Tính năng chính <span className="text-red-400">*</span>
                             </label>
                             {formData.keyFeatures.map((feature, index) => (
                                 <div key={index} className="flex gap-2">
@@ -320,7 +375,7 @@ const PostSubmission = () => {
 
                         <div className="space-y-2">
                             <label className="block text-blue-300 text-sm font-semibold">
-                                Hình ảnh
+                                Hình ảnh <span className="text-red-400">*</span>
                             </label>
                             <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                                 <input
