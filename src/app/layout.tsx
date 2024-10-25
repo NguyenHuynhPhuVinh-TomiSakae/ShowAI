@@ -9,6 +9,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Analytics } from "@vercel/analytics/react"
 import VoiceCallIcon from "@/components/VoiceCallIcon";
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import OpenReplayTracker from '@/components/OpenReplayTracker';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -53,6 +54,7 @@ export default function RootLayout({
       >
         <Analytics />
         <SpeedInsights />
+        <OpenReplayTracker />
         <NavFooter>
           {children}
           <Toaster />
