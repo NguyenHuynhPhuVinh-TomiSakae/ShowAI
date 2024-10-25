@@ -77,6 +77,26 @@ async function sendNotificationEmails(name: string) {
     }
 }
 
+// Thêm hàm helper để xóa ảnh từ Storage
+async function deleteImageFromStorage(imageUrl: string) {
+    try {
+        if (!imageUrl) return;
+
+        // Lấy đường dẫn file từ URL
+        const filePathMatch = imageUrl.match(/o\/(.*?)\?/);
+        if (!filePathMatch) return;
+
+        const filePath = decodeURIComponent(filePathMatch[1]);
+        const bucket = admin.storage().bucket(process.env.FIREBASE_STORAGE_BUCKET);
+        const file = bucket.file(filePath);
+
+        await file.delete();
+        console.log('Đã xóa ảnh thành công:', filePath);
+    } catch (error) {
+        console.error('Lỗi khi xóa ảnh:', error);
+    }
+}
+
 export async function POST(request: Request) {
     try {
         const db = await connectToDatabase();
@@ -182,8 +202,12 @@ export async function PATCH(request: Request) {
 
         if (action === 'add') {
             await db.collection("data_web_ai").insertOne(newData);
-            // Thêm gọi hàm gửi email thông báo
             await sendNotificationEmails(newData.id);
+        } else {
+            // Xóa ảnh khi từ chối bài đăng
+            if (submission.image) {
+                await deleteImageFromStorage(submission.image);
+            }
         }
 
         await db.collection("submissions").deleteOne({
