@@ -34,6 +34,7 @@ interface AIWebsite {
     evaluation?: number;
     comments?: Array<{ id: string; uid: string; user: string; text: string; date: string }>;
     image?: string; // Thêm trường image vào interface
+    displayName?: string;
 }
 
 interface WebsiteDetailsProps {
@@ -194,12 +195,26 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                         className="transition-transform duration-500 hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-70"></div>
-                    <h2 className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 text-2xl sm:text-4xl font-bold text-white">{website.name}</h2>
+                    <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6">
+                        <h2 className="text-2xl sm:text-4xl font-bold text-white mb-2">{website.name}</h2>
+                        <div className="text-sm text-gray-300">
+                            Đăng bởi: {website.displayName || 'Admin'}
+                        </div>
+                    </div>
                 </div>
             )}
 
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8">
-                {!website.image && <h2 className="text-3xl sm:text-4xl font-bold text-blue-300 mr-4 mb-4 sm:mb-0">{website.name}</h2>}
+                {!website.image && (
+                    <div>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-blue-300 mr-4 mb-2 sm:mb-0">
+                            {website.name}
+                        </h2>
+                        <div className="text-sm text-gray-400 mb-4">
+                            Đăng bởi: {website.displayName || 'Admin'}
+                        </div>
+                    </div>
+                )}
                 <div className="flex items-center space-x-4 sm:space-x-8 mb-4 sm:mb-0">
                     <div className="flex items-center text-gray-400 hover:text-gray-300 transition-colors">
                         <FaEye className="text-xl sm:text-2xl mr-2" />

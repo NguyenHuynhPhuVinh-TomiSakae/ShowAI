@@ -24,7 +24,8 @@ interface AIWebsite {
     labelColor?: string;
     labelIcon?: React.ReactNode;
     image?: string;
-    createdAt?: string; // Thêm trường này
+    createdAt?: string;
+    displayName?: string; // Thêm trường này
 }
 
 interface WebsiteListProps {
@@ -143,6 +144,9 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                             >
                                 <FaExternalLinkAlt />
                             </a>
+                        </div>
+                        <div className="mb-2 text-sm text-gray-400">
+                            Đăng bởi: {website.displayName || 'Admin'}
                         </div>
                         {website.label && (
                             <div className="mb-2">
