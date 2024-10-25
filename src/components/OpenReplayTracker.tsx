@@ -10,9 +10,6 @@ const OpenReplayTracker: React.FC = () => {
     const [tracker, setTracker] = useState<Tracker | null>(null);
 
     useEffect(() => {
-        // Kiểm tra môi trường client
-        if (typeof window === 'undefined') return;
-
         // Khởi tạo tracker
         const initTracker = async () => {
             try {
@@ -37,10 +34,9 @@ const OpenReplayTracker: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        // Kiểm tra môi trường client và các dependencies
-        if (typeof window === 'undefined' || !tracker || !auth) return;
+        if (!tracker || !auth) return;
 
-        const unsubscribe = auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged((user) => {
             tracker.start()
                 .then(() => {
                     console.log('OpenReplay started successfully');
@@ -50,9 +46,6 @@ const OpenReplayTracker: React.FC = () => {
                     console.error('OpenReplay failed to start:', error);
                 });
         });
-
-        // Cleanup function
-        return () => unsubscribe();
     }, [tracker, auth]);
 
     return null;

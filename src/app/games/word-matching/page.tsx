@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -8,7 +7,6 @@ import { toast, Toaster } from 'react-hot-toast';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import ModalPortal from '@/components/ModalPortal';
 import type { MotionProps } from 'framer-motion';
-import { useClient } from '@/hooks/useClient';
 
 type ModalBackdropProps = MotionProps & {
     className?: string;
@@ -46,7 +44,6 @@ const WordSkeleton = () => (
 );
 
 export default function WordMatchingGame() {
-    const isClient = useClient();
     // Thêm state mới
     const [gameStarted, setGameStarted] = useState(false);
 
@@ -148,7 +145,6 @@ export default function WordMatchingGame() {
     };
 
     useEffect(() => {
-        if (!isClient) return;
         const processCombination = async () => {
             if (selectedWords.length === 2) {
                 setIsLoading(true);
@@ -194,7 +190,7 @@ export default function WordMatchingGame() {
         };
 
         processCombination();
-    }, [selectedWords, isClient]);
+    }, [selectedWords]);
 
     if (!gameStarted) {
         return (
@@ -286,10 +282,10 @@ export default function WordMatchingGame() {
                                 transition: { delay: index * 0.1 },
                                 onClick: () => !isLoading && handleWordClick(word),
                                 className: `p-4 rounded-lg transition-all ${selectedWords.includes(word)
-                                    ? 'bg-blue-600'
-                                    : word.isBase
-                                        ? 'bg-purple-600 hover:bg-purple-700'
-                                        : 'bg-gray-800 hover:bg-gray-700'
+                                        ? 'bg-blue-600'
+                                        : word.isBase
+                                            ? 'bg-purple-600 hover:bg-purple-700'
+                                            : 'bg-gray-800 hover:bg-gray-700'
                                     } cursor-pointer`
                             } as ModalBackdropProps}
                         >

@@ -10,7 +10,6 @@ import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { NavigationGuard } from '@/components/NavigationGuard'
 import MediaPipeService from '@/services/MediaPipeService';
-import { useClient } from '@/hooks/useClient';
 
 // Thêm cấu hình toast style
 const toastStyle = {
@@ -24,7 +23,6 @@ const toastStyle = {
 };
 
 export default function SentimentGuessGame() {
-    const isClient = useClient();
     const [sentences, setSentences] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -36,10 +34,8 @@ export default function SentimentGuessGame() {
     const [streak, setStreak] = useState<number>(0);
     const [wrongAttempts, setWrongAttempts] = useState<number>(0);
 
-    // Cập nhật useEffect để chỉ chạy khi ở client
+    // Cập nhật useEffect
     useEffect(() => {
-        if (!isClient) return;
-
         const initClassifier = async () => {
             try {
                 const service = MediaPipeService.getInstance();
@@ -52,7 +48,7 @@ export default function SentimentGuessGame() {
         };
 
         initClassifier();
-    }, [isClient]);
+    }, []);
 
     const generateSentences = async () => {
         setLoading(true);

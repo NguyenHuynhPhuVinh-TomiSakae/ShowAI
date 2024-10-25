@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useClient } from '@/hooks/useClient';
 
 interface NavigationGuardProps {
     isBlocked: boolean;
@@ -9,11 +8,8 @@ interface NavigationGuardProps {
 
 export function NavigationGuard({ isBlocked, message = 'Dữ liệu đang tải. Bạn có chắc chắn muốn rời khỏi trang?' }: NavigationGuardProps) {
     const router = useRouter();
-    const isClient = useClient();
 
     useEffect(() => {
-        if (!isClient) return;
-
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (isBlocked) {
                 e.preventDefault();
@@ -47,7 +43,7 @@ export function NavigationGuard({ isBlocked, message = 'Dữ liệu đang tải.
             window.removeEventListener('popstate', handlePushState);
             router.push = originalPush;
         };
-    }, [isClient, isBlocked, message, router]);
+    }, [isBlocked, message, router]);
 
     return null;
 }

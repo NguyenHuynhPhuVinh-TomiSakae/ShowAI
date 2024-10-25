@@ -6,7 +6,6 @@ import WebsiteList from '@/components/WebsiteList';
 import SearchBar from '@/components/SearchBar';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import { useClient } from '@/hooks/useClient';
 
 interface AIWebsite {
   _id: string;
@@ -39,22 +38,18 @@ export default function Home() {
   const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
   const router = useRouter();
   const abortControllerRef = useRef<AbortController | null>(null);
-  const isClient = useClient();
 
   useEffect(() => {
-    if (!isClient) return;
-
     const urlParams = new URLSearchParams(window.location.search);
     const pageParam = urlParams.get('page');
     const initialPage = pageParam ? parseInt(pageParam, 10) : 1;
     fetchData(initialPage);
-
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [isClient]);
+  }, []);
 
   const fetchData = async (page: number) => {
     if (abortControllerRef.current) {
