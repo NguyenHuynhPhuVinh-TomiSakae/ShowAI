@@ -10,27 +10,29 @@ const OpenReplayTracker: React.FC = () => {
     const [tracker, setTracker] = useState<Tracker | null>(null);
 
     useEffect(() => {
-        // Khởi tạo tracker
-        const initTracker = async () => {
-            try {
-                const response = await fetch('/api/openreplay-config');
-                const config = await response.json();
+        // Khởi tạo tracker chỉ khi ở phía client
+        if (typeof window !== 'undefined') {
+            const initTracker = async () => {
+                try {
+                    const response = await fetch('/api/openreplay-config');
+                    const config = await response.json();
 
-                const trackerInstance = new Tracker({
-                    projectKey: config.projectKey,
-                });
+                    const trackerInstance = new Tracker({
+                        projectKey: config.projectKey,
+                    });
 
-                trackerInstance.use(trackerAssist({
-                    confirmText: "Bạn có muốn bắt đầu phiên hỗ trợ không?",
-                }));
+                    trackerInstance.use(trackerAssist({
+                        confirmText: "Bạn có muốn bắt đầu phiên hỗ trợ không?",
+                    }));
 
-                setTracker(trackerInstance);
-            } catch (error) {
-                console.error('Failed to initialize OpenReplay:', error);
-            }
-        };
+                    setTracker(trackerInstance);
+                } catch (error) {
+                    console.error('Failed to initialize OpenReplay:', error);
+                }
+            };
 
-        initTracker();
+            initTracker();
+        }
     }, []);
 
     useEffect(() => {
