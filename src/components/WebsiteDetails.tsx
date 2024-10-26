@@ -239,7 +239,12 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                     href={website.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 px-6 sm:py-3 sm:px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg text-sm sm:text-base"
+                    className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 
+                    text-white font-bold py-2 px-6 sm:py-3 sm:px-8 rounded-full transition-all duration-300 
+                    transform hover:scale-105 shadow-lg text-sm sm:text-base
+                    hover:-translate-y-1 active:translate-y-0
+                    border-b-4 border-blue-800 hover:border-blue-900 active:border-b-0
+                    active:shadow-inner"
                 >
                     Truy cập trang web
                 </Link>
