@@ -13,11 +13,22 @@ const ParallaxHeader: React.FC<ParallaxHeaderProps> = ({ onTagClick, allTags }) 
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        // Đợi một chút để đảm bảo các resources đã load
-        const timer = setTimeout(() => {
-            setIsLoaded(true);
-        }, 100);
-        return () => clearTimeout(timer);
+        // Thêm kiểm tra document.readyState
+        const checkReadyState = () => {
+            if (document.readyState === 'complete') {
+                setIsLoaded(true);
+            }
+        };
+
+        // Kiểm tra ngay lập tức
+        checkReadyState();
+
+        // Thêm event listener để theo dõi trạng thái load
+        document.addEventListener('readystatechange', checkReadyState);
+
+        return () => {
+            document.removeEventListener('readystatechange', checkReadyState);
+        };
     }, []);
 
     // Các transform chỉ áp dụng khi đã load xong
