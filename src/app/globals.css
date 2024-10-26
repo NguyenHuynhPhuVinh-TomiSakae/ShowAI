@@ -177,3 +177,30 @@
     max-width: 100% !important;
     height: auto !important;
 }
+
+/* 3D Card Effects */
+.card-3d {
+    transition: transform 0.3s ease;
+    transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+    transform: translateZ(20px);
+}
+
+.card-content {
+    backface-visibility: hidden;
+}
+
+.card-shine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(105deg,
+            transparent 20%,
+            rgba(255, 255, 255, 0.05) 50%,
+            transparent 80%);
+    pointer-events: none;
+}
