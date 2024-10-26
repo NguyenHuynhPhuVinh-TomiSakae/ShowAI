@@ -4,8 +4,9 @@ import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import WebsiteList from '@/components/WebsiteList';
 import SearchBar from '@/components/SearchBar';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface AIWebsite {
   _id: string;
@@ -96,26 +97,32 @@ export default function Home() {
   const SkeletonLoader = () => (
     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: 8 }).map((_, index) => (
-        <div key={index} className="bg-gray-800 border-2 border-gray-700 rounded-lg shadow-lg overflow-hidden">
-          <Skeleton height={192} baseColor="#1F2937" highlightColor="#374151" />
-          <div className="p-5">
+        <Card key={index} className="bg-gray-800 border-2 border-gray-700">
+          <CardHeader>
+            <Skeleton className="h-48 w-full animate-pulse" />
+          </CardHeader>
+          <CardContent>
             <div className="flex justify-between items-center mb-3">
-              <Skeleton width={150} baseColor="#1F2937" highlightColor="#374151" />
-              <Skeleton circle={true} height={20} width={20} baseColor="#1F2937" highlightColor="#374151" />
+              <Skeleton className="h-4 w-[150px] animate-pulse" />
+              <Skeleton className="h-4 w-4 rounded-full animate-pulse" />
             </div>
-            <Skeleton count={3} baseColor="#1F2937" highlightColor="#374151" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full animate-pulse" />
+              <Skeleton className="h-4 w-full animate-pulse" />
+              <Skeleton className="h-4 w-3/4 animate-pulse" />
+            </div>
             <div className="flex items-center space-x-4 my-4">
-              <Skeleton width={50} baseColor="#1F2937" highlightColor="#374151" />
-              <Skeleton width={50} baseColor="#1F2937" highlightColor="#374151" />
-              <Skeleton width={50} baseColor="#1F2937" highlightColor="#374151" />
+              <Skeleton className="h-4 w-[50px] animate-pulse" />
+              <Skeleton className="h-4 w-[50px] animate-pulse" />
+              <Skeleton className="h-4 w-[50px] animate-pulse" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Skeleton width={60} baseColor="#1F2937" highlightColor="#374151" />
-              <Skeleton width={60} baseColor="#1F2937" highlightColor="#374151" />
-              <Skeleton width={60} baseColor="#1F2937" highlightColor="#374151" />
+              <Skeleton className="h-4 w-[60px] animate-pulse" />
+              <Skeleton className="h-4 w-[60px] animate-pulse" />
+              <Skeleton className="h-4 w-[60px] animate-pulse" />
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );
@@ -144,21 +151,23 @@ export default function Home() {
         {paginationInfo && (
           <div className="mt-8 flex justify-center items-center space-x-4">
             {paginationInfo.currentPage > 1 && (
-              <button
-                className="text-blue-500 hover:text-blue-700"
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={() => handlePageChange(paginationInfo.currentPage - 1)}
               >
-                <FaChevronLeft />
-              </button>
+                <FaChevronLeft className="h-4 w-4" />
+              </Button>
             )}
             <span>{paginationInfo.currentPage}</span>
             {paginationInfo.currentPage < paginationInfo.totalPages && (
-              <button
-                className="text-blue-500 hover:text-blue-700"
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={() => handlePageChange(paginationInfo.currentPage + 1)}
               >
-                <FaChevronRight />
-              </button>
+                <FaChevronRight className="h-4 w-4" />
+              </Button>
             )}
           </div>
         )}
