@@ -343,6 +343,7 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose, initialInput =
             messagesEndRef={messagesEndRef}
             regenerateResponse={regenerateResponse}
             editMessage={editMessage}
+            setMessages={setMessages}  // Thêm dòng này
         >
             <VoiceSearch
                 onTranscript={handleTranscript}

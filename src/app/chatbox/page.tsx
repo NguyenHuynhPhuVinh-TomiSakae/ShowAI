@@ -247,55 +247,54 @@ export default function ChatBox() {
 
     return (
         <>
-            <div className="bg-[#2A3284] text-center py-4 sm:py-8 px-2 sm:px-4">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4">Trò Chuyện</h1>
-                <p className="text-sm sm:text-base md:text-lg max-w-3xl mx-auto">
+            <div className="bg-[#2A3284] text-center py-8 px-4">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-4">Trò chuyện</h1>
+                <p className="text-base sm:text-lg max-w-3xl mx-auto">
                     Hỏi bất cứ điều gì với ShowAI.
                 </p>
             </div>
-            <main className="flex min-h-screen max-h-screen bg-[#0F172A] text-white">
-                <div className="grid w-full">
-                    <div className="flex flex-col w-full h-screen max-w-[800px] mx-auto px-2 sm:px-4">
-                        {/* NavBar */}
-                        <nav className="w-full flex bg-[#0F172A] py-2 sm:py-4 text-white">
-                            <div className="flex flex-1 items-center text-sm sm:text-base">
-                                <h1 className="whitespace-pre">Trò chuyện với </h1>
-                                <span className="text-[#4ECCA3] text-base sm:text-lg font-bold">ShowAI</span>
-                            </div>
-                            <div className="flex items-center gap-1 sm:gap-4">
-                                <button
-                                    onClick={handleUndo}
-                                    disabled={messages.length === 0 || isLoading}
-                                    className="text-white hover:bg-[#1A1A2E] hover:text-[#4B5EFF] p-1 sm:p-2 rounded"
-                                >
-                                    <IoArrowUndo className="h-4 w-4 sm:h-5 sm:w-5" />
-                                </button>
-                                <button
-                                    onClick={handleClearMessages}
-                                    disabled={messages.length === 0}
-                                    className="text-white hover:bg-[#1A1A2E] hover:text-[#4B5EFF] p-1 sm:p-2 rounded"
-                                >
-                                    <IoTrash className="h-4 w-4 sm:h-5 sm:w-5" />
-                                </button>
-                            </div>
-                        </nav>
+            <main className="flex min-h-screen bg-[#0F172A] text-white">
+                <div className="w-full max-w-4xl mx-auto px-4 py-6">
+                    {/* Navbar được làm mới */}
+                    <nav className="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg">Trò chuyện với</span>
+                            <span className="text-[#4ECCA3] text-xl font-bold">ShowAI</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={handleUndo}
+                                disabled={messages.length === 0 || isLoading}
+                                className="p-2 rounded-lg hover:bg-[#1E293B] transition-colors"
+                            >
+                                <IoArrowUndo className="h-5 w-5" />
+                            </button>
+                            <button
+                                onClick={handleClearMessages}
+                                disabled={messages.length === 0}
+                                className="p-2 rounded-lg hover:bg-[#1E293B] transition-colors"
+                            >
+                                <IoTrash className="h-5 w-5" />
+                            </button>
+                        </div>
+                    </nav>
 
-                        {/* Messages */}
-                        <div
-                            ref={chatContainerRef}
-                            id="chat-container"
-                            className="flex flex-col pb-2 sm:pb-4 gap-2 sm:gap-4 overflow-y-auto flex-grow bg-[#0F172A] text-white"
-                        >
-                            {messages.length === 0 ? (
-                                <h1 className="text-2xl sm:text-4xl font-bold text-center mb-4 sm:mb-8">Hỏi bất cứ điều gì</h1>
-                            ) : (
-                                messages.map((message, index) => (
+                    {/* Messages container được làm mới */}
+                    <div ref={chatContainerRef} className="space-y-6 mb-6 overflow-y-auto">
+                        {messages.length === 0 ? (
+                            <div className="text-center py-20">
+                                <h1 className="text-4xl font-bold mb-4">Hỏi bất cứ điều gì</h1>
+                                <p className="text-gray-400">Bắt đầu cuộc trò chuyện của bạn với ShowAI</p>
+                            </div>
+                        ) : (
+                            <>
+                                {messages.map((message, index) => (
                                     <div
                                         key={index}
-                                        className={`flex flex-col ${!message.isUser
-                                            ? 'bg-[#1A1A2E] border border-[#3E52E8] text-gray-200 py-2 sm:py-4 px-2 sm:px-4 rounded-2xl'
-                                            : 'text-white'
-                                            } w-full`}
+                                        className={`${!message.isUser
+                                            ? 'bg-[#1E293B] border border-[#2A3284] rounded-xl p-4'
+                                            : 'bg-transparent'
+                                            }`}
                                     >
                                         {message.isUser ? (
                                             <span className="text-base sm:text-lg whitespace-pre-wrap">{message.text}</span>
@@ -315,142 +314,138 @@ export default function ChatBox() {
                                             </div>
                                         )}
                                     </div>
-                                ))
-                            )}
-                            {isAIResponding && (
-                                <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-400">
-                                    <LoaderIcon strokeWidth={2} className="animate-spin w-3 h-3 sm:w-4 sm:h-4" />
-                                    <span>Đang tạo...</span>
-                                </div>
-                            )}
-                        </div>
+                                ))}
+                                {isAIResponding && (
+                                    <div className="flex items-center gap-2 text-gray-400">
+                                        <LoaderIcon className="h-4 w-4 animate-spin" />
+                                        <span>ShowAI đang trả lời...</span>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
 
-                        {/* Chat Input */}
-                        <form onSubmit={handleSubmit} className="mb-1 sm:mb-2 mt-auto bg-[#0F172A]">
-                            <div className="shadow-md rounded-2xl border border-[#4ECCA3]">
-                                <div className="flex flex-col sm:flex-row items-center px-2 sm:px-3 py-1 sm:py-2 gap-1 sm:gap-2">
-                                    {/* Provider Selector */}
-                                    <Select
-                                        value={selectedProvider}
-                                        onValueChange={(value) => {
-                                            setSelectedProvider(value);
-                                            setSelectedModel(modelGroups.find(group => group.provider === value)?.models[0] || modelGroups[0].models[0]);
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-full sm:w-[180px] text-sm sm:text-base">
-                                            <SelectValue placeholder="Chọn nhà cung cấp" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {modelGroups.map((group) => (
-                                                <SelectItem key={group.provider} value={group.provider}>
-                                                    {group.provider}
+                    {/* Input container được làm mới */}
+                    <form onSubmit={handleSubmit} className="border border-[#2A3284] rounded-xl bg-[#1E293B]">
+                        <div className="p-4 space-y-4">
+                            <div className="flex gap-4">
+                                <Select
+                                    value={selectedProvider}
+                                    onValueChange={(value) => {
+                                        setSelectedProvider(value);
+                                        setSelectedModel(modelGroups.find(group => group.provider === value)?.models[0] || modelGroups[0].models[0]);
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[200px] bg-[#0F172A] border-[#2A3284]">
+                                        <SelectValue placeholder="Chọn nhà cung cấp" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {modelGroups.map((group) => (
+                                            <SelectItem key={group.provider} value={group.provider}>
+                                                {group.provider}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select
+                                    value={selectedModel.modal}
+                                    onValueChange={(value) => {
+                                        const newModel = modelGroups
+                                            .find(group => group.provider === selectedProvider)
+                                            ?.models.find(model => model.modal === value);
+                                        if (newModel) {
+                                            setSelectedModel(newModel);
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[200px] bg-[#0F172A] border-[#2A3284]">
+                                        <SelectValue placeholder="Chọn mô hình" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {modelGroups
+                                            .find(group => group.provider === selectedProvider)
+                                            ?.models.map((model) => (
+                                                <SelectItem key={model.modal} value={model.modal}>
+                                                    <span className="mr-2">{model.icon}</span>
+                                                    {model.name}
                                                 </SelectItem>
                                             ))}
-                                        </SelectContent>
-                                    </Select>
-
-                                    {/* Model Selector */}
-                                    <Select
-                                        value={selectedModel.modal}
-                                        onValueChange={(value) => {
-                                            const newModel = modelGroups
-                                                .find(group => group.provider === selectedProvider)
-                                                ?.models.find(model => model.modal === value);
-                                            if (newModel) {
-                                                setSelectedModel(newModel);
-                                            }
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-full sm:w-[180px] text-sm sm:text-base">
-                                            <SelectValue placeholder="Chọn mô hình" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {modelGroups
-                                                .find(group => group.provider === selectedProvider)
-                                                ?.models.map((model) => (
-                                                    <SelectItem key={model.modal} value={model.modal}>
-                                                        <span className="mr-2">{model.icon}</span>
-                                                        {model.name}
-                                                    </SelectItem>
-                                                ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <TextareaAutosize
-                                    autoFocus={true}
-                                    minRows={1}
-                                    maxRows={5}
-                                    className="text-sm sm:text-normal px-2 sm:px-3 resize-none ring-0 bg-inherit w-full m-0 outline-none text-white"
-                                    required={true}
-                                    placeholder="Hỏi bất cứ điều gì..."
-                                    value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                />
-                                <div className="flex p-2 sm:p-3 gap-1 sm:gap-2 items-center">
-                                    <div className="flex items-center flex-1 gap-1 sm:gap-2">
-                                        {selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && (
-                                            <>
-                                                <TooltipProvider>
-                                                    <Tooltip delayDuration={0}>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                type="button"
-                                                                variant="outline"
-                                                                size="icon"
-                                                                className="rounded-xl h-8 w-8 sm:h-10 sm:w-10 bg-[#1A1A2E] text-white border-[#4ECCA3] hover:bg-[#3E52E8]"
-                                                                onClick={() => document.getElementById('file-input')?.click()}
-                                                            >
-                                                                <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent className="bg-[#1A1A2E] text-white border-[#4ECCA3]">Thêm tệp đính kèm</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                                <input
-                                                    id="file-input"
-                                                    type="file"
-                                                    accept="image/*"
-                                                    multiple
-                                                    className="hidden"
-                                                    onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
-                                                />
-                                            </>
-                                        )}
-                                        {files.map(({ file }, index) => (
-                                            <div key={index} className="relative">
-                                                <img
-                                                    src={URL.createObjectURL(file)}
-                                                    alt={file.name}
-                                                    className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-md border border-[#4ECCA3]"
-                                                />
-                                                <button
-                                                    onClick={() => handleFileRemove(file)}
-                                                    className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-[#1A1A2E] rounded-full p-0.5 sm:p-1 border border-[#4ECCA3]"
-                                                >
-                                                    <IoClose className="h-2 w-2 sm:h-3 sm:w-3 text-[#4ECCA3]" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className="rounded-xl h-8 w-8 sm:h-10 sm:w-10 bg-[#3E52E8] hover:bg-[#4B5EFF] text-white flex items-center justify-center"
-                                    >
-                                        {isLoading ? (
-                                            <Square className="h-4 w-4 sm:h-5 sm:w-5" onClick={(e) => {
-                                                e.preventDefault();
-                                                // Thêm hàm dừng tạo ở đây
-                                            }} />
-                                        ) : (
-                                            <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5" />
-                                        )}
-                                    </button>
-                                </div>
+                                    </SelectContent>
+                                </Select>
                             </div>
-                        </form>
-                    </div>
+
+                            <TextareaAutosize
+                                className="w-full bg-[#0F172A] rounded-lg p-3 min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-[#2A3284]"
+                                placeholder="Hỏi bất cứ điều gì..."
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            />
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center flex-1 gap-1 sm:gap-2">
+                                    {selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && (
+                                        <>
+                                            <TooltipProvider>
+                                                <Tooltip delayDuration={0}>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="rounded-xl h-8 w-8 sm:h-10 sm:w-10 bg-[#1A1A2E] text-white border-[#4ECCA3] hover:bg-[#3E52E8]"
+                                                            onClick={() => document.getElementById('file-input')?.click()}
+                                                        >
+                                                            <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent className="bg-[#1A1A2E] text-white border-[#4ECCA3]">Thêm tệp đính kèm</TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <input
+                                                id="file-input"
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                className="hidden"
+                                                onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
+                                            />
+                                        </>
+                                    )}
+                                    {files.map(({ file }, index) => (
+                                        <div key={index} className="relative">
+                                            <img
+                                                src={URL.createObjectURL(file)}
+                                                alt={file.name}
+                                                className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-md border border-[#4ECCA3]"
+                                            />
+                                            <button
+                                                onClick={() => handleFileRemove(file)}
+                                                className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-[#1A1A2E] rounded-full p-0.5 sm:p-1 border border-[#4ECCA3]"
+                                            >
+                                                <IoClose className="h-2 w-2 sm:h-3 sm:w-3 text-[#4ECCA3]" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="rounded-xl h-8 w-8 sm:h-10 sm:w-10 bg-[#3E52E8] hover:bg-[#4B5EFF] text-white flex items-center justify-center"
+                                >
+                                    {isLoading ? (
+                                        <Square className="h-4 w-4 sm:h-5 sm:w-5" onClick={(e) => {
+                                            e.preventDefault();
+                                            // Thêm hàm dừng tạo ở đây
+                                        }} />
+                                    ) : (
+                                        <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </main>
         </>

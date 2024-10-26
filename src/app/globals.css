@@ -57,3 +57,123 @@
 .dropdown-item:hover {
     transform: translateX(5px);
 }
+
+.markdown-body.dark {
+    /* Loại bỏ background và set màu text cơ bản */
+    background-color: transparent !important;
+    color: #e5e7eb !important;
+}
+
+/* Links */
+.markdown-body.dark a {
+    color: #60a5fa !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.markdown-body.dark a:hover {
+    color: #93c5fd !important;
+    text-decoration: underline !important;
+}
+
+/* Inline code */
+.markdown-body.dark code {
+    background-color: #1f2937 !important;
+    color: #e5e7eb !important;
+    padding: 0.2em 0.4em !important;
+    border-radius: 6px !important;
+    font-size: 0.9em !important;
+    border: 1px solid #374151 !important;
+}
+
+/* Code blocks */
+.markdown-body.dark pre {
+    background-color: #1f2937 !important;
+    border: 1px solid #374151 !important;
+    border-radius: 12px !important;
+    padding: 1em !important;
+    margin: 1em 0 !important;
+}
+
+.markdown-body.dark pre code {
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* Blockquotes */
+.markdown-body.dark blockquote {
+    border-left: 4px solid #3b82f6 !important;
+    color: #9ca3af !important;
+    padding: 0.5em 1em !important;
+    background-color: #1f2937 !important;
+    border-radius: 0 8px 8px 0 !important;
+    margin: 1em 0 !important;
+}
+
+/* Tables */
+.markdown-body.dark table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    margin: 1em 0 !important;
+}
+
+.markdown-body.dark table tr {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.markdown-body.dark table tr:nth-child(2n) {
+    background-color: #111827 !important;
+}
+
+.markdown-body.dark table th,
+.markdown-body.dark table td {
+    padding: 0.75em 1em !important;
+    border: 1px solid #374151 !important;
+}
+
+.markdown-body.dark table th {
+    background-color: #111827 !important;
+    font-weight: 600 !important;
+}
+
+/* Horizontal rule */
+.markdown-body.dark hr {
+    border: none !important;
+    height: 1px !important;
+    background-color: #374151 !important;
+    margin: 1.5em 0 !important;
+}
+
+/* Headings */
+.markdown-body.dark h1,
+.markdown-body.dark h2,
+.markdown-body.dark h3,
+.markdown-body.dark h4,
+.markdown-body.dark h5,
+.markdown-body.dark h6 {
+    color: #f3f4f6 !important;
+    border-bottom: none !important;
+    margin: 1.5em 0 0.5em !important;
+}
+
+/* Lists */
+.markdown-body.dark ul,
+.markdown-body.dark ol {
+    padding-left: 1.5em !important;
+    margin: 1em 0 !important;
+}
+
+.markdown-body.dark li {
+    margin: 0.5em 0 !important;
+}
+
+/* Images */
+.markdown-body.dark img {
+    border-radius: 8px !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
