@@ -3,10 +3,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import WebsiteList from '@/components/WebsiteList';
-import SearchBar from '@/components/SearchBar';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import ParallaxHeader from '@/components/ParallaxHeader'
 
 interface AIWebsite {
   _id: string;
@@ -129,15 +129,7 @@ export default function Home() {
 
   return (
     <div className="bg-[#0F172A] text-white min-h-screen">
-      <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
-        <div className='py-4 sm:py-8'>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-4">Tìm các công cụ và ứng dụng AI tốt nhất</h1>
-          <p className="text-base sm:text-lg max-w-3xl mx-auto mb-6">
-            Khám phá các công cụ AI miễn phí sử dụng được ở việt nam. Các AI hỗ trợ giúp công việc của bạn trở nên đơn giản hơn bao giờ hết.
-          </p>
-          <SearchBar onTagClick={handleTagSearch} allTags={allTags} />
-        </div>
-      </div>
+      <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
       <div className="px-4 py-8">
         {isLoading ? (
           <SkeletonLoader />
