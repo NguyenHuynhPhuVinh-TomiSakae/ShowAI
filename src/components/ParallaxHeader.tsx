@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import SearchBar from './SearchBar';
 
 interface ParallaxHeaderProps {
@@ -10,22 +10,32 @@ interface ParallaxHeaderProps {
 const ParallaxHeader: React.FC<ParallaxHeaderProps> = ({ onTagClick, allTags }) => {
     const ref = useRef(null);
     const { scrollY } = useScroll();
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Thêm các transform mới
+    useEffect(() => {
+        // Đợi một chút để đảm bảo các resources đã load
+        const timer = setTimeout(() => {
+            setIsLoaded(true);
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+    // Các transform chỉ áp dụng khi đã load xong
     const backgroundY = useTransform(scrollY, [0, 500], [0, 150]);
     const textY = useTransform(scrollY, [0, 500], [0, -50]);
     const opacityText = useTransform(scrollY, [0, 200], [1, 0.5]);
-    const rotateX = useTransform(scrollY, [0, 500], [0, 10]); // Thêm rotation theo trục X
+    const rotateX = useTransform(scrollY, [0, 500], [0, 10]);
 
     return (
-        <div ref={ref} className="relative overflow-hidden bg-[#2A3284] perspective-1000">
+        <div ref={ref} className="relative overflow-hidden bg-[#2A3284]">
             <motion.div
                 style={{
                     y: backgroundY,
-                    rotateX: rotateX, // Thêm rotation
-                    transformStyle: "preserve-3d" // Thêm 3D transform
+                    rotateX: isLoaded ? rotateX : 0,
+                    transformStyle: isLoaded ? "preserve-3d" : "flat"
                 }}
                 className="absolute inset-0 bg-gradient-to-b from-blue-900 to-[#2A3284]"
+                initial={false}
             />
 
             <motion.div
@@ -33,9 +43,10 @@ const ParallaxHeader: React.FC<ParallaxHeaderProps> = ({ onTagClick, allTags }) 
                 style={{
                     y: textY,
                     opacity: opacityText,
-                    rotateX: rotateX, // Thêm rotation cho text
-                    transformStyle: "preserve-3d"  // Thêm 3D transform
+                    rotateX: isLoaded ? rotateX : 0,
+                    transformStyle: isLoaded ? "preserve-3d" : "flat"
                 }}
+                initial={false}
             >
                 <div className='py-4 sm:py-8'>
                     <motion.h1

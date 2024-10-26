@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaExternalLinkAlt, FaEye, FaHeart, FaStar } from 'react-icons/fa';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
@@ -39,14 +39,25 @@ const WebsiteCard: React.FC<{
     isShuffled?: boolean;
     isSidebar?: boolean;
 }> = ({ website, onClick, onTagClick, isRandom, isShuffled, isSidebar }) => {
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [isMobile, setIsMobile] = useState(true); // Default to mobile to prevent flicker
+
+    useEffect(() => {
+        // Kiểm tra mobile và set loaded state
+        setIsMobile(window.innerWidth <= 768);
+        const timer = setTimeout(() => {
+            setIsLoaded(true);
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+    // Thêm isLoaded vào điều kiện
+    const shouldDisableAnimation = !isLoaded || isRandom || isShuffled || isSidebar || isMobile;
+
     const x = useMotionValue(0);
     const y = useMotionValue(0);
     const dragX = useMotionValue(0);
     const dragY = useMotionValue(0);
-    const isMobile = window.innerWidth <= 768;
-
-    // Thêm isSidebar vào điều kiện tắt animation
-    const shouldDisableAnimation = isRandom || isShuffled || isSidebar || isMobile;
 
     const springConfig = {
         stiffness: shouldDisableAnimation ? 200 : 1000,
@@ -71,6 +82,9 @@ const WebsiteCard: React.FC<{
         springConfig
     );
 
+    const rotateXTransform = useTransform([rotateX, dragRotateX], (values: number[]) => values[0] + values[1]);
+    const rotateYTransform = useTransform([rotateY, dragRotateY], (values: number[]) => values[0] + values[1]);
+
     const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
         if (shouldDisableAnimation) return;
 
@@ -87,13 +101,15 @@ const WebsiteCard: React.FC<{
                 perspective: shouldDisableAnimation ? 0 : 3000,
             }}
             className="relative"
+            initial={false}
         >
             <motion.div
                 style={{
-                    rotateX: useTransform([rotateX, dragRotateX], (values: number[]) => values[0] + values[1]),
-                    rotateY: useTransform([rotateY, dragRotateY], (values: number[]) => values[0] + values[1]),
+                    rotateX: shouldDisableAnimation ? 0 : rotateXTransform,
+                    rotateY: shouldDisableAnimation ? 0 : rotateYTransform,
                     transformStyle: shouldDisableAnimation ? "flat" : "preserve-3d",
                 }}
+                initial={false}
                 drag={!shouldDisableAnimation}
                 dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
                 dragElastic={shouldDisableAnimation ? 0 : 1.5}
@@ -117,17 +133,20 @@ const WebsiteCard: React.FC<{
                 className="cursor-pointer bg-gray-800 border-2 border-gray-700 rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-blue-500"
             >
                 {website.image && (
-                    <div className="relative w-full h-48 overflow-hidden" style={{ transform: "translateZ(20px)" }}>
+                    <div className="relative w-full h-48 overflow-hidden"
+                        style={{ transform: shouldDisableAnimation ? "none" : "translateZ(20px)" }}>
                         <Image
                             src={website.image}
                             alt={website.name}
                             layout="fill"
                             objectFit="cover"
                             className="transition-transform duration-300 hover:scale-110"
+                            onLoad={() => setIsLoaded(true)}
                         />
                     </div>
                 )}
-                <div className="p-5" style={{ transform: "translateZ(50px)" }}>
+                <div className="p-5"
+                    style={{ transform: shouldDisableAnimation ? "none" : "translateZ(50px)" }}>
                     <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center">
                             <h2 className="text-xl font-bold text-blue-300 truncate mr-2">

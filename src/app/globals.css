@@ -221,3 +221,20 @@
 .perspective-1000 {
     perspective: 1000px;
 }
+
+/* Thêm vào globals.css */
+.preserve-3d {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform;
+}
+
+.no-preserve-3d {
+    transform-style: flat;
+    transform: none !important;
+}
+
+/* Thêm transition cho smooth loading */
+.transition-3d {
+    transition: transform-style 0.3s ease-out;
+}
