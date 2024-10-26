@@ -39,6 +39,11 @@ export default function Home() {
   const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
   const router = useRouter();
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -129,41 +134,45 @@ export default function Home() {
 
   return (
     <div className="bg-[#0F172A] text-white min-h-screen">
-      <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
-      <div className="px-4 py-8">
-        {isLoading ? (
-          <SkeletonLoader />
-        ) : error ? (
-          <div className="text-center text-red-500">
-            {error}
-          </div>
-        ) : (
-          <WebsiteList websites={aiWebsites} onTagClick={handleTagSearch} />
-        )}
-        {paginationInfo && (
-          <div className="mt-8 flex justify-center items-center space-x-4">
-            {paginationInfo.currentPage > 1 && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handlePageChange(paginationInfo.currentPage - 1)}
-              >
-                <FaChevronLeft className="h-4 w-4" />
-              </Button>
+      {isMounted && (
+        <>
+          <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
+          <div className="px-4 py-8">
+            {isLoading ? (
+              <SkeletonLoader />
+            ) : error ? (
+              <div className="text-center text-red-500">
+                {error}
+              </div>
+            ) : (
+              <WebsiteList websites={aiWebsites} onTagClick={handleTagSearch} />
             )}
-            <span>{paginationInfo.currentPage}</span>
-            {paginationInfo.currentPage < paginationInfo.totalPages && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handlePageChange(paginationInfo.currentPage + 1)}
-              >
-                <FaChevronRight className="h-4 w-4" />
-              </Button>
+            {paginationInfo && (
+              <div className="mt-8 flex justify-center items-center space-x-4">
+                {paginationInfo.currentPage > 1 && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handlePageChange(paginationInfo.currentPage - 1)}
+                  >
+                    <FaChevronLeft className="h-4 w-4" />
+                  </Button>
+                )}
+                <span>{paginationInfo.currentPage}</span>
+                {paginationInfo.currentPage < paginationInfo.totalPages && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handlePageChange(paginationInfo.currentPage + 1)}
+                  >
+                    <FaChevronRight className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
