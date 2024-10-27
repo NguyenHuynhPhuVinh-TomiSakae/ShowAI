@@ -64,16 +64,33 @@ export default function GamesPage() {
                             initial: { opacity: 0, y: 20 },
                             animate: { opacity: 1, y: 0 },
                             transition: { duration: 0.5 },
+                            className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                            onClick: () => router.push('/games/ai-control')
+                        } as ModalBackdropProps}
+                    >
+                        <FaGamepad className="text-6xl sm:text-7xl text-yellow-400 mx-auto mb-6" />
+                        <h2 className="text-xl sm:text-2xl font-bold text-yellow-300 mb-4">
+                            Điều Khiển AI
+                        </h2>
+                        <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
+                            Thử thách khả năng điều khiển và tương tác với AI thông qua các câu lệnh.
+                        </p>
+                    </motion.div>
+
+                    <motion.div
+                        {...{
+                            initial: { opacity: 0, y: 20 },
+                            animate: { opacity: 1, y: 0 },
+                            transition: { duration: 0.5 },
                             className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center"
                         } as ModalBackdropProps}
                     >
                         <FaTools className="text-6xl sm:text-7xl text-blue-400 mx-auto mb-6" />
                         <h2 className="text-xl sm:text-2xl font-bold text-blue-300 mb-4">
-                            Game Mới Đang Phát Triển
+                            Đấu Trường AI
                         </h2>
                         <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
-                            Tôi đang phát triển thêm nhiều game mới thú vị.
-                            Hãy quay lại sau để trải nghiệm các trò chơi độc đáo cùng AI nhé!
+                            Tham gia đấu trường AI, nơi bạn có thể thách đấu với các người chơi khác thông qua các thử thách về AI. Sắp ra mắt!
                         </p>
                     </motion.div>
                 </div>
