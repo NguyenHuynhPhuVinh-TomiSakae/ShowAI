@@ -152,7 +152,17 @@ const modelGroups = [
     },
 ];
 
+// Thêm hook để kiểm tra môi trường client
+const useIsClient = () => {
+    const [isClient, setIsClient] = useState(false);
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+    return isClient;
+};
+
 export default function AIControlGame() {
+    const isClient = useIsClient();
     const [prompt, setPrompt] = useState('');
     const [response, setResponse] = useState('');
     const [loading, setLoading] = useState(false);
@@ -369,19 +379,19 @@ export default function AIControlGame() {
                     {isLoading ? (
                         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                             <Skeleton
-                                width={window.innerWidth < 640 ? "100%" : 120}
+                                width={isClient ? window.innerWidth < 640 ? "100%" : 120 : 120}
                                 height={48}
                                 baseColor="#1F2937"
                                 highlightColor="#374151"
                             />
                             <Skeleton
-                                width={window.innerWidth < 640 ? "100%" : 120}
+                                width={isClient ? window.innerWidth < 640 ? "100%" : 120 : 120}
                                 height={48}
                                 baseColor="#1F2937"
                                 highlightColor="#374151"
                             />
                             <Skeleton
-                                width={window.innerWidth < 640 ? "100%" : 120}
+                                width={isClient ? window.innerWidth < 640 ? "100%" : 120 : 120}
                                 height={48}
                                 baseColor="#1F2937"
                                 highlightColor="#374151"
