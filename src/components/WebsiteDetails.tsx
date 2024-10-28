@@ -15,6 +15,7 @@ import Image from 'next/image';
 import AICompare from './AICompare';
 import TipTapEditor from './TipTapEditorModal';
 import type { MotionProps } from 'framer-motion';
+import { useMediaQuery } from 'react-responsive';
 
 type ModalBackdropProps = MotionProps & {
     className?: string;
@@ -56,6 +57,7 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
     const router = useRouter();
     const [websiteRating, setWebsiteRating] = useState(website.evaluation || 0);
     const [isRating, setIsRating] = useState(false);
+    const isMobile = useMediaQuery({ maxWidth: 768 });
 
     useEffect(() => {
         setIsVisible(true);
@@ -127,7 +129,11 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
         }
     };
 
-    const containerVariants = {
+    // Điều chỉnh containerVariants dựa trên thiết bị
+    const containerVariants = isMobile ? {
+        hidden: { opacity: 1, y: 0 },
+        visible: { opacity: 1, y: 0 }
+    } : {
         hidden: { opacity: 0, y: 50 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
     };
@@ -180,7 +186,7 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
         <motion.div
             {...{
                 className: "bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-4 sm:p-8 shadow-2xl border border-gray-700 overflow-hidden",
-                initial: "hidden",
+                initial: isMobile ? "visible" : "hidden",
                 animate: isVisible ? "visible" : "hidden",
                 variants: containerVariants
             } as ModalBackdropProps}

@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { ReactNode, useState, useEffect } from 'react';
+import { useMediaQuery } from 'react-responsive';
 
 interface ClientPageTransitionProps {
     children: ReactNode;
@@ -32,10 +33,12 @@ const animations = [
 
 const ClientPageTransition = ({ children }: ClientPageTransitionProps) => {
     const [animationIndex, setAnimationIndex] = useState(0);
+    const isMobile = useMediaQuery({ maxWidth: 768 });
 
     useEffect(() => {
-        setAnimationIndex(Math.floor(Math.random() * animations.length));
-    }, []);
+        // Chọn animation fade (index 2) cho mobile, random cho desktop
+        setAnimationIndex(isMobile ? 2 : Math.floor(Math.random() * animations.length));
+    }, [isMobile]);
 
     return (
         <AnimatePresence mode="wait">

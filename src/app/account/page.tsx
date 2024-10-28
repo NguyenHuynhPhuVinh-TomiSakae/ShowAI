@@ -14,6 +14,7 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import type { MotionProps } from 'framer-motion';
 import PostSubmission from '@/components/PostSubmission';
+import { useMediaQuery } from 'react-responsive';
 
 type ModalBackdropProps = MotionProps & {
     className?: string;
@@ -41,6 +42,7 @@ const AccountPage = () => {
     const [, setReceiveUpdates] = useState(false);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [is3DEnabled, setIs3DEnabled] = useState(false);
+    const isMobile = useMediaQuery({ maxWidth: 768 });
 
     useEffect(() => {
         const unsubscribe = auth?.onAuthStateChanged((currentUser) => {
@@ -429,14 +431,16 @@ const AccountPage = () => {
                             Truy cập trang Admin
                         </button>
                     )}
-                    <button
-                        onClick={toggle3DMode}
-                        className={`flex items-center gap-2 font-bold py-2 px-4 rounded transition duration-300 ${is3DEnabled ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600'
-                            }`}
-                    >
-                        <FaCube />
-                        Chế độ 3D {is3DEnabled ? 'Bật' : 'Tắt'}
-                    </button>
+                    {!isMobile && (
+                        <button
+                            onClick={toggle3DMode}
+                            className={`flex items-center gap-2 font-bold py-2 px-4 rounded transition duration-300 ${is3DEnabled ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600'
+                                }`}
+                        >
+                            <FaCube />
+                            Chế độ 3D {is3DEnabled ? 'Bật' : 'Tắt'}
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="container mx-auto px-4">
