@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion';
-import { FaGamepad } from 'react-icons/fa';
+import { FaWordpress, FaSmile, FaRobot, FaPaintBrush } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import type { MotionProps } from 'framer-motion';
 
@@ -32,7 +32,7 @@ export default function GamesPage() {
                             onClick: () => router.push('/games/word-matching')
                         } as ModalBackdropProps}
                     >
-                        <FaGamepad className="text-6xl sm:text-7xl text-green-400 mx-auto mb-6" />
+                        <FaWordpress className="text-6xl sm:text-7xl text-green-400 mx-auto mb-6" />
                         <h2 className="text-xl sm:text-2xl font-bold text-green-300 mb-4">
                             Trò Chơi Ghép Từ
                         </h2>
@@ -50,7 +50,7 @@ export default function GamesPage() {
                             onClick: () => router.push('/games/sentiment-guess')
                         } as ModalBackdropProps}
                     >
-                        <FaGamepad className="text-6xl sm:text-7xl text-purple-400 mx-auto mb-6" />
+                        <FaSmile className="text-6xl sm:text-7xl text-purple-400 mx-auto mb-6" />
                         <h2 className="text-xl sm:text-2xl font-bold text-purple-300 mb-4">
                             Phán Đoán Cảm Xúc
                         </h2>
@@ -68,7 +68,7 @@ export default function GamesPage() {
                             onClick: () => router.push('/games/ai-control')
                         } as ModalBackdropProps}
                     >
-                        <FaGamepad className="text-6xl sm:text-7xl text-yellow-400 mx-auto mb-6" />
+                        <FaRobot className="text-6xl sm:text-7xl text-yellow-400 mx-auto mb-6" />
                         <h2 className="text-xl sm:text-2xl font-bold text-yellow-300 mb-4">
                             Điều Khiển AI
                         </h2>
@@ -86,7 +86,7 @@ export default function GamesPage() {
                             onClick: () => router.push('/games/drawing-arena')
                         } as ModalBackdropProps}
                     >
-                        <FaGamepad className="text-6xl sm:text-7xl text-blue-400 mx-auto mb-6" />
+                        <FaPaintBrush className="text-6xl sm:text-7xl text-blue-400 mx-auto mb-6" />
                         <h2 className="text-xl sm:text-2xl font-bold text-blue-300 mb-4">
                             Đấu Trường Hội Họa
                         </h2>
