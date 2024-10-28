@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import GameRooms from './components/GameRooms';
 
 export default function AIGamePage() {
     const [nickname, setNickname] = useState('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [showRooms, setShowRooms] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -14,8 +16,24 @@ export default function AIGamePage() {
             setErrorMessage('Vui lòng nhập biệt danh của bạn');
             return;
         }
-        // Xử lý logic submit ở đây
+        // Lưu nickname vào localStorage
+        localStorage.setItem('nickname', nickname.trim());
+        setShowRooms(true);
     };
+
+    const handleViewRooms = () => {
+        if (!nickname.trim()) {
+            setErrorMessage('Vui lòng nhập biệt danh của bạn');
+            return;
+        }
+        // Lưu nickname vào localStorage
+        localStorage.setItem('nickname', nickname.trim());
+        setShowRooms(true);
+    };
+
+    if (showRooms) {
+        return <GameRooms nickname={nickname} />;
+    }
 
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
@@ -68,6 +86,7 @@ export default function AIGamePage() {
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
                                 <button
                                     type="button"
+                                    onClick={handleViewRooms}
                                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg transition duration-300 disabled:opacity-50"
                                     disabled={!nickname}
                                 >

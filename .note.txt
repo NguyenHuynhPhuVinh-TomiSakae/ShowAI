@@ -1,10 +1,15 @@
-Shadcn/ui
-Radix UI
-HeadlessUI
-DaisyUI
+- id: uuid (chọn "Primary Key" và "Default Value: gen_random_uuid()")
+- name: text (bỏ chọn "Is Nullable")
+- created_by: text (bỏ chọn "Is Nullable")
+- players: int8 (Default Value: 1)
+- max_players: int8 (Default Value: 4)
+- status: text (Default Value: 'waiting')
+- is_private: boolean (Default Value: false)
+- created_at: timestamptz (Default Value: now())
 
-Framer Motion
-Page transitions
-Scroll animations
-Gesture animations
-Layout animations
+
+- id: uuid (chọn "Primary Key" và "Default Value: gen_random_uuid()")
+- room_id: uuid (bỏ chọn "Is Nullable")
+- user_name: text (bỏ chọn "Is Nullable")
+- content: text (bỏ chọn "Is Nullable")
+- created_at: timestamptz (Default Value: now())
