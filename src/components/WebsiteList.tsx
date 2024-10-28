@@ -40,12 +40,20 @@ const WebsiteCard: React.FC<{
     isSidebar?: boolean;
 }> = ({ website, onClick, onTagClick, isRandom, isShuffled, isSidebar }) => {
     const [isLoaded, setIsLoaded] = useState(false);
-    const [isMobile, setIsMobile] = useState(true); // Default to mobile to prevent flicker
+    const [isMobile, setIsMobile] = useState(true);
+    const [is3DEnabled, setIs3DEnabled] = useState(false); // Thêm state mới
 
     useEffect(() => {
-        // Kiểm tra mobile và set loaded state
+        // Kiểm tra 3D mode từ localStorage
+        const check3DMode = () => {
+            const mode = localStorage.getItem('3d-mode');
+            setIs3DEnabled(mode === 'enabled');
+        };
+
+        check3DMode();
         setIsMobile(window.innerWidth <= 768);
-        // Thêm kiểm tra document.readyState
+
+        // Kiểm tra ngay lập tức
         const checkReadyState = () => {
             if (document.readyState === 'complete') {
                 setIsLoaded(true);
@@ -58,13 +66,17 @@ const WebsiteCard: React.FC<{
         // Thêm event listener để theo dõi trạng thái load
         document.addEventListener('readystatechange', checkReadyState);
 
+        // Thêm event listener để theo dõi thay đổi localStorage
+        window.addEventListener('storage', check3DMode);
+
         return () => {
             document.removeEventListener('readystatechange', checkReadyState);
+            window.removeEventListener('storage', check3DMode);
         };
     }, []);
 
-    // Thêm isLoaded vào điều kiện
-    const shouldDisableAnimation = !isLoaded || isRandom || isShuffled || isSidebar || isMobile;
+    // Cập nhật điều kiện vô hiệu hóa animation
+    const shouldDisableAnimation = !isLoaded || isRandom || isShuffled || isSidebar || isMobile || !is3DEnabled;
 
     const x = useMotionValue(0);
     const y = useMotionValue(0);

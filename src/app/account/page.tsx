@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirebase } from '@/components/FirebaseConfig';
-import { FaUser, FaHeart, FaPlus } from 'react-icons/fa';
+import { FaUser, FaHeart, FaPlus, FaCube } from 'react-icons/fa';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signOut, deleteUser } from 'firebase/auth';
 import WebsiteList from '@/components/WebsiteList';
@@ -40,6 +40,7 @@ const AccountPage = () => {
     const [showEmailModal, setShowEmailModal] = useState(false);
     const [, setReceiveUpdates] = useState(false);
     const [isSubscribed, setIsSubscribed] = useState(false);
+    const [is3DEnabled, setIs3DEnabled] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth?.onAuthStateChanged((currentUser) => {
@@ -72,6 +73,16 @@ const AccountPage = () => {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [auth, router]);
+
+    useEffect(() => {
+        // Thêm vào useEffect hiện có
+        const check3DMode = () => {
+            const mode = localStorage.getItem('3d-mode');
+            setIs3DEnabled(mode === 'enabled');
+        };
+        check3DMode();
+        // ... rest of existing useEffect code ...
+    }, []);
 
     const fetchUserData = async (userId: string) => {
         setIsLoading(true);
@@ -346,6 +357,12 @@ const AccountPage = () => {
         }
     };
 
+    const toggle3DMode = () => {
+        const newMode = !is3DEnabled;
+        localStorage.setItem('3d-mode', newMode ? 'enabled' : 'disabled');
+        setIs3DEnabled(newMode);
+    };
+
     const SkeletonLoader = () => (
         <div className="bg-gray-800 p-6 rounded-lg shadow-md">
             <Skeleton width={200} height={24} baseColor="#1F2937" highlightColor="#374151" className="mb-4" />
@@ -403,14 +420,24 @@ const AccountPage = () => {
         <motion.div className="bg-[#0F172A] text-white min-h-screen pb-4">
             <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold mb-4">Tài khoản của bạn</h1>
-                {isAdmin && (
+                <div className="flex justify-center gap-4">
+                    {isAdmin && (
+                        <button
+                            onClick={handleAdminAccess}
+                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                        >
+                            Truy cập trang Admin
+                        </button>
+                    )}
                     <button
-                        onClick={handleAdminAccess}
-                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                        onClick={toggle3DMode}
+                        className={`flex items-center gap-2 font-bold py-2 px-4 rounded transition duration-300 ${is3DEnabled ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600'
+                            }`}
                     >
-                        Truy cập trang Admin
+                        <FaCube />
+                        Chế độ 3D {is3DEnabled ? 'Bật' : 'Tắt'}
                     </button>
-                )}
+                </div>
             </div>
             <div className="container mx-auto px-4">
                 {errorMessage && (
