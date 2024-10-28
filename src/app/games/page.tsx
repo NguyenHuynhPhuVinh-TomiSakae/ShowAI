@@ -87,10 +87,10 @@ export default function GamesPage() {
                     >
                         <FaTools className="text-6xl sm:text-7xl text-blue-400 mx-auto mb-6" />
                         <h2 className="text-xl sm:text-2xl font-bold text-blue-300 mb-4">
-                            Đấu Trường AI
+                            Đang Phát Triển
                         </h2>
                         <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
-                            Tham gia đấu trường AI, nơi bạn có thể thách đấu với các người chơi khác thông qua các thử thách về AI. Sắp ra mắt!
+                            Tôi đang miệt mài phát triển tính năng mới. Rất mong được gặp lại bạn trong thời gian sắp tới!
                         </p>
                     </motion.div>
                 </div>
