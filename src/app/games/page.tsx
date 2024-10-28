@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion';
-import { FaTools, FaGamepad } from 'react-icons/fa';
+import { FaGamepad } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import type { MotionProps } from 'framer-motion';
 
@@ -82,15 +82,16 @@ export default function GamesPage() {
                             initial: { opacity: 0, y: 20 },
                             animate: { opacity: 1, y: 0 },
                             transition: { duration: 0.5 },
-                            className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center"
+                            className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                            onClick: () => router.push('/games/drawing-arena')
                         } as ModalBackdropProps}
                     >
-                        <FaTools className="text-6xl sm:text-7xl text-blue-400 mx-auto mb-6" />
+                        <FaGamepad className="text-6xl sm:text-7xl text-blue-400 mx-auto mb-6" />
                         <h2 className="text-xl sm:text-2xl font-bold text-blue-300 mb-4">
-                            Đang Phát Triển
+                            Đấu Trường Hội Họa
                         </h2>
                         <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
-                            Tôi đang miệt mài phát triển tính năng mới. Rất mong được gặp lại bạn trong thời gian sắp tới!
+                            Thử thách so tài với AI trong việc viết lệnh cho AI vẽ tranh!
                         </p>
                     </motion.div>
                 </div>

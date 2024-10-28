@@ -249,7 +249,21 @@ const WebsiteCard: React.FC<{
 const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSidebar = false, isRandom = false, isShuffled = false }) => {
     const router = useRouter();
 
-    const handleWebsiteClick = (id: string) => {
+    const handleWebsiteClick = async (id: string) => {
+        try {
+            // Gọi API để tăng lượt xem
+            await fetch('/api/incrementView', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id }),
+            });
+        } catch (error) {
+            console.error('Lỗi khi tăng lượt xem:', error);
+        }
+
+        // Chuyển hướng đến trang chi tiết
         router.push(`/show?id=${id}`);
     };
 
