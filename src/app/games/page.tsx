@@ -91,7 +91,7 @@ export default function GamesPage() {
                             Đấu Trường Hội Họa
                         </h2>
                         <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
-                            Thử thách so tài với AI trong việc viết lệnh cho AI vẽ tranh!
+                            Thử thách khả năng viết prompt và tạo hình ảnh với AI.
                         </p>
                     </motion.div>
                 </div>
