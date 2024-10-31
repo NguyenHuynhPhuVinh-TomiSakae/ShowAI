@@ -186,8 +186,10 @@ export async function PATCH(request: Request) {
         }, 0);
         const newId = (maxId + 1).toString();
 
-        const { _id, status, ...submissionData } = submission;
+        const { _id, status, name, displayName, ...submissionData } = submission;
         const newData = {
+            name,
+            displayName,
             ...submissionData,
             id: newId,
             heart: 0,
@@ -202,6 +204,27 @@ export async function PATCH(request: Request) {
 
         if (action === 'add') {
             await db.collection("data_web_ai").insertOne(newData);
+
+            // Thêm thông báo FCM mới
+            try {
+                const message = {
+                    topic: 'new',
+                    notification: {
+                        title: 'Website mới trên ShowAI',
+                        body: `${newData.name} đã được thêm vào ShowAI`
+                    },
+                    data: {
+                        type: 'new',
+                        name: newData.name,
+                        displayName: newData.displayName,
+                    }
+                };
+
+                await admin.messaging().send(message);
+            } catch (fcmError) {
+                console.error('Lỗi khi gửi thông báo FCM:', fcmError);
+            }
+
             await sendNotificationEmails(newData.id);
         } else {
             // Xóa ảnh khi từ chối bài đăng
