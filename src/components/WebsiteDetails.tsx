@@ -16,6 +16,7 @@ import AICompare from './AICompare';
 import TipTapEditor from './TipTapEditorModal';
 import type { MotionProps } from 'framer-motion';
 import { useMediaQuery } from 'react-responsive';
+import AIChart from './AIChart';
 
 type ModalBackdropProps = MotionProps & {
     className?: string;
@@ -313,6 +314,15 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                         ))}
                     </ul>
                 </div>
+            )}
+
+            {!isPreviewMode && (
+                <AIChart
+                    websiteId={website.id}
+                    websiteName={website.name}
+                    description={website.description}
+                    keyFeatures={website.keyFeatures}
+                />
             )}
 
             {!isPreviewMode && (
