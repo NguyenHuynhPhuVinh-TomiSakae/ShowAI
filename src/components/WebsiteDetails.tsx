@@ -17,6 +17,7 @@ import TipTapEditor from './TipTapEditorModal';
 import type { MotionProps } from 'framer-motion';
 import { useMediaQuery } from 'react-responsive';
 import AIChart from './AIChart';
+import AIRating from './AIRating';
 
 type ModalBackdropProps = MotionProps & {
     className?: string;
@@ -317,17 +318,19 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
             )}
 
             {!isPreviewMode && (
-                <AIChart
-                    websiteId={website.id}
-                    websiteName={website.name}
-                    description={website.description}
-                    keyFeatures={website.keyFeatures}
-                />
-            )}
-
-            {!isPreviewMode && (
                 <>
                     <AdditionalInfoButton websiteData={JSON.stringify(website)} />
+                    <AIRating
+                        websiteName={website.name}
+                        description={website.description}
+                        keyFeatures={website.keyFeatures}
+                    />
+                    <AIChart
+                        websiteId={website.id}
+                        websiteName={website.name}
+                        description={website.description}
+                        keyFeatures={website.keyFeatures}
+                    />
                     <AICompare currentWebsite={website} />
                     <div className="mt-8 sm:mt-12">
                         <ShortCommentInput
