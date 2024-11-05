@@ -47,7 +47,7 @@ const Footer = () => {
                         <h3 className="text-2xl font-bold mb-4 text-white">Tải ứng dụng</h3>
                         <div className="space-y-2 w-full">
                             <a
-                                href="/android/ShowAI-v1.1.0.apk"
+                                href="/android/ShowAI-v1.1.1.apk"
                                 download
                                 className="w-full flex items-center justify-center space-x-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300"
                             >
