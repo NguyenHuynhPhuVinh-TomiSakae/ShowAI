@@ -70,7 +70,7 @@ export default function RockPaperScissorsGame() {
         return 'thua';
     };
 
-    const getAIChoice = async (playerMove: Choice): Promise<Choice> => {
+    const getAIChoice = async (): Promise<Choice> => {
         setIsLoading(true);
         try {
             const apiKeyResponse = await fetch('/api/Gemini');
@@ -108,22 +108,31 @@ export default function RockPaperScissorsGame() {
                 ]
             });
 
-            // Tạo prompt với lịch sử
+            // Sửa lại prompt để không tiết lộ lựa chọn hiện tại
             const historyText = gameHistory
+                .slice(-5) // Chỉ lấy 5 lượt chơi gần nhất
                 .map(h => `Người chơi: ${h.playerMove}, AI: ${h.computerMove}, Kết quả: ${h.result}`)
                 .join('\n');
 
-            const prompt = `Lịch sử các lượt chơi trước:
+            const prompt = `Bạn là AI chơi kéo búa bao. Dựa vào lịch sử 5 lượt gần nhất:
 ${historyText}
 
-Người chơi vừa chọn "${playerMove}".
-Dựa vào lịch sử, hãy phân tích và đưa ra lựa chọn thông minh nhất.
-CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao", không kèm theo bất kỳ giải thích nào.`;
+Hãy phân tích pattern của người chơi và đưa ra lựa chọn thông minh để thắng. Ví dụ:
+- Nếu người chơi thường chọn lặp lại các nước đi
+- Nếu người chơi có xu hướng thay đổi sau khi thua
+- Nếu người chơi thích dùng một lựa chọn cụ thể
+
+CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm giải thích).`;
 
             const result = await model.generateContent(prompt);
             const aiChoice = result.response.text().trim().toLowerCase() as Choice;
 
-            return choices.includes(aiChoice) ? aiChoice : choices[Math.floor(Math.random() * choices.length)];
+            // Nếu không có lịch sử hoặc AI trả về không hợp lệ, chọn ngẫu nhiên
+            if (!gameHistory.length || !choices.includes(aiChoice)) {
+                return choices[Math.floor(Math.random() * choices.length)];
+            }
+
+            return aiChoice;
         } catch (error) {
             console.error('Lỗi khi lấy lựa chọn của AI:', error);
             return choices[Math.floor(Math.random() * choices.length)];
@@ -133,7 +142,7 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao", không kèm t
     };
 
     const handleChoice = async (choice: Choice) => {
-        const computerMove = await getAIChoice(choice);
+        const computerMove = await getAIChoice();
         setPlayerChoice(choice);
         setComputerChoice(computerMove);
 
