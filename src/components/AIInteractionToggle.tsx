@@ -48,12 +48,16 @@ const AIInteractionToggle: React.FC = () => {
 
                 if (hoverableElement) {
                     let buttonText = '';
+                    const buttonId = hoverableElement.getAttribute('data-button-id');
 
-                    // Xử lý trường hợp logo
-                    if (element.tagName === 'IMG' && element.getAttribute('alt') === 'ShowAI Logo') {
+                    // Ưu tiên kiểm tra data-button-id trước
+                    if (buttonId) {
+                        buttonText = buttonId;
+                    }
+                    // Sau đó mới xử lý trường hợp logo và text content
+                    else if (element.tagName === 'IMG' && element.getAttribute('alt') === 'ShowAI Logo') {
                         buttonText = 'ShowAI Logo';
                     }
-                    // Xử lý các trường hợp khác
                     else {
                         buttonText = hoverableElement.textContent?.trim() || '';
                     }

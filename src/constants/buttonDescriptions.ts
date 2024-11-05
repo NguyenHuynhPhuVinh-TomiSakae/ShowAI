@@ -109,6 +109,38 @@ export const buttonDescriptions: Record<string, ButtonDescription> = {
         text: 'ShowAI Logo',
         description: 'Quay về trang chủ ShowAI - Nền tảng AI đa năng',
         category: 'navigation'
+    },
+
+    // Website List Actions - Các nút trong danh sách website
+    'Xem Thêm': {
+        text: 'Xem Thêm',
+        description: 'Xem chi tiết về website này',
+        category: 'action'
+    },
+    'Truy Cập': {
+        text: 'Truy Cập',
+        description: 'Mở website trong tab mới',
+        category: 'action'
+    },
+    'Lượt Xem': {
+        text: 'Lượt Xem',
+        description: 'Số lượt người dùng đã xem website này',
+        category: 'action'
+    },
+    'Yêu Thích': {
+        text: 'Yêu Thích',
+        description: 'Số lượt yêu thích website này',
+        category: 'action'
+    },
+    'Đánh Giá': {
+        text: 'Đánh Giá',
+        description: 'Điểm đánh giá trung bình của website',
+        category: 'action'
+    },
+    'Tag': {
+        text: 'Tag',
+        description: 'Nhấn để lọc các website có cùng tag này',
+        category: 'action'
     }
 };
 

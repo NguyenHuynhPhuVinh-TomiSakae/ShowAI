@@ -154,7 +154,7 @@ const WebsiteCard: React.FC<{
                     y.set(0);
                 }}
                 onClick={onClick}
-                className="cursor-pointer bg-gray-800 border-2 border-gray-700 rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-blue-500"
+                className="cursor-pointer bg-gray-800 border-2 border-gray-700 rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-blue-500 ai-hoverable"
             >
                 {website.image && (
                     <div className="relative w-full h-48 overflow-hidden"
@@ -164,7 +164,7 @@ const WebsiteCard: React.FC<{
                             alt={website.name}
                             layout="fill"
                             objectFit="cover"
-                            className="transition-transform duration-300 hover:scale-110"
+                            className="transition-transform duration-300 hover:scale-110 ai-hoverable"
                             onLoad={() => setIsLoaded(true)}
                         />
                     </div>
@@ -173,7 +173,8 @@ const WebsiteCard: React.FC<{
                     style={{ transform: shouldDisableAnimation ? "none" : "translateZ(50px)" }}>
                     <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center">
-                            <h2 className="text-xl font-bold text-blue-300 truncate mr-2">
+                            <h2 className="text-xl font-bold text-blue-300 truncate mr-2 ai-hoverable"
+                                data-button-id="Xem Thêm">
                                 {website.name}
                             </h2>
                             {website.createdAt && new Date().getTime() - new Date(website.createdAt).getTime() < 7 * 24 * 60 * 60 * 1000 && (
@@ -187,7 +188,8 @@ const WebsiteCard: React.FC<{
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-blue-300 hover:text-blue-500 transition-colors duration-200"
+                            className="text-blue-300 hover:text-blue-500 transition-colors duration-200 ai-hoverable"
+                            data-button-id="Truy Cập"
                         >
                             <FaExternalLinkAlt />
                         </a>
@@ -208,19 +210,19 @@ const WebsiteCard: React.FC<{
                     </p>
                     <div className="flex items-center space-x-4 text-gray-400 text-sm mb-4">
                         {website.view !== undefined && (
-                            <div className="flex items-center">
+                            <div className="flex items-center ai-hoverable" data-button-id="Lượt Xem">
                                 <FaEye className="mr-1" />
                                 <span>{website.view}</span>
                             </div>
                         )}
                         {website.heart !== undefined && (
-                            <div className="flex items-center">
+                            <div className="flex items-center ai-hoverable" data-button-id="Yêu Thích">
                                 <FaHeart className="mr-1 text-red-500" />
                                 <span>{website.heart}</span>
                             </div>
                         )}
                         {website.evaluation !== undefined && (
-                            <div className="flex items-center">
+                            <div className="flex items-center ai-hoverable" data-button-id="Đánh Giá">
                                 <FaStar className="mr-1 text-yellow-400" />
                                 <span>{website.evaluation.toFixed(1)}</span>
                             </div>
@@ -230,7 +232,8 @@ const WebsiteCard: React.FC<{
                         {website.tags.map((tag, tagIndex) => (
                             <span
                                 key={tagIndex}
-                                className="bg-blue-900 text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-blue-700 transition-colors duration-200"
+                                className="bg-blue-900 text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded cursor-pointer hover:bg-blue-700 transition-colors duration-200 ai-hoverable"
+                                data-button-id="Tag"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onTagClick(tag);
