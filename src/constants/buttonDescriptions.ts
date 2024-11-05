@@ -163,6 +163,43 @@ export const buttonDescriptions: Record<string, ButtonDescription> = {
         text: 'Tìm Kiếm',
         description: 'Nhấn để thực hiện tìm kiếm',
         category: 'form'
+    },
+
+    // Website Details Actions - Các nút trong chi tiết website
+    'website-heart': {
+        text: 'Yêu Thích Website',
+        description: 'Thêm website này vào danh sách yêu thích của bạn',
+        category: 'action'
+    },
+    'website-pin': {
+        text: 'Ghim Website',
+        description: 'Ghim website này để dễ dàng truy cập sau này',
+        category: 'action'
+    },
+    'website-access': {
+        text: 'Truy Cập Website',
+        description: 'Mở website này trong tab mới',
+        category: 'action'
+    },
+    'website-rating': {
+        text: 'Đánh Giá Website',
+        description: 'Cho điểm và đánh giá website này',
+        category: 'action'
+    },
+    'website-comment': {
+        text: 'Bình Luận',
+        description: 'Thêm bình luận của bạn về website này',
+        category: 'action'
+    },
+    'website-compare': {
+        text: 'So Sánh AI',
+        description: 'So sánh website này với các website AI khác',
+        category: 'action'
+    },
+    'website-info': {
+        text: 'Thông Tin Thêm',
+        description: 'Xem thêm thông tin chi tiết về website này',
+        category: 'action'
     }
 };
 

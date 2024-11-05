@@ -8,6 +8,8 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface AdditionalInfoButtonProps {
     websiteData: string;
+    className?: string;
+    'data-button-id'?: string;
 }
 
 interface ChatMessage {
@@ -15,7 +17,11 @@ interface ChatMessage {
     parts: string;
 }
 
-const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({ websiteData }) => {
+const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({
+    websiteData,
+    className,
+    'data-button-id': buttonId
+}) => {
     const [additionalInfo, setAdditionalInfo] = useState<ChatMessage[]>([]);
     const [responseHistory, setResponseHistory] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -130,7 +136,7 @@ const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({ websiteData
     );
 
     return (
-        <div className="mt-4">
+        <div className={`mt-4 ${className}`} data-button-id={buttonId}>
             {additionalInfo.length === 0 && (
                 <div className="flex flex-wrap gap-2 md:gap-4">
                     {renderButton(generateAdditionalInfo, <FaPlus />, 'Thêm thông tin', 'bg-blue-500')}

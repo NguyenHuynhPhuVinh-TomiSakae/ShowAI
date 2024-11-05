@@ -18,9 +18,15 @@ interface AIWebsite {
 
 interface AICompareProps {
     currentWebsite: AIWebsite;
+    className?: string;
+    'data-button-id'?: string;
 }
 
-const AICompare: React.FC<AICompareProps> = ({ currentWebsite }) => {
+const AICompare: React.FC<AICompareProps> = ({
+    currentWebsite,
+    className,
+    'data-button-id': buttonId
+}) => {
     const [isLoading, setIsLoading] = useState(false);
     const [aiTool2, setAiTool2] = useState('');
     const [comparisonResult, setComparisonResult] = useState('');
@@ -136,7 +142,7 @@ const AICompare: React.FC<AICompareProps> = ({ currentWebsite }) => {
     };
 
     return (
-        <div className="mt-8 bg-gray-800 rounded-xl p-4 sm:p-6">
+        <div className={`mt-8 bg-gray-800 rounded-xl p-4 sm:p-6 ${className}`} data-button-id={buttonId}>
             <h3 className="text-xl sm:text-2xl font-bold text-blue-300 mb-4">So sánh với công cụ AI khác</h3>
             <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
                 <div className="w-full sm:w-[45%] p-2 border rounded bg-[#1E293B] text-white border-[#3E52E8] mb-2 sm:mb-0">

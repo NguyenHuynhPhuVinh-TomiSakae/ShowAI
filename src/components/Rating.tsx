@@ -7,15 +7,22 @@ import { doc, getDoc, updateDoc, deleteField } from 'firebase/firestore';
 interface RatingProps {
     websiteId: string;
     initialRating: number;
-    user: {
-        uid: string;
-        displayName?: string;
-    } | null;
-    onRatingUpdate: (newRating: number) => void;
+    user: any;
+    onRatingUpdate: (rating: number) => void;
     onRatingStart: () => void;
+    className?: string;
+    'data-button-id'?: string;
 }
 
-const Rating: React.FC<RatingProps> = ({ websiteId, initialRating, user, onRatingUpdate, onRatingStart }) => {
+const Rating: React.FC<RatingProps> = ({
+    websiteId,
+    initialRating,
+    user,
+    onRatingUpdate,
+    onRatingStart,
+    className,
+    'data-button-id': buttonId
+}) => {
     const [userRating, setUserRating] = useState<number | null>(null);
     const [hoverRating, setHoverRating] = useState(0);
     const [canRate, setCanRate] = useState(true);
@@ -114,39 +121,41 @@ const Rating: React.FC<RatingProps> = ({ websiteId, initialRating, user, onRatin
     };
 
     return (
-        <div className="mt-4">
-            <div className="flex items-center mb-2">
-                <h3 className="text-lg font-semibold text-blue-300 mr-2">Đánh giá</h3>
-                <FaStar className="text-yellow-400 mr-1" />
-                <span className="text-gray-300">{localEvaluation.toFixed(1) || 'Chưa có'}</span>
-            </div>
-            <div className="flex items-center">
-                <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                        <FaStar
-                            key={star}
-                            className={`cursor-pointer text-2xl mr-1 ${star <= (hoverRating || userRating || 0)
-                                ? 'text-yellow-400'
-                                : 'text-gray-400'
-                                }`}
-                            onClick={() => canRate && handleRating(star)}
-                            onMouseEnter={() => canRate && setHoverRating(star)}
-                            onMouseLeave={() => canRate && setHoverRating(0)}
-                        />
-                    ))}
+        <div className={className} data-button-id={buttonId}>
+            <div className="mt-4">
+                <div className="flex items-center mb-2">
+                    <h3 className="text-lg font-semibold text-blue-300 mr-2">Đánh giá</h3>
+                    <FaStar className="text-yellow-400 mr-1" />
+                    <span className="text-gray-300">{localEvaluation.toFixed(1) || 'Chưa có'}</span>
                 </div>
-                {!canRate && (
-                    <button
-                        onClick={handleRemoveRating}
-                        className="ml-4 text-red-400 hover:text-red-300 flex items-center"
-                    >
-                        <FaTrash className="mr-1" /> Xóa đánh giá
-                    </button>
+                <div className="flex items-center">
+                    <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <FaStar
+                                key={star}
+                                className={`cursor-pointer text-2xl mr-1 ${star <= (hoverRating || userRating || 0)
+                                    ? 'text-yellow-400'
+                                    : 'text-gray-400'
+                                    }`}
+                                onClick={() => canRate && handleRating(star)}
+                                onMouseEnter={() => canRate && setHoverRating(star)}
+                                onMouseLeave={() => canRate && setHoverRating(0)}
+                            />
+                        ))}
+                    </div>
+                    {!canRate && (
+                        <button
+                            onClick={handleRemoveRating}
+                            className="ml-4 text-red-400 hover:text-red-300 flex items-center"
+                        >
+                            <FaTrash className="mr-1" /> Xóa đánh giá
+                        </button>
+                    )}
+                </div>
+                {!user && (
+                    <p className="text-gray-400 mt-2">Đăng nhập để đánh giá</p>
                 )}
             </div>
-            {!user && (
-                <p className="text-gray-400 mt-2">Đăng nhập để đánh giá</p>
-            )}
         </div>
     );
 };

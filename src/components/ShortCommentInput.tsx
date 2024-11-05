@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, Suspense } from 'react';
 import { FaCommentAlt, FaSpinner } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
@@ -8,9 +7,11 @@ import ModalPortal from './ModalPortal';
 interface ShortCommentInputProps {
     websiteId: string;
     user: any;
+    className?: string;
+    'data-button-id'?: string;
 }
 
-const ShortCommentInputContent: React.FC<ShortCommentInputProps> = ({ user }) => {
+const ShortCommentInputContent: React.FC<ShortCommentInputProps> = ({ user, className, 'data-button-id': buttonId }) => {
     const searchParams = useSearchParams();
     const websiteId = searchParams.get('id');
 
@@ -215,7 +216,7 @@ const ShortCommentInputContent: React.FC<ShortCommentInputProps> = ({ user }) =>
     }
 
     return (
-        <div className="mb-4 mt-4">
+        <div className={`mb-4 mt-4 ${className}`} data-button-id={buttonId}>
             <div className="flex items-center mb-2">
                 <FaCommentAlt className="text-blue-500 mr-2" />
                 <h3 className="text-lg font-semibold text-white">Bình luận ngắn</h3>

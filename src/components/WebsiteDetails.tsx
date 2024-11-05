@@ -231,14 +231,16 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                     <div className="flex items-center">
                         <FaHeart
                             className={`text-xl sm:text-2xl mr-2 ${isHearted ? 'text-red-500' : 'text-gray-400 hover:text-red-400 cursor-pointer'} 
-                            ${isPreviewMode ? 'cursor-default' : 'cursor-pointer'} transition-colors`}
+                            ${isPreviewMode ? 'cursor-default' : 'cursor-pointer'} transition-colors ai-hoverable`}
+                            data-button-id="website-heart"
                             onClick={handleHeartClick}
                         />
                         <span className="text-base sm:text-lg text-gray-400">{heartCount}</span>
                     </div>
                     <button
                         onClick={handlePinClick}
-                        className={`text-2xl ${isPinned ? 'text-green-400' : 'text-gray-400'} hover:text-green-400 transition-colors duration-200 ${isPreviewMode ? 'cursor-default pointer-events-none' : ''}`}
+                        data-button-id="website-pin"
+                        className={`text-2xl ${isPinned ? 'text-green-400' : 'text-gray-400'} hover:text-green-400 transition-colors duration-200 ${isPreviewMode ? 'cursor-default pointer-events-none' : ''} ai-hoverable`}
                     >
                         <FaThumbtack />
                     </button>
@@ -247,12 +249,13 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                     href={website.link}
                     target="_blank"
                     rel="noopener noreferrer"
+                    data-button-id="website-access"
                     className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 
                     text-white font-bold py-2 px-6 sm:py-3 sm:px-8 rounded-full transition-all duration-300 
                     transform hover:scale-105 shadow-lg text-sm sm:text-base
                     hover:-translate-y-1 active:translate-y-0
                     border-b-4 border-blue-800 hover:border-blue-900 active:border-b-0
-                    active:shadow-inner"
+                    active:shadow-inner ai-hoverable"
                 >
                     Truy cập trang web
                 </Link>
@@ -272,6 +275,8 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                             user={user}
                             onRatingUpdate={handleRatingUpdate}
                             onRatingStart={handleRatingStart}
+                            className="ai-hoverable"
+                            data-button-id="website-rating"
                         />
                     )
                 )}
@@ -319,7 +324,11 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
 
             {!isPreviewMode && (
                 <>
-                    <AdditionalInfoButton websiteData={JSON.stringify(website)} />
+                    <AdditionalInfoButton
+                        websiteData={JSON.stringify(website)}
+                        className="ai-hoverable"
+                        data-button-id="website-info"
+                    />
                     <AIRating
                         websiteName={website.name}
                         description={website.description}
@@ -331,11 +340,17 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                         description={website.description}
                         keyFeatures={website.keyFeatures}
                     />
-                    <AICompare currentWebsite={website} />
+                    <AICompare
+                        currentWebsite={website}
+                        className="ai-hoverable"
+                        data-button-id="website-compare"
+                    />
                     <div className="mt-8 sm:mt-12">
                         <ShortCommentInput
                             websiteId={website.id}
                             user={user}
+                            className="ai-hoverable"
+                            data-button-id="website-comment"
                         />
                         <Comments
                             websiteId={website.id}
