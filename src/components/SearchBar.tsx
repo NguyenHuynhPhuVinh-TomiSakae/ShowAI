@@ -50,7 +50,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onTagClick, allTags = [] }) => {
                         <input
                             type="text"
                             placeholder="Tìm kiếm công cụ AI..."
-                            className="py-3 px-5 pr-36 rounded-full w-full text-white bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#3E52E8] focus:border-transparent transition-all duration-300"
+                            className="py-3 px-5 pr-36 rounded-full w-full text-white bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#3E52E8] focus:border-transparent transition-all duration-300 ai-hoverable"
+                            data-button-id="search-input"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -58,15 +59,19 @@ const SearchBar: React.FC<SearchBarProps> = ({ onTagClick, allTags = [] }) => {
                         <VoiceSearch
                             onTranscript={handleVoiceTranscript}
                             onClearInput={() => setSearchTerm('')}
-                            className="absolute right-24 top-1/2 transform -translate-y-1/2 text-[#3E52E8] hover:text-[#4B5EFF] transition-colors duration-300" />
+                            className="absolute right-24 top-1/2 transform -translate-y-1/2 text-[#3E52E8] hover:text-[#4B5EFF] transition-colors duration-300 ai-hoverable"
+                            data-button-id="voice-search"
+                        />
                         <button
-                            className="absolute right-14 top-1/2 transform -translate-y-1/2 text-[#3E52E8] hover:text-[#4B5EFF] transition-colors duration-300"
+                            className="absolute right-14 top-1/2 transform -translate-y-1/2 text-[#3E52E8] hover:text-[#4B5EFF] transition-colors duration-300 ai-hoverable"
+                            data-button-id="tag-button"
                             onClick={() => setShowTagDropdown(!showTagDropdown)}
                         >
                             <FaTags className="text-xl" />
                         </button>
                         <button
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-[#3E52E8] text-white rounded-full p-2 hover:bg-[#4B5EFF] transition-colors duration-300"
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-[#3E52E8] text-white rounded-full p-2 hover:bg-[#4B5EFF] transition-colors duration-300 ai-hoverable"
+                            data-button-id="search-button"
                             onClick={handleSearch}
                         >
                             <FaSearch className="text-xl" />
@@ -82,7 +87,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onTagClick, allTags = [] }) => {
                         {allTags.map((tag, index) => (
                             <button
                                 key={index}
-                                className="flex items-center justify-center bg-gray-800 hover:bg-[#3E52E8] text-white rounded-lg px-3 py-2 text-sm transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                className="flex items-center justify-center bg-gray-800 hover:bg-[#3E52E8] text-white rounded-lg px-3 py-2 text-sm transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ai-hoverable"
+                                data-button-id="Tag"
                                 onClick={() => onTagClick ? onTagClick(tag) : handleTagSearch(tag)}
                             >
                                 <FaSearch className="mr-2 text-xs" />

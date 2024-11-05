@@ -141,6 +141,28 @@ export const buttonDescriptions: Record<string, ButtonDescription> = {
         text: 'Tag',
         description: 'Nhấn để lọc các website có cùng tag này',
         category: 'action'
+    },
+
+    // Search Actions - Các nút tìm kiếm
+    'search-input': {
+        text: 'Tìm Kiếm',
+        description: 'Nhập từ khóa để tìm kiếm công cụ AI',
+        category: 'form'
+    },
+    'voice-search': {
+        text: 'Tìm Kiếm Bằng Giọng Nói',
+        description: 'Nhấn để tìm kiếm bằng giọng nói của bạn',
+        category: 'form'
+    },
+    'tag-button': {
+        text: 'Danh Sách Tag',
+        description: 'Xem và chọn các tag phổ biến',
+        category: 'form'
+    },
+    'search-button': {
+        text: 'Tìm Kiếm',
+        description: 'Nhấn để thực hiện tìm kiếm',
+        category: 'form'
     }
 };
 

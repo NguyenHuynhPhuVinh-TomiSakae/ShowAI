@@ -280,9 +280,4 @@
 
 .ai-hoverable {
     cursor: pointer;
-    position: relative;
-}
-
-.ai-hoverable:hover {
-    /* Thêm các style hover nếu cần */
 }
