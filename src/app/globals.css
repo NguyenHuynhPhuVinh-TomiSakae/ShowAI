@@ -277,3 +277,12 @@
 .markdown-content pre code {
     color: #f8fafc;
 }
+
+.ai-hoverable {
+    cursor: pointer;
+    position: relative;
+}
+
+.ai-hoverable:hover {
+    /* Thêm các style hover nếu cần */
+}

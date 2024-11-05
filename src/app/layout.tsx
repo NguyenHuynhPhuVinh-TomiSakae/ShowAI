@@ -10,6 +10,7 @@ import { Analytics } from "@vercel/analytics/react"
 import VoiceCallIcon from "@/components/VoiceCallIcon";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import OpenReplayTracker from '@/components/OpenReplayTracker';
+import AIInteractionToggle from "@/components/AIInteractionToggle";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -79,6 +80,7 @@ export default function RootLayout({
         <ScrollToTopButton />
         <GeminiChatIcon />
         <VoiceCallIcon />
+        <AIInteractionToggle />
         <div id="modal-root"></div>
         <Script id="structured-data" type="application/ld+json">
           {JSON.stringify({

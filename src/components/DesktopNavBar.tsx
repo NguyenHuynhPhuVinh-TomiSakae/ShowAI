@@ -48,12 +48,15 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
             <div className="lg:relative lg:w-auto lg:bg-transparent lg:flex lg:items-center">
                 <div className="flex flex-row p-0 space-x-4">
                     <div
-                        className="relative group"
+                        className="relative group ai-hoverable"
                         ref={aiToolsRef}
                         onMouseEnter={() => handleMouseEnter(setIsAIToolsDropdownOpen)}
                         onMouseLeave={() => handleMouseLeave(setIsAIToolsDropdownOpen)}
                     >
-                        <button className="nav-button group bg-gray-800 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-gray-800">
+                        <button
+                            className="nav-button ai-hoverable bg-gray-800 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-gray-800"
+                            data-description="Chứa các công cụ AI như tạo hình ảnh và chuyển đổi file"
+                        >
                             <FaTools className="mr-2" />
                             <span>Hộp Công Cụ</span>
                             {isAIToolsDropdownOpen ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />}
@@ -70,11 +73,11 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                     } as ModalBackdropProps}
                                 >
                                     <div className="p-4 space-y-2">
-                                        <button onClick={() => { setIsAIImageGenModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
+                                        <button onClick={() => { setIsAIImageGenModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-blue-400 hover:text-gray-800">
                                             <FaImage className="mr-3" />
                                             Tạo Hình Ảnh
                                         </button>
-                                        <button onClick={() => { setIsFileConversionModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item hover:bg-blue-400 hover:text-gray-800">
+                                        <button onClick={() => { setIsFileConversionModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-blue-400 hover:text-gray-800">
                                             <FaExchangeAlt className="mr-3" />
                                             Chuyển Đổi Ảnh
                                         </button>
@@ -83,21 +86,20 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                             )}
                         </AnimatePresence>
                     </div>
-                    <button onClick={() => router.push('/leaderboard')} className="nav-button bg-gray-800 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-800">
+                    <button onClick={() => router.push('/leaderboard')} className="nav-button ai-hoverable bg-gray-800 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-800">
                         <FaTrophy className="mr-2" />
                         <span>Bảng Xếp Hạng</span>
                     </button>
-                    {/* Thêm nút Games mới */}
-                    <button onClick={() => router.push('/games')} className="nav-button bg-gray-800 border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-gray-800">
+                    <button onClick={() => router.push('/games')} className="nav-button ai-hoverable bg-gray-800 border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-gray-800">
                         <FaGamepad className="mr-2" />
                         <span>Trò Chơi</span>
                     </button>
                     <div
-                        className="relative group"
+                        className="relative group ai-hoverable"
                         onMouseEnter={() => setIsAIDropdownOpen(true)}
                         onMouseLeave={() => setIsAIDropdownOpen(false)}
                     >
-                        <button className="nav-button bg-gray-800 border border-green-500 text-green-500 hover:bg-green-500 hover:text-gray-800">
+                        <button className="nav-button ai-hoverable bg-gray-800 border border-green-500 text-green-500 hover:bg-green-500 hover:text-gray-800">
                             <FaRobot className="mr-2" />
                             <span>AI</span>
                             {isAIDropdownOpen ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />}
@@ -114,11 +116,11 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                     } as ModalBackdropProps}
                                 >
                                     <div className="p-4 space-y-2">
-                                        <button onClick={() => { router.push('/codebox'); setIsAIDropdownOpen(false); }} className="dropdown-item hover:bg-green-500 hover:text-gray-800">
+                                        <button onClick={() => { router.push('/codebox'); setIsAIDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-green-500 hover:text-gray-800">
                                             <FaCode className="mr-3" />
                                             Tạo Mã
                                         </button>
-                                        <button onClick={() => { router.push('/chatbox'); setIsAIDropdownOpen(false); }} className="dropdown-item hover:bg-green-500 hover:text-gray-800">
+                                        <button onClick={() => { router.push('/chatbox'); setIsAIDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-green-500 hover:text-gray-800">
                                             <FaComments className="mr-3" />
                                             Trò Chuyện
                                         </button>
@@ -128,12 +130,12 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                         </AnimatePresence>
                     </div>
                     <div
-                        className="relative group"
+                        className="relative group ai-hoverable"
                         ref={userDropdownRef}
                         onMouseEnter={() => user && handleMouseEnter(setIsUserDropdownOpen)}
                         onMouseLeave={() => user && handleMouseLeave(setIsUserDropdownOpen)}
                     >
-                        <button onClick={() => !user && router.push('/login')} className="nav-button bg-gray-800 border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-800">
+                        <button onClick={() => !user && router.push('/login')} className="nav-button ai-hoverable bg-gray-800 border border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-gray-800">
                             <FaUserCircle className="mr-2" />
                             <span>{user ? user.username : 'Đăng Nhập'}</span>
                             {user && (isUserDropdownOpen ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />)}
@@ -150,11 +152,11 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                     } as ModalBackdropProps}
                                 >
                                     <div className="p-4 space-y-2">
-                                        <button onClick={() => { router.push('/account'); setIsUserDropdownOpen(false); }} className="dropdown-item hover:bg-teal-400 hover:text-gray-800">
+                                        <button onClick={() => { router.push('/account'); setIsUserDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-teal-400 hover:text-gray-800">
                                             <FaUser className="mr-3" />
                                             Tài Khoản
                                         </button>
-                                        <button onClick={() => { handleLogout(); setIsUserDropdownOpen(false); }} className="dropdown-item hover:bg-teal-400 hover:text-gray-800">
+                                        <button onClick={() => { handleLogout(); setIsUserDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-teal-400 hover:text-gray-800">
                                             <FaSignOutAlt className="mr-3" />
                                             Đăng Xuất
                                         </button>
