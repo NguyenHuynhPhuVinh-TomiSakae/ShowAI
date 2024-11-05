@@ -77,6 +77,36 @@ type Score = {
     player2: number;
 };
 
+// Thêm component ResultModal
+const ResultModal = ({ isWinner, onClose }: { isWinner: boolean; onClose: () => void }) => {
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                className={`${isWinner ? 'bg-green-600' : 'bg-red-600'
+                    } p-6 rounded-lg shadow-lg text-white text-center max-w-sm mx-4`}
+            >
+                <h2 className="text-2xl font-bold mb-4">
+                    {isWinner ? '🎉 Chúc mừng!' : '😢 Thua cuộc!'}
+                </h2>
+                <p className="mb-6">
+                    {isWinner
+                        ? 'Bạn đã chiến thắng trận đấu!'
+                        : 'Đối thủ đã chiến thắng trận đấu!'}
+                </p>
+                <button
+                    onClick={onClose}
+                    className="bg-white text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100"
+                >
+                    Đóng
+                </button>
+            </motion.div>
+        </div>
+    );
+};
+
 export default function RockPaperScissorsGame() {
     const [playerChoice, setPlayerChoice] = useState<Choice | null>(null);
     const [computerChoice, setComputerChoice] = useState<Choice | null>(null);
@@ -90,6 +120,15 @@ export default function RockPaperScissorsGame() {
     const [supabase, setSupabase] = useState<any>(null);
     const [matchmakingStatus, setMatchmakingStatus] = useState<MatchmakingStatus>('idle');
     const [playerRole, setPlayerRole] = useState<PlayerRole>(null);
+    const [gameEnded, setGameEnded] = useState(false);
+    const WINNING_SCORE = 5;
+
+    // Thêm state để theo dõi chế độ chơi với AI trong khi chờ
+    const [playingWithAIWhileWaiting, setPlayingWithAIWhileWaiting] = useState(false);
+
+    // Thêm state để kiểm soát hiển thị modal
+    const [showResultModal, setShowResultModal] = useState(false);
+    const [isWinner, setIsWinner] = useState(false);
 
     const determineWinner = (player: Choice, computer: Choice): GameResult => {
         if (player === computer) return 'hòa';
@@ -175,6 +214,49 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
     };
 
     const handleChoice = async (choice: Choice) => {
+        // Nếu đang trong trạng thái chờ và chọn chơi với AI
+        if (isOnline && currentGame?.status === 'waiting' && playingWithAIWhileWaiting) {
+            const computerMove = await getAIChoice();
+            setPlayerChoice(choice);
+            setComputerChoice(computerMove);
+
+            const gameResult = determineWinner(choice, computerMove);
+            setResult(gameResult);
+
+            let newScore = { ...score };
+            if (gameResult === 'thắng') {
+                newScore = { ...score, player1: score.player1 + 1 };
+                toast.success('Bạn thắng! 🎉', toastStyle);
+            } else if (gameResult === 'thua') {
+                newScore = { ...score, player2: score.player2 + 1 };
+                toast.error('Bạn thua! 😢', toastStyle);
+            } else {
+                toast('Hòa! 🤝', toastStyle);
+            }
+
+            setScore(newScore);
+            setGameHistory(prev => [...prev, {
+                playerMove: choice,
+                computerMove: computerMove,
+                result: gameResult
+            }]);
+
+            if (newScore.player1 >= WINNING_SCORE || newScore.player2 >= WINNING_SCORE) {
+                setGameEnded(true);
+                const playerWon = newScore.player1 >= WINNING_SCORE;
+                setIsWinner(playerWon);
+                setShowResultModal(true);
+            } else {
+                setTimeout(() => {
+                    setPlayerChoice(null);
+                    setComputerChoice(null);
+                    setResult(null);
+                }, 3000);
+            }
+            return;
+        }
+
+        // Xử lý game online bình thường
         if (isOnline && currentGame && supabase) {
             if (playerRole === 'ai') {
                 // Nếu là AI, cập nhật lựa chọn vào player2_choice
@@ -191,6 +273,8 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
             }
             return;
         }
+
+        // Xử lý game offline bình thường
         const computerMove = await getAIChoice();
         setPlayerChoice(choice);
         setComputerChoice(computerMove);
@@ -198,22 +282,38 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
         const gameResult = determineWinner(choice, computerMove);
         setResult(gameResult);
 
+        let newScore = { ...score };
         if (gameResult === 'thắng') {
-            setScore(prev => ({ ...prev, player1: prev.player1 + 1 }));
+            newScore = { ...score, player1: score.player1 + 1 };
             toast.success('Bạn thắng! 🎉', toastStyle);
         } else if (gameResult === 'thua') {
-            setScore(prev => ({ ...prev, player2: prev.player2 + 1 }));
+            newScore = { ...score, player2: score.player2 + 1 };
             toast.error('Bạn thua! 😢', toastStyle);
         } else {
             toast('Hòa! 🤝', toastStyle);
         }
 
-        // Cập nhật lịch sử
+        setScore(newScore);
         setGameHistory(prev => [...prev, {
             playerMove: choice,
             computerMove: computerMove,
             result: gameResult
         }]);
+
+        // Kiểm tra điều kiện thắng
+        if (newScore.player1 >= WINNING_SCORE || newScore.player2 >= WINNING_SCORE) {
+            setGameEnded(true);
+            const playerWon = newScore.player1 >= WINNING_SCORE;
+            setIsWinner(playerWon);
+            setShowResultModal(true);
+        } else {
+            // Chỉ reset sau 3 giây nếu chưa kết thúc trận
+            setTimeout(() => {
+                setPlayerChoice(null);
+                setComputerChoice(null);
+                setResult(null);
+            }, 3000);
+        }
     };
 
     const resetGame = () => {
@@ -255,7 +355,6 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
         }
 
         setMatchmakingStatus('finding');
-        toast.loading('Đang tìm đối thủ...', { id: 'finding-match' });
 
         try {
             const { data: availableGame, error } = await supabase
@@ -267,8 +366,7 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                 .single();
 
             if (error && error.code !== 'PGRST116') {
-                console.error('Lỗi khi tìm game:', error);
-                toast.error('Không thể tìm trận đấu', { id: 'finding-match' });
+                toast.error('Lỗi khi tìm game:', toastStyle);
                 setMatchmakingStatus('idle');
                 return;
             }
@@ -286,7 +384,6 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
 
                 if (updateError) {
                     console.error('Lỗi khi tham gia game:', updateError);
-                    toast.error('Không thể tham gia game', { id: 'finding-match' });
                     setMatchmakingStatus('idle');
                     return;
                 }
@@ -294,14 +391,11 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                 setCurrentGame(updatedGame);
                 setIsOnline(true);
                 setMatchmakingStatus('matched');
-                toast.dismiss('finding-match');
-                toast.success('Đã tìm thấy đối thủ!');
             } else {
                 await createOnlineGame();
             }
         } catch (error) {
             console.error('Lỗi:', error);
-            toast.error('Đã có lỗi xảy ra', { id: 'finding-match' });
             setMatchmakingStatus('idle');
         }
     };
@@ -319,13 +413,23 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                 filter: `id=eq.${currentGame.id}`
             }, (payload: any) => {
                 const updatedGame = payload.new as OnlineGame;
-                setCurrentGame(updatedGame);
 
-                // Cập nhật trạng thái khi game chuyển sang playing
+                // Kiểm tra nếu game chuyển sang trạng thái finished hoặc player2 đã thoát
+                if (updatedGame.status === 'finished' || !updatedGame.player2_id) {
+                    // Reset game cho người chơi còn lại
+                    setCurrentGame(null);
+                    setIsOnline(false);
+                    setMatchmakingStatus('idle');
+                    setPlayerRole(null);
+                    setScore({ player1: 0, player2: 0 });
+                    setPlayingWithAIWhileWaiting(false);
+                    toast.error('Đối thủ đã thoát trận đấu!', toastStyle);
+                } else {
+                    setCurrentGame(updatedGame);
+                }
+
                 if (updatedGame.status === 'playing') {
                     setMatchmakingStatus('matched');
-                    toast.dismiss('finding-match');
-                    toast.success('Trận đấu bắt đầu!');
                 }
             })
             .subscribe();
@@ -333,7 +437,7 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
         return () => {
             gameSubscription.unsubscribe();
         };
-    }, [currentGame, supabase]);
+    }, [currentGame, supabase, playerRole]);
 
     // Thêm useEffect để khởi tạo Supabase client
     useEffect(() => {
@@ -343,14 +447,14 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                 const { url, key } = await response.json();
 
                 if (!url || !key) {
-                    toast.error('Không thể kết nối tới server');
+                    toast.error('Không thể kết nối tới server', toastStyle);
                     return;
                 }
 
                 const supabaseClient = createClient(url, key);
                 setSupabase(supabaseClient);
             } catch (error) {
-                toast.error('Lỗi kết nối tới server');
+                toast.error('Lỗi kết nối tới server', toastStyle);
                 console.error(error);
             }
         };
@@ -382,20 +486,38 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                 playerRole === 'player' ? currentGame.player2_choice : currentGame.player1_choice
             );
 
+            let newScore = { ...score };
             if (result === 'thắng') {
-                setScore(prev => ({
-                    ...prev,
-                    [playerRole === 'player' ? 'player1' : 'player2']: prev[playerRole === 'player' ? 'player1' : 'player2'] + 1
-                }));
+                newScore = {
+                    ...score,
+                    [playerRole === 'player' ? 'player1' : 'player2']: score[playerRole === 'player' ? 'player1' : 'player2'] + 1
+                };
                 toast.success('Bạn thắng! 🎉', toastStyle);
             } else if (result === 'thua') {
-                setScore(prev => ({
-                    ...prev,
-                    [playerRole === 'player' ? 'player2' : 'player1']: prev[playerRole === 'player' ? 'player2' : 'player1'] + 1
-                }));
+                newScore = {
+                    ...score,
+                    [playerRole === 'player' ? 'player2' : 'player1']: score[playerRole === 'player' ? 'player2' : 'player1'] + 1
+                };
                 toast.error('Bạn thua! 😢', toastStyle);
             } else {
                 toast('Hòa! 🤝', toastStyle);
+            }
+
+            setScore(newScore);
+
+            // Kiểm tra điều kiện thắng
+            if (newScore.player1 >= WINNING_SCORE || newScore.player2 >= WINNING_SCORE) {
+                setGameEnded(true);
+                const playerWon = playerRole === 'player'
+                    ? newScore.player1 >= WINNING_SCORE
+                    : newScore.player2 >= WINNING_SCORE;
+                setIsWinner(playerWon);
+                setShowResultModal(true);
+            } else {
+                // Chỉ reset sau 3 giây nếu chưa kết thúc trận
+                setTimeout(() => {
+                    resetOnlineGame();
+                }, 3000);
             }
         }
     }, [currentGame?.player1_choice, currentGame?.player2_choice]);
@@ -416,26 +538,127 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
     const resetOnlineGame = async () => {
         if (!currentGame || !supabase) return;
 
-        if (currentGame.player1_ready && currentGame.player2_ready) {
+        // Nếu game đã kết thúc (đạt 5 điểm), chỉ reset khi cả hai đã sẵn sàng
+        if (gameEnded) {
+            if (currentGame.player1_ready && currentGame.player2_ready) {
+                await supabase
+                    .from('games')
+                    .update({
+                        player1_choice: null,
+                        player2_choice: null,
+                        player1_ready: false,
+                        player2_ready: false,
+                        status: 'playing'
+                    })
+                    .eq('id', currentGame.id);
+                setGameEnded(false);
+                setScore({ player1: 0, player2: 0 });
+            }
+        } else {
+            // Nếu chưa kết thúc, tự động reset sau mỗi lượt
             await supabase
                 .from('games')
                 .update({
                     player1_choice: null,
                     player2_choice: null,
-                    player1_ready: false,
-                    player2_ready: false,
                     status: 'playing'
                 })
                 .eq('id', currentGame.id);
         }
     };
 
-    // Thêm useEffect để tự động reset game khi cả hai sẵn sàng
+    // Thêm useEffect để tự động reset game khi cả hai s��n sàng
     useEffect(() => {
         if (currentGame?.player1_ready && currentGame?.player2_ready) {
             resetOnlineGame();
         }
     }, [currentGame?.player1_ready, currentGame?.player2_ready]);
+
+    // Cập nhật useEffect cho game online để dừng chơi với AI khi có người tham gia
+    useEffect(() => {
+        if (currentGame?.status === 'playing' && playingWithAIWhileWaiting) {
+            setPlayingWithAIWhileWaiting(false);
+            resetGame();
+            toast.success('Người chơi khác đã tham gia!', toastStyle);
+        }
+    }, [currentGame?.status]);
+
+    // Thêm hàm xử lý thoát trận
+    const handleExitGame = async () => {
+        if (!currentGame || !supabase) return;
+
+        try {
+            // Xóa game nếu đang ở trạng thái chờ
+            if (currentGame.status === 'waiting') {
+                await supabase
+                    .from('games')
+                    .delete()
+                    .eq('id', currentGame.id);
+            } else {
+                // Kết thúc game cho cả hai người chơi
+                const { error } = await supabase
+                    .from('games')
+                    .update({
+                        status: 'finished',
+                        // Giữ lại player1_id nhưng đánh dấu game đã kết thúc
+                        player2_id: null,
+                        player1_choice: null,
+                        player2_choice: null,
+                    })
+                    .eq('id', currentGame.id);
+
+                if (error) {
+                    throw error;
+                }
+
+                // Gửi thông báo realtime cho tất cả người chơi
+                await supabase
+                    .channel('custom_update_channel')
+                    .send({
+                        type: 'broadcast',
+                        event: 'game_exit',
+                        payload: { game_id: currentGame.id }
+                    });
+            }
+
+            // Reset các state
+            setCurrentGame(null);
+            setIsOnline(false);
+            setMatchmakingStatus('idle');
+            setPlayerRole(null);
+            setScore({ player1: 0, player2: 0 });
+            setPlayingWithAIWhileWaiting(false);
+            toast.success('Đã thoát trận đấu', toastStyle);
+        } catch (error) {
+            console.error('Lỗi khi thoát trận:', error);
+            toast.error('Có lỗi xảy ra khi thoát trận', toastStyle);
+        }
+    };
+
+    // Thêm effect mới để lắng nghe sự kiện thoát trận
+    useEffect(() => {
+        if (!supabase || !currentGame) return;
+
+        const channel = supabase
+            .channel('custom_update_channel')
+            .on('broadcast', { event: 'game_exit' }, (payload: any) => {
+                if (payload.payload.game_id === currentGame.id) {
+                    // Reset game cho người chơi còn lại
+                    setCurrentGame(null);
+                    setIsOnline(false);
+                    setMatchmakingStatus('idle');
+                    setPlayerRole(null);
+                    setScore({ player1: 0, player2: 0 });
+                    setPlayingWithAIWhileWaiting(false);
+                    toast.error('Đối thủ đã thoát trận đấu!', toastStyle);
+                }
+            })
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [currentGame, supabase]);
 
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
@@ -481,14 +704,47 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                         </>
                     ) : (
                         <div className="text-center">
-                            {currentGame?.status === 'playing' ? (
-                                <p className="mb-2">Đang trong trận đấu</p>
-                            ) : currentGame?.status === 'waiting' ? (
-                                <div className="flex items-center gap-2 justify-center">
-                                    <FaSync className="animate-spin" />
-                                    Đang chờ người chơi khác tham gia...
+                            <div className="flex items-center gap-2 justify-center mb-2">
+                                {currentGame?.status === 'playing' ? (
+                                    <p className="mb-2">Đang trong trận đấu</p>
+                                ) : currentGame?.status === 'waiting' && !playingWithAIWhileWaiting ? (
+                                    <div className="flex items-center gap-2 justify-center">
+                                        <FaSync className="animate-spin" />
+                                        Đang tìm đối thủ...
+                                    </div>
+                                ) : null}
+
+                                {/* Thêm nút thoát */}
+                                <button
+                                    onClick={handleExitGame}
+                                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 flex items-center gap-2"
+                                >
+                                    <span>Thoát trận</span>
+                                </button>
+                            </div>
+
+                            {currentGame?.status === 'waiting' && (
+                                <div className="flex flex-col items-center gap-2">
+                                    {!playingWithAIWhileWaiting ? (
+                                        <button
+                                            onClick={() => setPlayingWithAIWhileWaiting(true)}
+                                            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700"
+                                        >
+                                            Chơi với AI trong khi chờ
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => {
+                                                setPlayingWithAIWhileWaiting(false);
+                                                resetGame();
+                                            }}
+                                            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700"
+                                        >
+                                            Dừng chơi với AI
+                                        </button>
+                                    )}
                                 </div>
-                            ) : null}
+                            )}
                         </div>
                     )}
 
@@ -497,7 +753,7 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                             onClick={() => {
                                 setMatchmakingStatus('idle');
                                 toast.dismiss('finding-match');
-                                toast.success('Đã hủy tìm trận');
+                                toast.success('Đã hủy tìm trận', toastStyle);
                             }}
                             className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
                         >
@@ -521,7 +777,7 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                         </div>
                     )}
 
-                    {isOnline && currentGame?.player1_choice && currentGame?.player2_choice && (
+                    {isOnline && currentGame?.player1_choice && currentGame?.player2_choice && gameEnded && (
                         <>
                             <button
                                 onClick={handleReady}
@@ -545,7 +801,7 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                                 {playerRole === 'player' ? (
                                     currentGame.player2_ready ? 'Đối thủ đã sẵn sàng' : 'Đang đợi đối thủ sẵn sàng...'
                                 ) : (
-                                    currentGame.player1_ready ? 'Đối thủ đã sẵn sàng' : 'Đang đợi đối thủ sẵn sàng...'
+                                    currentGame.player1_ready ? 'Đối thủ đ�� sẵn sàng' : 'Đang đợi đối thủ sẵn sàng...'
                                 )}
                             </div>
                         </>
@@ -555,7 +811,9 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                 <div className="text-center mb-4 sm:mb-8">
                     <div className="text-base sm:text-xl font-bold">
                         {isOnline ? (
-                            `Tỉ số: ${playerRole === 'player' ? 'Bạn' : 'Đối thủ'} ${score.player1} - ${score.player2} ${playerRole === 'player' ? 'Đối thủ' : 'Bạn'}`
+                            currentGame?.status === 'waiting' && playingWithAIWhileWaiting ?
+                                `Tỉ số: Bạn ${score.player1} - ${score.player2} AI` :
+                                `Tỉ số: ${playerRole === 'player' ? 'Bạn' : 'Đối thủ'} ${score.player1} - ${score.player2} ${playerRole === 'player' ? 'Đối thủ' : 'Bạn'}`
                         ) : (
                             `Tỉ số: Bạn ${score.player1} - ${score.player2} AI`
                         )}
@@ -565,72 +823,94 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                 <div className="grid grid-cols-2 gap-4 sm:gap-8 max-w-4xl mx-auto mb-4 sm:mb-8">
                     <div className="text-center">
                         <h2 className="text-xl font-bold mb-4">
-                            {isOnline ? (playerRole === 'player' ? 'Bạn' : 'Đối thủ') : 'Bạn'}
+                            {isOnline ? (
+                                currentGame?.status === 'waiting' && playingWithAIWhileWaiting ?
+                                    'Bạn' :
+                                    (playerRole === 'player' ? 'Bạn' : 'Đối thủ')
+                            ) : 'Bạn'}
                         </h2>
                         {isLoading ? (
                             <IconSkeleton />
                         ) : (
-                            <motion.div
-                                className="text-6xl mb-4"
-                                initial={{ scale: 0 }}
-                                animate={{
-                                    scale: isOnline
-                                        ? (currentGame?.player1_choice && currentGame?.player2_choice ? 1 : 0)
-                                        : Boolean(playerChoice) ? 1 : 0
-                                }}
-                                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                            >
-                                {isOnline ?
-                                    (playerRole === 'player' ?
-                                        (currentGame?.player1_choice && currentGame?.player2_choice) &&
-                                        choiceIcons[currentGame.player1_choice]?.({ className: "mx-auto" }) :
-                                        (currentGame?.player1_choice && currentGame?.player2_choice) &&
-                                        choiceIcons[currentGame.player2_choice]?.({ className: "mx-auto" })
-                                    ) :
-                                    playerChoice && choiceIcons[playerChoice]?.({ className: "mx-auto" })
-                                }
-                            </motion.div>
+                            <>
+                                <motion.div
+                                    className="text-6xl mb-4"
+                                    initial={{ scale: 0 }}
+                                    animate={{
+                                        scale: isOnline
+                                            ? (currentGame?.status === 'waiting' && playingWithAIWhileWaiting
+                                                ? (playerChoice ? 1 : 0)
+                                                : (currentGame?.player1_choice && currentGame?.player2_choice ? 1 : 0))
+                                            : (playerChoice ? 1 : 0)
+                                    }}
+                                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                                >
+                                    {isOnline
+                                        ? (currentGame?.status === 'waiting' && playingWithAIWhileWaiting
+                                            ? playerChoice && choiceIcons[playerChoice]?.({ className: "mx-auto" })
+                                            : (playerRole === 'player'
+                                                ? (currentGame?.player1_choice && currentGame?.player2_choice) &&
+                                                choiceIcons[currentGame.player1_choice]?.({ className: "mx-auto" })
+                                                : (currentGame?.player1_choice && currentGame?.player2_choice) &&
+                                                choiceIcons[currentGame.player2_choice]?.({ className: "mx-auto" }))
+                                        )
+                                        : playerChoice && choiceIcons[playerChoice]?.({ className: "mx-auto" })
+                                    }
+                                </motion.div>
+                                {isOnline && currentGame?.status === 'playing' && (
+                                    (playerRole === 'player' && currentGame.player1_choice) ||
+                                    (playerRole === 'ai' && currentGame.player2_choice)
+                                ) && (
+                                        <p className="text-green-500 text-sm">Đã chọn</p>
+                                    )}
+                            </>
                         )}
-                        {isOnline && ((playerRole === 'player' && currentGame?.player1_choice) ||
-                            (playerRole === 'ai' && currentGame?.player2_choice)) &&
-                            !(currentGame?.player1_choice && currentGame?.player2_choice) && (
-                                <p className="text-green-500">Đã chọn xong</p>
-                            )}
                     </div>
 
                     <div className="text-center">
                         <h2 className="text-xl font-bold mb-4">
-                            {isOnline ? (playerRole === 'ai' ? 'Bạn' : 'Đối thủ') : 'AI'}
+                            {isOnline ? (
+                                currentGame?.status === 'waiting' && playingWithAIWhileWaiting ?
+                                    'AI' :
+                                    (playerRole === 'ai' ? 'Bạn' : 'Đối thủ')
+                            ) : 'AI'}
                         </h2>
                         {isLoading ? (
                             <IconSkeleton />
                         ) : (
-                            <motion.div
-                                className="text-6xl mb-4"
-                                initial={{ scale: 0 }}
-                                animate={{
-                                    scale: isOnline
-                                        ? (currentGame?.player1_choice && currentGame?.player2_choice ? 1 : 0)
-                                        : Boolean(computerChoice) ? 1 : 0
-                                }}
-                                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                            >
-                                {isOnline ?
-                                    (playerRole === 'ai' ?
-                                        (currentGame?.player1_choice && currentGame?.player2_choice) &&
-                                        choiceIcons[currentGame.player1_choice]?.({ className: "mx-auto" }) :
-                                        (currentGame?.player1_choice && currentGame?.player2_choice) &&
-                                        choiceIcons[currentGame.player2_choice]?.({ className: "mx-auto" })
-                                    ) :
-                                    computerChoice && choiceIcons[computerChoice]?.({ className: "mx-auto" })
-                                }
-                            </motion.div>
+                            <>
+                                <motion.div
+                                    className="text-6xl mb-4"
+                                    initial={{ scale: 0 }}
+                                    animate={{
+                                        scale: isOnline
+                                            ? (currentGame?.status === 'waiting' && playingWithAIWhileWaiting
+                                                ? (computerChoice ? 1 : 0)
+                                                : (currentGame?.player1_choice && currentGame?.player2_choice ? 1 : 0))
+                                            : (computerChoice ? 1 : 0)
+                                    }}
+                                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                                >
+                                    {isOnline
+                                        ? (currentGame?.status === 'waiting' && playingWithAIWhileWaiting
+                                            ? computerChoice && choiceIcons[computerChoice]?.({ className: "mx-auto" })
+                                            : (playerRole === 'ai'
+                                                ? (currentGame?.player1_choice && currentGame?.player2_choice) &&
+                                                choiceIcons[currentGame.player1_choice]?.({ className: "mx-auto" })
+                                                : (currentGame?.player1_choice && currentGame?.player2_choice) &&
+                                                choiceIcons[currentGame.player2_choice]?.({ className: "mx-auto" }))
+                                        )
+                                        : computerChoice && choiceIcons[computerChoice]?.({ className: "mx-auto" })
+                                    }
+                                </motion.div>
+                                {isOnline && currentGame?.status === 'playing' && (
+                                    (playerRole === 'player' && currentGame.player2_choice) ||
+                                    (playerRole === 'ai' && currentGame.player1_choice)
+                                ) && (
+                                        <p className="text-green-500 text-sm">Đã chọn</p>
+                                    )}
+                            </>
                         )}
-                        {isOnline && ((playerRole === 'player' && currentGame?.player2_choice) ||
-                            (playerRole === 'ai' && currentGame?.player1_choice)) &&
-                            !(currentGame?.player1_choice && currentGame?.player2_choice) && (
-                                <p className="text-green-500">Đã chọn xong</p>
-                            )}
                     </div>
                 </div>
 
@@ -638,9 +918,11 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                     {choices.map((choice) => {
                         const Icon = choiceIcons[choice];
                         const isDisabled = isLoading ||
-                            (isOnline && currentGame?.status !== 'playing') ||
-                            (isOnline && ((playerRole === 'player' && currentGame?.player1_choice) ||
-                                (playerRole === 'ai' && currentGame?.player2_choice)));
+                            (isOnline && currentGame?.status === 'playing' &&
+                                ((playerRole === 'player' && currentGame?.player1_choice) ||
+                                    (playerRole === 'ai' && currentGame?.player2_choice))) ||
+                            // Cho phép chọn nếu đang chơi với AI trong khi chờ
+                            (isOnline && currentGame?.status === 'waiting' && !playingWithAIWhileWaiting);
 
                         return (
                             <motion.button
@@ -661,6 +943,24 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                     })}
                 </div>
             </div>
+
+            {/* Thêm Modal vào cuối component */}
+            {showResultModal && (
+                <ModalPortal>
+                    <ResultModal
+                        isWinner={isWinner}
+                        onClose={() => {
+                            setShowResultModal(false);
+                            if (isOnline) {
+                                resetOnlineGame();
+                            } else {
+                                resetGame();
+                                setGameEnded(false);
+                            }
+                        }}
+                    />
+                </ModalPortal>
+            )}
         </div>
     );
 }
