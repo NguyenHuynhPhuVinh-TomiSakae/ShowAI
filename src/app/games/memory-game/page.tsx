@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaSync } from 'react-icons/fa';
 import { toast, Toaster } from 'react-hot-toast';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import ModalPortal from '@/components/ModalPortal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -38,6 +37,43 @@ const CardSkeleton = () => (
     </div>
 );
 
+interface DictionaryWord {
+    text: string;
+    source: string[];
+}
+
+const generateWords = async (pairCount: number): Promise<string[]> => {
+    try {
+        const response = await fetch('/words.txt');
+        const text = await response.text();
+        const words: DictionaryWord[] = text
+            .split('\n')
+            .filter(line => line.trim())
+            .map(line => JSON.parse(line));
+
+        // Lọc các từ có độ dài phù hợp (không quá dài)
+        const validWords = words.filter(word =>
+            word.text.length <= 10 && // Giới hạn độ dài từ
+            !word.text.includes('_') && // Loại bỏ từ có gạch dưới
+            word.text.trim().length > 0 // Đảm bảo không có từ rỗng
+        );
+
+        // Xáo trộn mảng từ
+        const shuffledWords = validWords.sort(() => Math.random() - 0.5);
+
+        // Lấy số lượng từ cần thiết
+        return shuffledWords
+            .slice(0, pairCount)
+            .map(word => word.text);
+    } catch (error) {
+        console.error('Lỗi khi đọc từ điển:', error);
+        // Trả về mảng từ mặc định nếu có lỗi
+        return ['Phở', 'Áo Dài', 'Nón Lá', 'Trăng', 'Mưa',
+            'Hạnh Phúc', 'Trà Đá', 'Cà Phê', 'Võng', 'Đèn Lồng']
+            .slice(0, pairCount);
+    }
+};
+
 export default function MemoryGame() {
     const [cards, setCards] = useState<Card[]>([]);
     const [flippedCards, setFlippedCards] = useState<number[]>([]);
@@ -50,59 +86,6 @@ export default function MemoryGame() {
     useEffect(() => {
         initializeGame();
     }, []);
-
-    const generateWords = async (pairCount: number) => {
-        try {
-            const apiKeyResponse = await fetch('/api/Gemini');
-            const apiKeyData = await apiKeyResponse.json();
-            if (!apiKeyData.success) {
-                throw new Error('Không lấy được khóa API');
-            }
-            const apiKey = apiKeyData.apiKey;
-            const genAI = new GoogleGenerativeAI(apiKey);
-
-            const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
-                safetySettings: [
-                    {
-                        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-                        threshold: HarmBlockThreshold.BLOCK_NONE
-                    },
-                    {
-                        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-                        threshold: HarmBlockThreshold.BLOCK_NONE
-                    },
-                    {
-                        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-                        threshold: HarmBlockThreshold.BLOCK_NONE
-                    },
-                    {
-                        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-                        threshold: HarmBlockThreshold.BLOCK_NONE
-                    }
-                ]
-            });
-
-            const prompt = `Tạo ${pairCount} từ tiếng Việt có dấu (bao gồm cả từ đơn và từ ghép), mỗi từ không quá 10 chữ cái.
-            Các từ nên đa dạng và thuộc nhiều chủ đề khác nhau như:
-            - Thiên nhiên (cây cối, động vật, thời tiết...)
-            - Văn hóa Việt Nam (ẩm thực, lễ hội, trang phục...)
-            - Cảm xúc, tính cách
-            - Hoạt động, nghề nghiệp
-            - Đồ vật, vật dụng hàng ngày
-            
-            CHỈ TRẢ VỀ DANH SÁCH CÁC TỪ, mỗi từ trên một dòng, không kèm theo số thứ tự hay bất kỳ ký tự nào khác.
-            Ví dụ các từ có thể là: Phở, Áo Dài, Mưa Rào, Hạnh Phúc, Trăng Sáng, v.v.`;
-
-            const result = await model.generateContent(prompt);
-            const words = result.response.text().trim().split('\n');
-            return words.slice(0, pairCount);
-        } catch (error) {
-            console.error('Lỗi khi tạo từ:', error);
-            // Từ dự phòng khi có lỗi
-            return ['Phở', 'Áo Dài', 'Nón Lá', 'Trăng', 'Mưa', 'Hạnh Phúc', 'Trà Đá', 'Cà Phê', 'Võng', 'Đèn Lồng'].slice(0, pairCount);
-        }
-    };
 
     const initializeGame = async () => {
         setIsLoading(true);
