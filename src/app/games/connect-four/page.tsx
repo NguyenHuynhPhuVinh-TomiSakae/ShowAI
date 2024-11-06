@@ -272,84 +272,85 @@ export default function ConnectFourGame() {
                     Đấu với AI thông minh!
                 </p>
             </div>
-
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 sm:mb-8">
-                <button
-                    onClick={resetGame}
-                    className="flex items-center gap-1 sm:gap-2 bg-blue-600 hover:bg-blue-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
-                    disabled={isLoading}
-                >
-                    <FaSync className={isLoading ? 'animate-spin' : ''} />
-                    Ván mới
-                </button>
-                <button
-                    onClick={resetScore}
-                    className="bg-red-600 hover:bg-red-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
-                    disabled={isLoading}
-                >
-                    Reset tất cả
-                </button>
-                <button
-                    onClick={() => setShowLeaderboard(true)}
-                    className="bg-yellow-600 hover:bg-yellow-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
-                    disabled={isLoading}
-                >
-                    Bảng xếp hạng
-                </button>
-            </div>
-
-            <div className="text-center mb-4 sm:mb-8">
-                <div className="text-base sm:text-xl font-bold">
-                    Tỉ số: Bạn {score.player} - {score.computer} AI
+            <div className="container mx-auto px-4 py-8">
+                <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 sm:mb-8">
+                    <button
+                        onClick={resetGame}
+                        className="flex items-center gap-1 sm:gap-2 bg-blue-600 hover:bg-blue-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
+                        disabled={isLoading}
+                    >
+                        <FaSync className={isLoading ? 'animate-spin' : ''} />
+                        Ván mới
+                    </button>
+                    <button
+                        onClick={resetScore}
+                        className="bg-red-600 hover:bg-red-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
+                        disabled={isLoading}
+                    >
+                        Reset tất cả
+                    </button>
+                    <button
+                        onClick={() => setShowLeaderboard(true)}
+                        className="bg-yellow-600 hover:bg-yellow-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
+                        disabled={isLoading}
+                    >
+                        Bảng xếp hạng
+                    </button>
                 </div>
-            </div>
 
-            <div className="overflow-x-auto overflow-y-hidden pb-4">
-                <div className="min-w-[280px] sm:min-w-[320px] w-full max-w-[560px] mx-auto p-2 sm:p-4">
-                    <div className="grid grid-cols-7 bg-gray-700 p-0.5 sm:p-1 gap-0.5 sm:gap-1 rounded-lg">
-                        {board.map((cell, index) => (
-                            <motion.button
-                                key={index}
-                                whileHover={{ scale: !gameOver && isPlayerTurn ? 1.05 : 1 }}
-                                whileTap={{ scale: !gameOver && isPlayerTurn ? 0.95 : 1 }}
-                                onClick={() => handleClick(index % COLS)}
-                                disabled={gameOver || !isPlayerTurn || isLoading}
-                                className={`relative w-full pt-[100%] 
+                <div className="text-center mb-4 sm:mb-8">
+                    <div className="text-base sm:text-xl font-bold">
+                        Tỉ số: Bạn {score.player} - {score.computer} AI
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto overflow-y-hidden pb-4">
+                    <div className="min-w-[280px] sm:min-w-[320px] w-full max-w-[560px] mx-auto p-2 sm:p-4">
+                        <div className="grid grid-cols-7 bg-gray-700 p-0.5 sm:p-1 gap-0.5 sm:gap-1 rounded-lg">
+                            {board.map((cell, index) => (
+                                <motion.button
+                                    key={index}
+                                    whileHover={{ scale: !gameOver && isPlayerTurn ? 1.05 : 1 }}
+                                    whileTap={{ scale: !gameOver && isPlayerTurn ? 0.95 : 1 }}
+                                    onClick={() => handleClick(index % COLS)}
+                                    disabled={gameOver || !isPlayerTurn || isLoading}
+                                    className={`relative w-full pt-[100%] 
                                     ${cell ? 'bg-gray-800' : 'bg-white/5 hover:bg-white/10'}
                                     ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
                                     ${index === lastMove ? 'ring-1 sm:ring-2 ring-yellow-400' : ''}
                                     rounded-full transition-colors
                                 `}
-                            >
-                                {(cell || isLoading) && (
-                                    <motion.div
-                                        className={`absolute inset-0 flex items-center justify-center`}
-                                        initial="initial"
-                                        animate="animate"
-                                        variants={getDropAnimation(index)}
-                                        key={`${index}-${cell}`}
-                                        onAnimationComplete={() => {
-                                            // Có thể thêm logic phụ ở đây nếu cần
-                                        }}
-                                    >
-                                        {isLoading && !cell ? (
-                                            <Skeleton
-                                                width="70%"
-                                                height="70%"
-                                                baseColor="#1F2937"
-                                                highlightColor="#374151"
-                                                borderRadius="50%"
-                                            />
-                                        ) : (
-                                            <div className={`w-[80%] h-[80%] rounded-full
+                                >
+                                    {(cell || isLoading) && (
+                                        <motion.div
+                                            className={`absolute inset-0 flex items-center justify-center`}
+                                            initial="initial"
+                                            animate="animate"
+                                            variants={getDropAnimation(index)}
+                                            key={`${index}-${cell}`}
+                                            onAnimationComplete={() => {
+                                                // Có thể thêm logic phụ ở đây nếu cần
+                                            }}
+                                        >
+                                            {isLoading && !cell ? (
+                                                <Skeleton
+                                                    width="70%"
+                                                    height="70%"
+                                                    baseColor="#1F2937"
+                                                    highlightColor="#374151"
+                                                    borderRadius="50%"
+                                                />
+                                            ) : (
+                                                <div className={`w-[80%] h-[80%] rounded-full
                                                 ${cell === 'X' ? 'bg-yellow-500' : cell === 'O' ? 'bg-red-500' : ''}
                                                 shadow-lg
                                             `} />
-                                        )}
-                                    </motion.div>
-                                )}
-                            </motion.button>
-                        ))}
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </motion.button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
