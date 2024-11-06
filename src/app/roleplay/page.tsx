@@ -132,7 +132,19 @@ export default function RoleplayChat() {
 
     // Tạo system prompt từ personality và world được chọn
     const getSystemPrompt = () => {
-        return `${selectedPersonality.prompt} ${selectedWorld.prompt} Hãy nhập vai và trả lời phù hợp với tính cách và bối cảnh này.`;
+        return `${selectedPersonality.prompt} ${selectedWorld.prompt}
+
+Khi trả lời, hãy tuân theo format sau:
+*[Cảm nghĩ/suy nghĩ trong đầu]*
+[Mô tả hành động/cử chỉ/biểu cảm]
+"[Lời thoại]"
+
+Ví dụ:
+*Hmm... người này có vẻ thú vị đấy...*
+[Khẽ nghiêng đầu, nở một nụ cười tinh quái]
+"Ara ara~ Có vẻ chúng ta sẽ có một cuộc trò chuyện thú vị đây..."
+
+Hãy nhập vai và trả lời phù hợp với tính cách và bối cảnh này, theo phong cách anime/manga.`;
     };
 
     useEffect(() => {
