@@ -41,6 +41,7 @@ export default function TicTacToeGame() {
     const [isLoading, setIsLoading] = useState(false);
     const [, setGameHistory] = useState<GameHistory>([]);
     const isGameEndingRef = useRef(false);
+    const [lastMove, setLastMove] = useState<number | null>(null);
 
     // Khởi tạo worker
     useEffect(() => {
@@ -65,6 +66,7 @@ export default function TicTacToeGame() {
                         return newBoard;
                     });
 
+                    setLastMove(moveIndex);
                     setIsLoading(false);
                     setIsPlayerTurn(true);
                 }
@@ -106,6 +108,7 @@ export default function TicTacToeGame() {
         newBoard[index] = 'X';
         setBoard(newBoard);
         setIsPlayerTurn(false);
+        setLastMove(index);
 
         // Kiểm tra người thắng
         const winner = checkWinner(newBoard, index);
@@ -215,6 +218,7 @@ export default function TicTacToeGame() {
         setIsPlayerTurn(true);
         setGameOver(false);
         isGameEndingRef.current = false;
+        setLastMove(null);
     };
 
     const resetScore = () => {
@@ -273,6 +277,7 @@ export default function TicTacToeGame() {
                                 className={`aspect-square min-w-[40px] min-h-[40px] text-2xl font-bold flex items-center justify-center
                                     ${cell ? 'bg-gray-700' : 'bg-purple-600 hover:bg-purple-700'}
                                     ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
+                                    ${index === lastMove ? 'text-red-500' : ''}
                                 `}
                             >
                                 {isLoading && !cell ? (
