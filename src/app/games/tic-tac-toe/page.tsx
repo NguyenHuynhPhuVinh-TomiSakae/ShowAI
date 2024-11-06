@@ -242,7 +242,7 @@ export default function TicTacToeGame() {
             const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
             const userData = userDoc.data();
 
-            // Kiểm tra xem người chơi đã có trong bảng xếp hạng chưa
+            // Lấy record hiện tại từ database
             const { data: existingRecord } = await supabase
                 .from('tictactoe_leaderboard')
                 .select('wins')
@@ -255,7 +255,8 @@ export default function TicTacToeGame() {
                     {
                         firebase_id: auth.currentUser.uid,
                         display_name: userData?.displayName || 'Người chơi ẩn danh',
-                        wins: existingRecord ? score.player : 1, // Nếu chưa có thì set wins = 1
+                        // Nếu đã có record thì cộng thêm 1, nếu chưa có thì set wins = 1
+                        wins: existingRecord ? existingRecord.wins + 1 : 1,
                     },
                     { onConflict: 'firebase_id' }
                 );
