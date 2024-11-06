@@ -16,10 +16,6 @@ const toastStyle = {
     },
 };
 
-const HANGMAN_PARTS = [
-    'đầu', 'thân', 'tay trái', 'tay phải', 'chân trái', 'chân phải'
-];
-
 const WordSkeleton = () => (
     <div className="animate-pulse space-y-4 text-center">
         <div className="h-6 bg-gray-700 rounded w-48 mx-auto mb-4"></div>
@@ -93,6 +89,11 @@ const removeDiacritics = (str: string) => {
         .replace(/Đ/g, 'D');
 };
 
+interface DictionaryWord {
+    text: string;
+    source: string[];
+}
+
 export default function HangmanGame() {
     const [word, setWord] = useState('');
     const [hint, setHint] = useState('');
@@ -107,7 +108,34 @@ export default function HangmanGame() {
         initializeGame();
     }, []);
 
-    const generateWord = async () => {
+    const getRandomWord = async () => {
+        try {
+            const response = await fetch('/words.txt');
+            const text = await response.text();
+            const words: DictionaryWord[] = text
+                .split('\n')
+                .filter(line => line.trim())
+                .map(line => JSON.parse(line));
+
+            // Lọc các từ có 2-3 từ ghép
+            const compoundWords = words.filter(word => {
+                const wordParts = word.text.split(' ');
+                return wordParts.length >= 2 && wordParts.length <= 3;
+            });
+
+            if (compoundWords.length === 0) {
+                throw new Error('Không tìm thấy từ phù hợp');
+            }
+
+            const randomWord = compoundWords[Math.floor(Math.random() * compoundWords.length)];
+            return randomWord;
+        } catch (error) {
+            console.error('Lỗi khi lấy từ ngẫu nhiên:', error);
+            return null;
+        }
+    };
+
+    const generateHintAndExplanation = async (word: string) => {
         try {
             const apiKeyResponse = await fetch('/api/Gemini');
             const apiKeyData = await apiKeyResponse.json();
@@ -139,35 +167,45 @@ export default function HangmanGame() {
                 ]
             });
 
-            const prompt = `Hãy tạo một từ ghép tiếng Việt ngẫu nhiên (2-3 âm tiết), một gợi ý ngắn gọn, và một giải thích chi tiết về nghĩa của từ.
-            Trả về dưới định dạng: từ|gợi ý|giải thích
-            Ví dụ: mặt trời|Nguồn sáng tự nhiên chính của Trái Đất|Mặt trời là ngôi sao ở trung tâm Thái Dương Hệ, cung cấp năng lượng và ánh sáng cho Trái Đất
+            const prompt = `Hãy tạo một gợi ý ngắn gọn và một giải thích chi tiết cho từ "${word}".
+            Trả về dưới định dạng: gợi ý|giải thích
+            Ví dụ: Nguồn sáng tự nhiên chính của Trái Đất|Mặt trời là ngôi sao ở trung tâm Thái Dương Hệ
             CHỈ TRẢ VỀ KẾT QUẢ theo định dạng trên, không kèm theo nội dung khác.`;
 
             const result = await model.generateContent(prompt);
             const response = result.response.text().trim();
-            const [newWord, newHint, explanation] = response.split('|');
+            const [hint, explanation] = response.split('|');
 
-            return { word: newWord.toLowerCase(), hint: newHint, explanation: explanation };
+            return { hint, explanation };
         } catch (error) {
-            console.error('Lỗi khi tạo từ:', error);
-            return null;
+            console.error('Lỗi khi tạo gợi ý:', error);
+            return {
+                hint: "Không có gợi ý",
+                explanation: "Không có giải thích"
+            };
         }
     };
 
     const initializeGame = async () => {
         setIsLoading(true);
-        const result = await generateWord();
-        if (result) {
-            setWord(result.word);
-            setHint(result.hint);
-            setExplanation(result.explanation);
+        try {
+            const randomWordObj = await getRandomWord();
+            if (!randomWordObj) {
+                throw new Error('Không thể lấy từ ngẫu nhiên');
+            }
+
+            const { hint, explanation } = await generateHintAndExplanation(randomWordObj.text);
+
+            setWord(randomWordObj.text.toLowerCase());
+            setHint(hint);
+            setExplanation(explanation);
             setGuessedLetters([]);
             setWrongGuesses(0);
             setGameOver(false);
             setWon(false);
-        } else {
-            toast.error('Không thể tạo từ mới!', toastStyle);
+        } catch (error) {
+            console.error('Lỗi khởi tạo game:', error);
+            toast.error('Không thể bắt đầu trò chơi!', toastStyle);
         }
         setIsLoading(false);
     };
@@ -177,7 +215,6 @@ export default function HangmanGame() {
 
         setGuessedLetters([...guessedLetters, letter]);
 
-        // Kiểm tra cả chữ có dấu và không dấu
         const normalizedWord = removeDiacritics(word);
         const normalizedLetter = removeDiacritics(letter);
 
@@ -185,7 +222,7 @@ export default function HangmanGame() {
             const newWrongGuesses = wrongGuesses + 1;
             setWrongGuesses(newWrongGuesses);
 
-            if (newWrongGuesses >= HANGMAN_PARTS.length) {
+            if (newWrongGuesses >= 6) {
                 setGameOver(true);
                 toast.error(`Bạn đã thua! Từ đúng là: ${word}`, toastStyle);
             }
@@ -251,7 +288,7 @@ export default function HangmanGame() {
                                 className="text-xl mb-4"
                                 variants={itemVariants}
                             >
-                                Số lần đoán sai: {wrongGuesses}/{HANGMAN_PARTS.length}
+                                Số lần đoán sai: {wrongGuesses}/6
                             </motion.p>
 
                             <motion.p

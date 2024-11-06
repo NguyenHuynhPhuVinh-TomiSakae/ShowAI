@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaSync, FaHistory } from 'react-icons/fa';
 import { toast, Toaster } from 'react-hot-toast';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import ModalPortal from '@/components/ModalPortal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -13,6 +12,11 @@ interface WordHistory {
     firstWord: string;
     secondWord: string;
     isAI: boolean;
+}
+
+interface DictionaryWord {
+    text: string;
+    source: string[];
 }
 
 const toastStyle = {
@@ -41,70 +45,55 @@ export default function WordChainGame() {
     const [currentWord, setCurrentWord] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
+    const [initialWord, setInitialWord] = useState<string>('');
 
     const generateWord = async (lastWord: string) => {
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
-            const apiKeyData = await apiKeyResponse.json();
-            if (!apiKeyData.success) {
-                throw new Error('Không lấy được khóa API');
-            }
-            const apiKey = apiKeyData.apiKey;
-            const genAI = new GoogleGenerativeAI(apiKey);
+            const response = await fetch('/words.txt');
+            const text = await response.text();
 
-            const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
-                safetySettings: [
-                    {
-                        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-                        threshold: HarmBlockThreshold.BLOCK_NONE
-                    },
-                    {
-                        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-                        threshold: HarmBlockThreshold.BLOCK_NONE
-                    },
-                    {
-                        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-                        threshold: HarmBlockThreshold.BLOCK_NONE
-                    },
-                    {
-                        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-                        threshold: HarmBlockThreshold.BLOCK_NONE
-                    }
-                ]
+            const words: DictionaryWord[] = text
+                .split('\n')
+                .filter(line => line.trim())
+                .map(line => JSON.parse(line));
+
+            const matchingWords = words.filter(word => {
+                const parts = word.text.toLowerCase().split(' ');
+                return parts.length === 2 && parts[0] === lastWord.toLowerCase();
             });
 
-            const prompt = `Hãy tạo một từ ghép tiếng Việt có nghĩa bắt đầu bằng từ "${lastWord}".
-            Ví dụ: 
-            - nếu input là "chào" có thể trả về "chào hỏi"
-            - nếu input là "hỏi" có thể trả về "hỏi han"
-            
-            Yêu cầu:
-            - Phải là từ ghép có nghĩa trong tiếng Việt
-            - Từ thứ nhất phải là "${lastWord}"
-            - Không dùng từ đã xuất hiện trong chuỗi từ trước
-            - Không dùng tên riêng hoặc từ địa phương
-            
-            CHỈ TRẢ VỀ TỪ GHÉP HOÀN CHỈNH, không kèm theo giải thích.
-            Nếu không thể tìm được từ ghép phù hợp, hãy trả về "không thể".`;
+            const usedWords = history.flatMap(h => [h.firstWord, h.secondWord]);
+            const availableWords = matchingWords.filter(word =>
+                !usedWords.includes(word.text.split(' ')[1])
+            );
 
-            const result = await model.generateContent(prompt);
-            const fullWord = result.response.text().trim();
-
-            if (fullWord.toLowerCase() === "không thể") {
+            if (availableWords.length === 0) {
                 return null;
             }
 
-            // Tách từ ghép thành hai phần
-            const words = fullWord.split(' ');
-            if (words.length !== 2 || words[0].toLowerCase() !== lastWord.toLowerCase()) {
-                return null;
-            }
-
-            return words[1];
+            const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+            return randomWord.text.split(' ')[1];
         } catch (error) {
-            console.error('Lỗi khi tạo từ:', error);
+            console.error('Lỗi khi đọc từ điển:', error);
             return null;
+        }
+    };
+
+    const checkWordExists = async (firstWord: string, secondWord: string): Promise<boolean> => {
+        try {
+            const response = await fetch('/words.txt');
+            const text = await response.text();
+            const words: DictionaryWord[] = text
+                .split('\n')
+                .filter(line => line.trim())
+                .map(line => JSON.parse(line));
+
+            // Kiểm tra cụm từ ghép có tồn tại trong từ điển
+            const combinedWord = `${firstWord} ${secondWord}`.toLowerCase();
+            return words.some(dictWord => dictWord.text.toLowerCase() === combinedWord);
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra từ:', error);
+            return false;
         }
     };
 
@@ -118,8 +107,7 @@ export default function WordChainGame() {
             return;
         }
 
-        // Lấy từ cuối cùng để kiểm tra
-        const lastWord = history.length > 0 ? history[history.length - 1].secondWord : 'xin';
+        const lastWord = history.length > 0 ? history[history.length - 1].secondWord : initialWord;
 
         // Kiểm tra từ đã được sử dụng
         const usedWords = history.flatMap(h => [h.firstWord, h.secondWord]);
@@ -128,12 +116,17 @@ export default function WordChainGame() {
             return;
         }
 
-        // Thêm lượt của người chơi
+        // Kiểm tra cụm từ ghép có tồn tại trong từ điển
+        const wordExists = await checkWordExists(lastWord, word);
+        if (!wordExists) {
+            toast.error('Cụm từ ghép này không có trong từ điển! Vui lòng nhập từ khác hoặc đầu hàng.', toastStyle);
+            return;
+        }
+
         setHistory(prev => [...prev, { firstWord: lastWord, secondWord: word, isAI: false }]);
         setCurrentWord('');
         setIsLoading(true);
 
-        // AI trả lời
         const aiWord = await generateWord(word);
         if (aiWord) {
             setHistory(prev => [...prev, { firstWord: word, secondWord: aiWord, isAI: true }]);
@@ -143,11 +136,65 @@ export default function WordChainGame() {
         setIsLoading(false);
     };
 
-    const resetGame = () => {
+    const resetGame = async () => {
+        const newWord = await getRandomWord();
+        setInitialWord(newWord);
         setHistory([]);
         setCurrentWord('');
         setIsLoading(false);
     };
+
+    const handleSurrender = () => {
+        toast.error('Bạn đã đầu hàng! Trò chơi kết thúc.', {
+            ...toastStyle,
+            duration: 3000, // Hiển thị thông báo trong 3 giây
+            icon: '🏳️' // Thêm icon cờ trắng
+        });
+
+        // Thêm kết quả đầu hàng vào lịch sử nếu có lượt chơi
+        if (history.length > 0) {
+            setHistory(prev => [...prev, {
+                firstWord: history[history.length - 1].secondWord,
+                secondWord: "ĐẦU HÀNG",
+                isAI: false
+            }]);
+        }
+
+        // Đợi 1 giây trước khi reset game để người chơi kịp đọc thông báo
+        setTimeout(() => {
+            resetGame();
+        }, 1000);
+    };
+
+    const getRandomWord = async () => {
+        try {
+            const response = await fetch('/words.txt');
+            const text = await response.text();
+            const words: DictionaryWord[] = text
+                .split('\n')
+                .filter(line => line.trim())
+                .map(line => JSON.parse(line));
+
+            // Lọc các từ đơn (không có dấu cách)
+            const singleWords = words.filter(word => !word.text.includes(' '));
+
+            if (singleWords.length === 0) return 'xin';
+
+            const randomWord = singleWords[Math.floor(Math.random() * singleWords.length)];
+            return randomWord.text.toLowerCase();
+        } catch (error) {
+            console.error('Lỗi khi lấy từ ngẫu nhiên:', error);
+            return 'xin';
+        }
+    };
+
+    useEffect(() => {
+        const initGame = async () => {
+            const word = await getRandomWord();
+            setInitialWord(word);
+        };
+        initGame();
+    }, []);
 
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
@@ -178,6 +225,13 @@ export default function WordChainGame() {
                     >
                         <FaHistory />
                         Lịch sử
+                    </button>
+                    <button
+                        onClick={handleSurrender}
+                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
+                        disabled={isLoading || history.length === 0} // Disable nếu chưa có lượt chơi
+                    >
+                        🏳️ Đầu hàng
                     </button>
                 </div>
 
@@ -210,7 +264,7 @@ export default function WordChainGame() {
                                 placeholder={
                                     history.length > 0
                                         ? `Nối tiếp từ "${history[history.length - 1].secondWord}"`
-                                        : 'Bắt đầu với từ "xin"...'
+                                        : `Bắt đầu với từ "${initialWord}"`
                                 }
                                 disabled={isLoading}
                             />
