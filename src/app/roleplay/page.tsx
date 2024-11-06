@@ -197,7 +197,7 @@ TUYỆT ĐỐI KHÔNG sử dụng bất kỳ ngôn ngữ nào ngoài tiếng Vi�
                     throw new Error('Không thể lấy khóa Deepinfra');
                 }
 
-                const response = await fetch("https://api.deepinfra.com/v1/openai/chat/completions", {
+                const deepinfraResponse = await fetch("https://api.deepinfra.com/v1/openai/chat/completions", {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${key}`,
@@ -209,16 +209,20 @@ TUYỆT ĐỐI KHÔNG sử dụng bất kỳ ngôn ngữ nào ngoài tiếng Vi�
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (!deepinfraResponse.ok) {
+                    throw new Error(`HTTP error! status: ${deepinfraResponse.status}`);
                 }
 
-                const data = await response.json();
+                const data = await deepinfraResponse.json();
 
                 if (data?.choices?.[0]?.message?.content) {
-                    const aiResponse = data.choices[0].message.content.trim();
-                    setMessages(prevMessages => [...prevMessages, { text: aiResponse, isUser: false }]);
-                    setChatHistory(prevHistory => [...prevHistory, { role: "assistant", content: aiResponse }]);
+                    const rawResponse = data.choices[0].message.content.trim();
+
+                    // Tối ưu phản hồi bằng Gemini
+                    const optimizedResponse = await optimizeWithGemini(rawResponse);
+
+                    setMessages(prevMessages => [...prevMessages, { text: optimizedResponse, isUser: false }]);
+                    setChatHistory(prevHistory => [...prevHistory, { role: "assistant", content: optimizedResponse }]);
                 } else {
                     throw new Error('Phản hồi từ API không hợp lệ');
                 }
@@ -230,6 +234,33 @@ TUYỆT ĐỐI KHÔNG sử dụng bất kỳ ngôn ngữ nào ngoài tiếng Vi�
                 setIsLoading(false);
                 setIsAIResponding(false);
             }
+        }
+    };
+
+    // Thêm hàm mới để tối ưu phản hồi bằng Gemini
+    const optimizeWithGemini = async (rawResponse: string) => {
+        try {
+            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyData = await apiKeyResponse.json();
+
+            if (!apiKeyData.success) {
+                return rawResponse; // Trả về phản hồi gốc nếu không lấy được API key
+            }
+
+            const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
+
+            const prompt = `Hãy tối ưu và chỉnh sửa đoạn văn sau để rõ nghĩa và tự nhiên hơn, đảm bảo giữ nguyên format và phong cách roleplay. Chỉ trả về văn bản đã được chỉnh sửa, không thêm giải thích:
+
+${rawResponse}`;
+
+            const result = await model.generateContent(prompt);
+            const optimizedText = result.response.text();
+
+            return optimizedText || rawResponse; // Trả về bản gốc nếu không tối ưu được
+        } catch (error) {
+            console.error('Lỗi khi tối ưu phản hồi:', error);
+            return rawResponse; // Trả về phản hồi gốc nếu có lỗi
         }
     };
 
