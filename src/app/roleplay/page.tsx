@@ -152,7 +152,7 @@ Hãy sử dụng:
 - Mô tả hành động và cử chỉ sinh động
 - Thể hiện cá tính rõ ràng theo tính cách đã chọn
 
-TUYỆT ĐỐI KHÔNG sử dụng tiếng Anh và các ngôn ngữ khác trong câu trả lời.`;
+TUYỆT ĐỐI KHÔNG sử dụng tiếng Anh, tiếng Trung, tiếng Hàn, tiếng Nhật và các ngôn ngữ khác trong câu trả lời.`;
     };
 
     useEffect(() => {
