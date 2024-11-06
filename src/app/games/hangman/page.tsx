@@ -230,7 +230,7 @@ export default function HangmanGame() {
                 animate={{ y: 0 }}
                 transition={{ type: "spring", stiffness: 100 }}
             >
-                <h1 className="text-2xl sm:text-3xl font-bold mb-4">Người Treo Cổ</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-4">Trò Chơi Đoán Từ</h1>
                 <p className="text-base sm:text-lg max-w-3xl mx-auto">
                     Đoán từ bằng cách chọn các chữ cái. Bạn có thể đoán sai tối đa 6 lần.
                 </p>

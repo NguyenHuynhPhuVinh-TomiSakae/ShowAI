@@ -141,6 +141,10 @@ export default function ConnectFourGame() {
         }
 
         setIsPlayerTurn(false);
+
+        // Đợi animation hoàn thành (500ms + buffer 100ms)
+        await new Promise(resolve => setTimeout(resolve, 600));
+
         makeAIMove(newBoard);
     };
 
@@ -199,6 +203,25 @@ export default function ConnectFourGame() {
         resetGame();
     };
 
+    const getDropAnimation = (index: number) => {
+        const row = Math.floor(index / COLS);
+        const startRow = 0;
+        const distance = (row - startRow) * 100;
+
+        return {
+            initial: { y: -distance, opacity: 1 },
+            animate: { y: 0, opacity: 1 },
+            transition: {
+                type: "spring",
+                stiffness: 150,     // Giảm xuống 150
+                damping: 15,        // Giảm xuống 15
+                mass: 3,            // Tăng lên 3
+                velocity: 2,        // Giảm xuống 2
+                duration: 0.5       // Thêm duration để kiểm soát thời gian
+            }
+        };
+    };
+
     return (
         <div className="bg-[#0F172A] text-white min-h-screen">
             <ModalPortal>
@@ -248,17 +271,23 @@ export default function ConnectFourGame() {
                                     onClick={() => handleClick(index % COLS)}
                                     disabled={gameOver || !isPlayerTurn || isLoading}
                                     className={`relative w-full pt-[100%] 
-                                        ${cell ? 'bg-gray-700' : 'bg-purple-600 hover:bg-purple-700'}
+                                        ${cell ? 'bg-gray-800' : 'bg-white/5 hover:bg-white/10'}
                                         ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
                                         ${index === lastMove ? 'ring-2 ring-yellow-400' : ''}
-                                        rounded-full
+                                        rounded-full transition-colors
                                     `}
                                 >
                                     {(cell || isLoading) && (
-                                        <div className={`absolute inset-0 flex items-center justify-center
-                                            text-3xl sm:text-4xl md:text-5xl font-bold
-                                            ${cell === 'X' ? 'text-yellow-400' : cell === 'O' ? 'text-red-400' : ''}
-                                        `}>
+                                        <motion.div
+                                            className={`absolute inset-0 flex items-center justify-center`}
+                                            initial="initial"
+                                            animate="animate"
+                                            variants={getDropAnimation(index)}
+                                            key={`${index}-${cell}`}
+                                            onAnimationComplete={() => {
+                                                // Có thể thêm logic phụ ở đây nếu cần
+                                            }}
+                                        >
                                             {isLoading && !cell ? (
                                                 <Skeleton
                                                     width="70%"
@@ -268,9 +297,12 @@ export default function ConnectFourGame() {
                                                     borderRadius="50%"
                                                 />
                                             ) : (
-                                                cell && '●'
+                                                <div className={`w-[80%] h-[80%] rounded-full
+                                                    ${cell === 'X' ? 'bg-yellow-500' : cell === 'O' ? 'bg-red-500' : ''}
+                                                    shadow-lg
+                                                `} />
                                             )}
-                                        </div>
+                                        </motion.div>
                                     )}
                                 </motion.button>
                             ))}

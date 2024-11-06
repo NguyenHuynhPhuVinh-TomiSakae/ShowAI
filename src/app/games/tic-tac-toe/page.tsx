@@ -228,7 +228,7 @@ export default function TicTacToeGame() {
     };
 
     return (
-        <div className="bg-[#0F172A] text-white min-h-screen">
+        <div className="bg-[#0F172A] text-white min-h-screen relative">
             <ModalPortal>
                 <Toaster position="top-center" />
             </ModalPortal>
@@ -265,34 +265,44 @@ export default function TicTacToeGame() {
                     </div>
                 </div>
 
-                <div className="overflow-auto p-4">
-                    <div className="grid grid-cols-[repeat(15,minmax(40px,1fr))] gap-[2px] max-w-fit mx-auto mb-8 bg-gray-700">
-                        {board.map((cell, index) => (
-                            <motion.button
-                                key={index}
-                                whileHover={{ scale: cell ? 1 : 1.05 }}
-                                whileTap={{ scale: cell ? 1 : 0.95 }}
-                                onClick={() => handleClick(index)}
-                                disabled={!!cell || gameOver || !isPlayerTurn || isLoading}
-                                className={`aspect-square min-w-[40px] min-h-[40px] text-2xl font-bold flex items-center justify-center
-                                    ${cell ? 'bg-gray-700' : 'bg-purple-600 hover:bg-purple-700'}
-                                    ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
-                                    ${index === lastMove ? 'text-red-500' : ''}
-                                `}
-                            >
-                                {isLoading && !cell ? (
-                                    <Skeleton
-                                        width={30}
-                                        height={30}
-                                        baseColor="#1F2937"
-                                        highlightColor="#374151"
-                                        borderRadius={6}
-                                    />
-                                ) : (
-                                    cell
-                                )}
-                            </motion.button>
-                        ))}
+                <div className="overflow-x-auto overflow-y-hidden pb-4">
+                    <div className="min-w-[320px] w-full max-w-[640px] mx-auto p-4">
+                        <div className={`grid grid-cols-[repeat(15,1fr)] gap-1 rounded-lg
+                            ${isLoading ? 'opacity-50' : ''}`}>
+                            {board.map((cell, index) => (
+                                <motion.button
+                                    key={index}
+                                    whileHover={{ scale: !gameOver && isPlayerTurn && !cell ? 1.05 : 1 }}
+                                    whileTap={{ scale: !gameOver && isPlayerTurn && !cell ? 0.95 : 1 }}
+                                    onClick={() => handleClick(index)}
+                                    disabled={!!cell || gameOver || !isPlayerTurn || isLoading}
+                                    className={`relative w-full pt-[100%] bg-white/10
+                                        ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
+                                        ${index === lastMove ? 'ring-2 ring-yellow-400' : ''}
+                                        rounded-lg
+                                    `}
+                                >
+                                    {(cell || isLoading) && (
+                                        <div className={`absolute inset-0 flex items-center justify-center
+                                            text-xl sm:text-2xl md:text-3xl font-bold
+                                            ${cell === 'X' ? 'text-yellow-400' : cell === 'O' ? 'text-red-400' : ''}
+                                        `}>
+                                            {isLoading && !cell ? (
+                                                <Skeleton
+                                                    width="50%"
+                                                    height="50%"
+                                                    baseColor="#1F2937"
+                                                    highlightColor="#374151"
+                                                    borderRadius="50%"
+                                                />
+                                            ) : (
+                                                cell
+                                            )}
+                                        </div>
+                                    )}
+                                </motion.button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

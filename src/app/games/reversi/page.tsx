@@ -307,10 +307,7 @@ export default function ReversiGame() {
                                     `}
                                 >
                                     {(cell || isLoading) && (
-                                        <div className={`absolute inset-0 flex items-center justify-center
-                                            text-3xl sm:text-4xl md:text-5xl font-bold
-                                            ${cell === 'B' ? 'text-black' : cell === 'W' ? 'text-white' : ''}
-                                        `}>
+                                        <div className="absolute inset-0 flex items-center justify-center">
                                             {isLoading && !cell ? (
                                                 <Skeleton
                                                     width="70%"
@@ -320,7 +317,12 @@ export default function ReversiGame() {
                                                     borderRadius="50%"
                                                 />
                                             ) : (
-                                                cell && '●'
+                                                cell && (
+                                                    <div className={`w-[80%] h-[80%] rounded-full
+                                                        ${cell === 'B' ? 'bg-black' : 'bg-white'}
+                                                        shadow-lg
+                                                    `} />
+                                                )
                                             )}
                                         </div>
                                     )}

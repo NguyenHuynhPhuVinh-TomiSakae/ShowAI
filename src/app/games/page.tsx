@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion';
-import { FaWordpress, FaSmile, FaRobot, FaPaintBrush, FaHandRock, FaThLarge, FaBrain, FaLink, FaUserSlash, FaQuestion, FaCircle, FaYinYang } from 'react-icons/fa';
+import { FaWordpress, FaSmile, FaRobot, FaPaintBrush, FaHandRock, FaThLarge, FaBrain, FaLink, FaQuestion, FaCircle, FaYinYang, FaFont } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import type { MotionProps } from 'framer-motion';
 
@@ -141,12 +141,12 @@ export default function GamesPage() {
                                 onClick: () => router.push('/games/hangman')
                             } as ModalBackdropProps}
                         >
-                            <FaUserSlash className="text-6xl sm:text-7xl text-indigo-400 mx-auto mb-6" />
+                            <FaFont className="text-6xl sm:text-7xl text-indigo-400 mx-auto mb-6" />
                             <h2 className="text-xl sm:text-2xl font-bold text-indigo-300 mb-4">
-                                Người Treo Cổ
+                                Trò Chơi Đoán Từ
                             </h2>
                             <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
-                                Đoán từ do AI nghĩ ra trước khi người bị treo.
+                                Đoán từ do AI nghĩ ra.
                             </p>
                         </motion.div>
 
