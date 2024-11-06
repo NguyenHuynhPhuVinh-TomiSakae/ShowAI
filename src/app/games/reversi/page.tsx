@@ -7,6 +7,10 @@ import { toast, Toaster } from 'react-hot-toast';
 import ModalPortal from '@/components/ModalPortal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import LeaderboardModal from '@/components/LeaderboardModal';
+import { useFirebase } from '@/components/FirebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import { useSupabase } from '@/hooks/useSupabase';
 
 type Player = 'B' | 'W' | null; // B: Black (Đen), W: White (Trắng)
 type Board = Player[];
@@ -40,6 +44,9 @@ export default function ReversiGame() {
     const [score, setScore] = useState({ player: 2, computer: 2 });
     const [isLoading, setIsLoading] = useState(false);
     const [lastMove, setLastMove] = useState<number | null>(null);
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const { auth, db } = useFirebase();
+    const { supabase, loading: supabaseLoading } = useSupabase();
 
     const getValidMoves = (currentBoard: Board, player: Player): number[] => {
         const validMoves: number[] = [];
@@ -231,12 +238,43 @@ export default function ReversiGame() {
         resetGame();
     };
 
+    const updateLeaderboard = async () => {
+        if (!auth?.currentUser || !db || !supabase || supabaseLoading) return;
+
+        try {
+            const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+            const userData = userDoc.data();
+
+            const { data: existingRecord } = await supabase
+                .from('reversi_leaderboard')
+                .select('wins')
+                .eq('firebase_id', auth.currentUser.uid)
+                .single();
+
+            const { error } = await supabase
+                .from('reversi_leaderboard')
+                .upsert(
+                    {
+                        firebase_id: auth.currentUser.uid,
+                        display_name: userData?.displayName || 'Người chơi ẩn danh',
+                        wins: existingRecord ? existingRecord.wins + 1 : 1,
+                    },
+                    { onConflict: 'firebase_id' }
+                );
+
+            if (error) throw error;
+        } catch (error) {
+            console.error('Lỗi khi cập nhật bảng xếp hạng:', error);
+        }
+    };
+
     const handleGameEnd = (winner: Player) => {
         setGameOver(true);
 
         if (winner === 'B') {
             setScore(prev => ({ ...prev, player: prev.player + 1 }));
             toast.success('Chúc mừng! Bạn đã thắng! 🎉', toastStyle);
+            updateLeaderboard();
         } else if (winner === 'W') {
             setScore(prev => ({ ...prev, computer: prev.computer + 1 }));
             toast.error('AI đã thắng! Hãy thử lại! 😢', toastStyle);
@@ -251,18 +289,18 @@ export default function ReversiGame() {
                 <Toaster position="top-center" />
             </ModalPortal>
 
-            <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-4">Cờ Lật (Reversi)</h1>
-                <p className="text-base sm:text-lg max-w-3xl mx-auto">
+            <div className="bg-[#2A3284] text-center py-4 sm:py-8 mb-4 sm:mb-8 px-2 sm:px-4">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4">Cờ Lật (Reversi)</h1>
+                <p className="text-sm sm:text-base md:text-lg max-w-3xl mx-auto">
                     Đấu với AI thông minh!
                 </p>
             </div>
 
             <div className="container mx-auto px-4 py-8">
-                <div className="flex justify-center gap-4 mb-8">
+                <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 sm:mb-8">
                     <button
                         onClick={resetGame}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                        className="flex items-center gap-1 sm:gap-2 bg-blue-600 hover:bg-blue-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
                         disabled={isLoading}
                     >
                         <FaSync className={isLoading ? 'animate-spin' : ''} />
@@ -270,27 +308,34 @@ export default function ReversiGame() {
                     </button>
                     <button
                         onClick={resetScore}
-                        className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
+                        className="bg-red-600 hover:bg-red-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
                         disabled={isLoading}
                     >
                         Reset tất cả
                     </button>
+                    <button
+                        onClick={() => setShowLeaderboard(true)}
+                        className="bg-yellow-600 hover:bg-yellow-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
+                        disabled={isLoading}
+                    >
+                        Bảng xếp hạng
+                    </button>
                 </div>
 
-                <div className="text-center mb-8">
-                    <div className="text-xl font-bold">
+                <div className="text-center mb-4 sm:mb-8">
+                    <div className="text-base sm:text-xl font-bold">
                         Tỉ số: Bạn (Đen) {score.player} - {score.computer} AI (Trắng)
                     </div>
                     {!gameOver && (
-                        <div className="text-lg mt-2">
+                        <div className="text-sm sm:text-lg mt-2">
                             {isPlayerTurn ? 'Đến lượt bạn đi!' : 'AI đang suy nghĩ...'}
                         </div>
                     )}
                 </div>
 
                 <div className="overflow-x-auto overflow-y-hidden pb-4">
-                    <div className="min-w-[320px] w-full max-w-[640px] mx-auto p-4">
-                        <div className="grid grid-cols-8 bg-gray-700 p-1 gap-1 rounded-lg">
+                    <div className="min-w-[280px] sm:min-w-[320px] w-full max-w-[560px] mx-auto p-2 sm:p-4">
+                        <div className="grid grid-cols-8 bg-gray-700 p-0.5 sm:p-1 gap-0.5 sm:gap-1 rounded-lg">
                             {board.map((cell, index) => (
                                 <motion.button
                                     key={index}
@@ -301,24 +346,24 @@ export default function ReversiGame() {
                                     className={`relative w-full pt-[100%]
                                         ${cell ? 'bg-green-800' : 'bg-green-600 hover:bg-green-700'}
                                         ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
-                                        ${index === lastMove ? 'ring-2 ring-yellow-400' : ''}
-                                        ${!cell && isValidMove(board, index, 'B') ? 'ring-2 ring-yellow-400 ring-opacity-50' : ''}
-                                        rounded-lg
+                                        ${index === lastMove ? 'ring-1 sm:ring-2 ring-yellow-400' : ''}
+                                        ${!cell && isValidMove(board, index, 'B') ? 'ring-1 sm:ring-2 ring-yellow-400 ring-opacity-50' : ''}
+                                        rounded-md sm:rounded-lg
                                     `}
                                 >
                                     {(cell || isLoading) && (
                                         <div className="absolute inset-0 flex items-center justify-center">
                                             {isLoading && !cell ? (
                                                 <Skeleton
-                                                    width="70%"
-                                                    height="70%"
+                                                    width="60%"
+                                                    height="60%"
                                                     baseColor="#1F2937"
                                                     highlightColor="#374151"
                                                     borderRadius="50%"
                                                 />
                                             ) : (
                                                 cell && (
-                                                    <div className={`w-[80%] h-[80%] rounded-full
+                                                    <div className={`w-[70%] sm:w-[80%] h-[70%] sm:h-[80%] rounded-full
                                                         ${cell === 'B' ? 'bg-black' : 'bg-white'}
                                                         shadow-lg
                                                     `} />
@@ -332,6 +377,12 @@ export default function ReversiGame() {
                     </div>
                 </div>
             </div>
+
+            <LeaderboardModal
+                isOpen={showLeaderboard}
+                onClose={() => setShowLeaderboard(false)}
+                tableName="reversi_leaderboard"
+            />
         </div>
     );
 }
