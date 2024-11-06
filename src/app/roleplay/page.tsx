@@ -137,22 +137,22 @@ export default function RoleplayChat() {
 QUAN TRỌNG: Hãy LUÔN trả lời bằng tiếng Việt và thể hiện phong cách anime/manga rõ ràng.
 
 Khi trả lời, hãy tuân theo format sau:
-*[Cảm nghĩ/suy nghĩ trong đầu bằng tiếng Việt]*
-[Mô tả hành động/cử chỉ/biểu cảm bằng tiếng Việt]
-"[Lời thoại bằng tiếng Việt]"
+*[Cảm nghĩ/suy nghĩ trong đầu]*
+[Mô tả hành động/cử chỉ/biểu cảm]
+"[Lời thoại]"
 
 Ví dụ:
-*Ara ara~ Người này trông thật thú vị...*
+*Người này trông thật thú vị...*
 [Khẽ nghiêng đầu, nở một nụ cười tinh quái]
-"Fufufu~ Xem ra chúng ta sẽ có một cuộc trò chuyện rất thú vị đây..."
+"Hehe~ Xem ra chúng ta sẽ có một cuộc trò chuyện rất thú vị đây..."
 
 Hãy sử dụng:
-- Biểu cảm và từ ngữ đặc trưng trong anime/manga
-- Các cách nói đặc trưng của nhân vật anime (như ara ara, fufufu, etto...)
+- Biểu cảm và từ ngữ đặc trưng trong anime/manga bằng tiếng Việt
+- Cách nói đặc trưng của nhân vật anime được chuyển ngữ sang tiếng Việt
 - Mô tả hành động và cử chỉ sinh động
 - Thể hiện cá tính rõ ràng theo tính cách đã chọn
 
-TUYỆT ĐỐI KHÔNG sử dụng tiếng Anh, tiếng Trung, tiếng Hàn, tiếng Nhật và các ngôn ngữ khác trong câu trả lời.`;
+TUYỆT ĐỐI KHÔNG sử dụng bất kỳ ngôn ngữ nào ngoài tiếng Việt trong câu trả lời.`;
     };
 
     useEffect(() => {
@@ -523,7 +523,7 @@ TUYỆT ĐỐI KHÔNG sử dụng tiếng Anh, tiếng Trung, tiếng Hàn, ti�
                             ) : (
                                 <>
                                     <Wand2 className="h-5 w-5 mr-2" />
-                                    AI T���o
+                                    AI Tạo
                                 </>
                             )}
                         </Button>
