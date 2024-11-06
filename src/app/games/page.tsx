@@ -125,7 +125,7 @@ export default function GamesPage() {
                         >
                             <FaLink className="text-6xl sm:text-7xl text-cyan-400 mx-auto mb-6" />
                             <h2 className="text-xl sm:text-2xl font-bold text-cyan-300 mb-4">
-                                Nối Từ
+                                Trò Chơi Nối Từ
                             </h2>
                             <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
                                 Chơi trò chơi nối từ với AI, ai không nghĩ ra từ sẽ thua.
