@@ -11,23 +11,19 @@ interface ClientPageTransitionProps {
 const animations = [
     {
         initial: { opacity: 0, y: 50 },
-        animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: -50 }
+        animate: { opacity: 1, y: 0 }
     },
     {
         initial: { opacity: 0, scale: 0.9 },
-        animate: { opacity: 1, scale: 1 },
-        exit: { opacity: 0, scale: 0.9 }
+        animate: { opacity: 1, scale: 1 }
     },
     {
         initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 }
+        animate: { opacity: 1 }
     },
     {
         initial: { opacity: 0, rotateY: -90 },
-        animate: { opacity: 1, rotateY: 0 },
-        exit: { opacity: 0, rotateY: 90 }
+        animate: { opacity: 1, rotateY: 0 }
     }
 ];
 
@@ -46,7 +42,6 @@ const ClientPageTransition = ({ children }: ClientPageTransitionProps) => {
                 key={Math.random()} // Force re-render on route change
                 initial={animations[animationIndex].initial}
                 animate={animations[animationIndex].animate}
-                exit={animations[animationIndex].exit}
                 transition={{
                     type: "spring",
                     stiffness: 100,
