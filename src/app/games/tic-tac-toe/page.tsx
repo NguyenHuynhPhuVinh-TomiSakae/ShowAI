@@ -7,6 +7,10 @@ import { toast, Toaster } from 'react-hot-toast';
 import ModalPortal from '@/components/ModalPortal';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { useFirebase } from '@/components/FirebaseConfig';
+import LeaderboardModal from '@/components/LeaderboardModal';
+import { doc, getDoc } from 'firebase/firestore';
+import { useSupabase } from '@/hooks/useSupabase';
 
 type Player = 'X' | 'O' | null;
 type Board = Player[];
@@ -42,6 +46,9 @@ export default function TicTacToeGame() {
     const [, setGameHistory] = useState<GameHistory>([]);
     const isGameEndingRef = useRef(false);
     const [lastMove, setLastMove] = useState<number | null>(null);
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const { auth, db } = useFirebase();
+    const { supabase, loading: supabaseLoading } = useSupabase();
 
     // Khởi tạo worker
     useEffect(() => {
@@ -197,6 +204,7 @@ export default function TicTacToeGame() {
         if (winner === 'X') {
             result = 'thắng';
             setScore(prev => ({ ...prev, player: prev.player + 1 }));
+            updateLeaderboard();
             toast.success('Chúc mừng! Bạn đã thắng với 5 quân liên tiếp! 🎉', toastStyle);
         } else if (winner === 'O') {
             result = 'thua';
@@ -225,6 +233,37 @@ export default function TicTacToeGame() {
         setScore({ player: 0, computer: 0 });
         setGameHistory([]);
         resetGame();
+    };
+
+    const updateLeaderboard = async () => {
+        if (!auth?.currentUser || !db || !supabase || supabaseLoading) return;
+
+        try {
+            const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+            const userData = userDoc.data();
+
+            // Kiểm tra xem người chơi đã có trong bảng xếp hạng chưa
+            const { data: existingRecord } = await supabase
+                .from('tictactoe_leaderboard')
+                .select('wins')
+                .eq('firebase_id', auth.currentUser.uid)
+                .single();
+
+            const { error } = await supabase
+                .from('tictactoe_leaderboard')
+                .upsert(
+                    {
+                        firebase_id: auth.currentUser.uid,
+                        display_name: userData?.displayName || 'Người chơi ẩn danh',
+                        wins: existingRecord ? score.player : 1, // Nếu chưa có thì set wins = 1
+                    },
+                    { onConflict: 'firebase_id' }
+                );
+
+            if (error) throw error;
+        } catch (error) {
+            console.error('Lỗi khi cập nhật bảng xếp hạng:', error);
+        }
     };
 
     return (
@@ -256,6 +295,13 @@ export default function TicTacToeGame() {
                         disabled={isLoading}
                     >
                         Reset tất cả
+                    </button>
+                    <button
+                        onClick={() => setShowLeaderboard(true)}
+                        className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg"
+                        disabled={isLoading}
+                    >
+                        Bảng xếp hạng
                     </button>
                 </div>
 
@@ -306,6 +352,11 @@ export default function TicTacToeGame() {
                     </div>
                 </div>
             </div>
+
+            <LeaderboardModal
+                isOpen={showLeaderboard}
+                onClose={() => setShowLeaderboard(false)}
+            />
         </div>
     );
 }
