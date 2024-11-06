@@ -7,6 +7,19 @@ class ConnectFourAI {
         this.EMPTY = null;
         this.PLAYER = 'X';
         this.AI = 'O';
+
+        this.LiveOne = 10;
+        this.DeadOne = 1;
+        this.LiveTwo = 100;
+        this.DeadTwo = 10;
+        this.LiveThree = 1000;
+        this.DeadThree = 100;
+        this.LiveFour = 10000;
+        this.DeadFour = 1000;
+        this.Five = 100000;
+
+        this.hashTable = this.initHashTable(rows, cols);
+        this.transpositionTable = new Map();
     }
 
     convertTo2DArray(board, rows, cols) {
@@ -100,50 +113,53 @@ class ConnectFourAI {
     // Các hàm đánh giá và kiểm tra trạng thái game
     evaluateBoard(board) {
         let score = 0;
+        const restrictions = this.getRestrictions(board);
+        const [minRow, minCol, maxRow, maxCol] = restrictions;
 
-        // Đánh giá theo hàng
-        for (let row = 0; row < this.rows; row++) {
-            for (let col = 0; col < this.cols - 3; col++) {
-                score += this.evaluateLine(
-                    board[row][col],
+        // Đánh giá theo hướng ngang (horizontal)
+        for (let row = minRow; row <= maxRow; row++) {
+            for (let col = minCol; col <= maxCol - 3; col++) {
+                score += this.evaluateDirection(
+                    [board[row][col],
                     board[row][col + 1],
                     board[row][col + 2],
-                    board[row][col + 3]
+                    board[row][col + 3]]
                 );
             }
         }
 
-        // Đánh giá theo cột
-        for (let row = 0; row < this.rows - 3; row++) {
-            for (let col = 0; col < this.cols; col++) {
-                score += this.evaluateLine(
-                    board[row][col],
+        // Đánh giá theo hướng dọc (vertical)
+        for (let col = minCol; col <= maxCol; col++) {
+            for (let row = minRow; row <= maxRow - 3; row++) {
+                score += this.evaluateDirection(
+                    [board[row][col],
                     board[row + 1][col],
                     board[row + 2][col],
-                    board[row + 3][col]
+                    board[row + 3][col]]
                 );
             }
         }
 
-        // Đánh giá đường chéo
-        for (let row = 0; row < this.rows - 3; row++) {
-            for (let col = 0; col < this.cols - 3; col++) {
-                score += this.evaluateLine(
-                    board[row][col],
+        // Đánh giá theo đường chéo xuống (diagonal down)
+        for (let row = minRow; row <= maxRow - 3; row++) {
+            for (let col = minCol; col <= maxCol - 3; col++) {
+                score += this.evaluateDirection(
+                    [board[row][col],
                     board[row + 1][col + 1],
                     board[row + 2][col + 2],
-                    board[row + 3][col + 3]
+                    board[row + 3][col + 3]]
                 );
             }
         }
 
-        for (let row = 3; row < this.rows; row++) {
-            for (let col = 0; col < this.cols - 3; col++) {
-                score += this.evaluateLine(
-                    board[row][col],
+        // Đánh giá theo đường chéo lên (diagonal up)
+        for (let row = maxRow; row >= minRow + 3; row--) {
+            for (let col = minCol; col <= maxCol - 3; col++) {
+                score += this.evaluateDirection(
+                    [board[row][col],
                     board[row - 1][col + 1],
                     board[row - 2][col + 2],
-                    board[row - 3][col + 3]
+                    board[row - 3][col + 3]]
                 );
             }
         }
@@ -151,26 +167,54 @@ class ConnectFourAI {
         return score;
     }
 
-    evaluateLine(a, b, c, d) {
-        let score = 0;
+    evaluateDirection(cells) {
         let aiCount = 0;
         let playerCount = 0;
         let empty = 0;
 
-        const line = [a, b, c, d];
-        line.forEach(cell => {
+        cells.forEach(cell => {
             if (cell === this.AI) aiCount++;
             else if (cell === this.PLAYER) playerCount++;
             else empty++;
         });
 
-        if (aiCount === 4) score += 100;
-        else if (aiCount === 3 && empty === 1) score += 5;
-        else if (aiCount === 2 && empty === 2) score += 2;
+        if (aiCount === 4) return this.Five;
+        if (playerCount === 4) return -this.Five;
 
-        if (playerCount === 3 && empty === 1) score -= 4;
+        if (empty === 0) return 0;
 
-        return score;
+        if (aiCount === 3 && empty === 1) return this.LiveThree;
+        if (playerCount === 3 && empty === 1) return -this.LiveThree;
+
+        if (aiCount === 2 && empty === 2) return this.LiveTwo;
+        if (playerCount === 2 && empty === 2) return -this.LiveTwo;
+
+        return 0;
+    }
+
+    getRestrictions(board) {
+        let minRow = this.rows;
+        let minCol = this.cols;
+        let maxRow = 0;
+        let maxCol = 0;
+
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.cols; j++) {
+                if (board[i][j] !== this.EMPTY) {
+                    minRow = Math.min(minRow, i);
+                    minCol = Math.min(minCol, j);
+                    maxRow = Math.max(maxRow, i);
+                    maxCol = Math.max(maxCol, j);
+                }
+            }
+        }
+
+        return [
+            Math.max(0, minRow - 2),
+            Math.max(0, minCol - 2),
+            Math.min(this.rows - 1, maxRow + 2),
+            Math.min(this.cols - 1, maxCol + 2)
+        ];
     }
 
     isGameOver(board) {
@@ -222,6 +266,26 @@ class ConnectFourAI {
         }
 
         return false;
+    }
+
+    initHashTable(rows, cols) {
+        const table = [];
+        for (let i = 0; i < rows; i++) {
+            table[i] = [];
+            for (let j = 0; j < cols; j++) {
+                table[i][j] = [
+                    this.random32(), // Cho người chơi
+                    this.random32()  // Cho AI
+                ];
+            }
+        }
+        return table;
+    }
+
+    random32() {
+        const o = new Uint32Array(1);
+        crypto.getRandomValues(o);
+        return o[0];
     }
 }
 
