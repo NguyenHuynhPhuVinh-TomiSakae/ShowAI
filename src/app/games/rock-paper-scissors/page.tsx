@@ -8,6 +8,10 @@ import ModalPortal from '@/components/ModalPortal';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import LeaderboardModal from '@/components/LeaderboardModal';
+import { useFirebase } from '@/components/FirebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import { useSupabase } from '@/hooks/useSupabase';
 
 type Choice = 'búa' | 'kéo' | 'bao';
 type GameResult = 'thắng' | 'thua' | 'hòa' | null;
@@ -57,6 +61,9 @@ export default function RockPaperScissorsGame() {
     const [score, setScore] = useState({ player: 0, computer: 0 });
     const [isLoading, setIsLoading] = useState(false);
     const [gameHistory, setGameHistory] = useState<GameHistory>([]);
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const { auth, db } = useFirebase();
+    const { supabase, loading: supabaseLoading } = useSupabase();
 
     const determineWinner = (player: Choice, computer: Choice): GameResult => {
         if (player === computer) return 'hòa';
@@ -141,6 +148,36 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
         }
     };
 
+    const updateLeaderboard = async () => {
+        if (!auth?.currentUser || !db || !supabase || supabaseLoading) return;
+
+        try {
+            const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+            const userData = userDoc.data();
+
+            const { data: existingRecord } = await supabase
+                .from('rockpaperscissors_leaderboard')
+                .select('wins')
+                .eq('firebase_id', auth.currentUser.uid)
+                .single();
+
+            const { error } = await supabase
+                .from('rockpaperscissors_leaderboard')
+                .upsert(
+                    {
+                        firebase_id: auth.currentUser.uid,
+                        display_name: userData?.displayName || 'Người chơi ẩn danh',
+                        wins: existingRecord ? existingRecord.wins + 1 : 1,
+                    },
+                    { onConflict: 'firebase_id' }
+                );
+
+            if (error) throw error;
+        } catch (error) {
+            console.error('Lỗi khi cập nhật bảng xếp hạng:', error);
+        }
+    };
+
     const handleChoice = async (choice: Choice) => {
         const computerMove = await getAIChoice();
         setPlayerChoice(choice);
@@ -152,6 +189,7 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
         if (gameResult === 'thắng') {
             setScore(prev => ({ ...prev, player: prev.player + 1 }));
             toast.success('Bạn thắng! 🎉', toastStyle);
+            updateLeaderboard();
         } else if (gameResult === 'thua') {
             setScore(prev => ({ ...prev, computer: prev.computer + 1 }));
             toast.error('Bạn thua! 😢', toastStyle);
@@ -197,6 +235,13 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                     >
                         <FaSync className={isLoading ? 'animate-spin' : ''} />
                         Chơi lại
+                    </button>
+                    <button
+                        onClick={() => setShowLeaderboard(true)}
+                        className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg"
+                        disabled={isLoading}
+                    >
+                        Bảng xếp hạng
                     </button>
                 </div>
 
@@ -262,6 +307,12 @@ CHỈ TRẢ VỀ một trong ba từ: "búa", "kéo" hoặc "bao" (không kèm g
                     })}
                 </div>
             </div>
+
+            <LeaderboardModal
+                isOpen={showLeaderboard}
+                onClose={() => setShowLeaderboard(false)}
+                tableName="rockpaperscissors_leaderboard"
+            />
         </div>
     );
 }

@@ -15,9 +15,10 @@ type LeaderboardEntry = {
 interface LeaderboardModalProps {
     isOpen: boolean;
     onClose: () => void;
+    tableName: string;
 }
 
-const LeaderboardModal = ({ isOpen, onClose }: LeaderboardModalProps) => {
+const LeaderboardModal = ({ isOpen, onClose, tableName }: LeaderboardModalProps) => {
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { db } = useFirebase();
@@ -29,7 +30,7 @@ const LeaderboardModal = ({ isOpen, onClose }: LeaderboardModalProps) => {
 
             try {
                 const { data, error } = await supabase
-                    .from('tictactoe_leaderboard')
+                    .from(tableName)
                     .select('*')
                     .order('wins', { ascending: false })
                     .limit(10);
@@ -65,7 +66,7 @@ const LeaderboardModal = ({ isOpen, onClose }: LeaderboardModalProps) => {
         if (isOpen) {
             fetchLeaderboard();
         }
-    }, [isOpen, db, supabase, supabaseLoading]);
+    }, [isOpen, db, supabase, supabaseLoading, tableName]);
 
     if (!isOpen) return null;
 

@@ -361,6 +361,7 @@ export default function TicTacToeGame() {
             <LeaderboardModal
                 isOpen={showLeaderboard}
                 onClose={() => setShowLeaderboard(false)}
+                tableName="tictactoe_leaderboard"
             />
         </div>
     );
