@@ -170,23 +170,21 @@ export default function RoleplayChat() {
             setIsAIResponding(true);
 
             try {
-                const keyResponse = await fetch('/api/openrouter-key');
+                const keyResponse = await fetch('/api/deepinfra-key');
                 const { key } = await keyResponse.json();
 
                 if (!key) {
-                    throw new Error('Không thể lấy khóa OPENROUTER');
+                    throw new Error('Không thể lấy khóa Deepinfra');
                 }
 
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                const response = await fetch("https://api.deepinfra.com/v1/openai/chat/completions", {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${key}`,
-                        "HTTP-Referer": `${process.env.NEXT_PUBLIC_SITE_URL}`,
-                        "X-Title": `${process.env.NEXT_PUBLIC_SITE_NAME}`,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        "model": "gryphe/mythomax-l2-13b:free",
+                        "model": "Gryphe/MythoMax-L2-13b-turbo",
                         "messages": newChatHistory
                     })
                 });
