@@ -33,7 +33,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "src/workers/ai-worker.js"  ],
   "exclude": [
     "node_modules"
   ]

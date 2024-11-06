@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaSync } from 'react-icons/fa';
 import { toast, Toaster } from 'react-hot-toast';
@@ -30,6 +30,8 @@ type GameHistory = {
 // Thay đổi kích thước bàn cờ
 const BOARD_SIZE = 15; // 15x15
 
+let aiWorker: Worker | null = null;
+
 export default function TicTacToeGame() {
     // Thay đổi khởi tạo bàn cờ
     const [board, setBoard] = useState<Board>(Array(BOARD_SIZE * BOARD_SIZE).fill(null));
@@ -38,6 +40,83 @@ export default function TicTacToeGame() {
     const [score, setScore] = useState({ player: 0, computer: 0 });
     const [isLoading, setIsLoading] = useState(false);
     const [, setGameHistory] = useState<GameHistory>([]);
+
+    // Khởi tạo worker
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            aiWorker = new Worker(new URL('../../../workers/ai-worker.js', import.meta.url));
+            aiWorker.onmessage = (e) => {
+                const result = e.data;
+                if (result.bestmove) {
+                    const moveIndex = result.bestmove.i * BOARD_SIZE + result.bestmove.j;
+                    setBoard(prevBoard => {
+                        const newBoard = [...prevBoard];
+                        newBoard[moveIndex] = 'O';
+                        return newBoard;
+                    });
+                    setIsLoading(false);
+                    setIsPlayerTurn(true);
+
+                    // Kiểm tra người thắng sau khi AI đánh
+                    const newBoard = [...board];
+                    newBoard[moveIndex] = 'O';
+                    const winner = checkWinner(newBoard, moveIndex);
+                    if (winner || !newBoard.includes(null)) {
+                        handleGameEnd(winner);
+                    }
+                }
+            };
+        }
+        return () => {
+            if (aiWorker) {
+                aiWorker.terminate();
+            }
+        };
+    }, []);
+
+    const getAIMove = async (currentBoard: Board): Promise<void> => {
+        setIsLoading(true);
+        try {
+            // Chuyển đổi board 1D thành 2D cho worker
+            const board2D = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    board2D[i][j] = currentBoard[i * BOARD_SIZE + j] === 'X' ? -1 :
+                        currentBoard[i * BOARD_SIZE + j] === 'O' ? 1 : 0;
+                }
+            }
+
+            // Gửi board đến worker
+            if (aiWorker) {
+                aiWorker.postMessage([board2D, 1, 2000]); // board, player, maxTime
+            }
+        } catch (error) {
+            console.error('Lỗi khi tính toán nước đi của AI:', error);
+            setIsLoading(false);
+        }
+    };
+
+    const handleClick = async (index: number) => {
+        if (board[index] || gameOver || !isPlayerTurn || isLoading) return;
+
+        // Tạo bản sao của bảng với nước đi mới của người chơi
+        const newBoard = [...board];
+        newBoard[index] = 'X';
+        setBoard(newBoard);
+        setIsPlayerTurn(false);
+
+        // Kiểm tra người thắng
+        const winner = checkWinner(newBoard, index);
+        if (winner || !newBoard.includes(null)) {
+            handleGameEnd(winner);
+            return;
+        }
+
+        // Nếu game chưa kết thúc, để AI đánh
+        if (!gameOver && newBoard.includes(null)) {
+            await getAIMove(newBoard);
+        }
+    };
 
     const checkWinner = (squares: Board, lastMove: number): Player | null => {
         if (lastMove === -1) return null;
@@ -101,186 +180,6 @@ export default function TicTacToeGame() {
         }
 
         return null;
-    };
-
-    const getAIMove = async (currentBoard: Board): Promise<number> => {
-        setIsLoading(true);
-        try {
-            // Tạo delay ngẫu nhiên từ 500ms đến 2000ms
-            const randomDelay = Math.floor(Math.random() * (2000 - 500 + 1)) + 500;
-            await new Promise(resolve => setTimeout(resolve, randomDelay));
-
-            // Trực tiếp sử dụng logic findBestMove thay vì gọi API
-            return findBestMove(currentBoard);
-
-        } catch (error) {
-            console.error('Lỗi khi lấy nước đi của AI:', error);
-            return findBestMove(currentBoard);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Hàm tìm nước đi tốt nhất khi AI trả về kết quả không hợp lệ
-    const findBestMove = (currentBoard: Board): number => {
-        // Tìm các quân đã đánh
-        const playedMoves = currentBoard.reduce((acc, cell, index) => {
-            if (cell) acc.push(index);
-            return acc;
-        }, [] as number[]);
-
-        if (playedMoves.length === 0) {
-            // Nếu là nước đi đầu tiên, đánh vào trung tâm
-            return Math.floor(BOARD_SIZE * BOARD_SIZE / 2);
-        }
-
-        // Tìm vùng các quân đã đánh
-        const minRow = Math.floor(Math.min(...playedMoves) / BOARD_SIZE);
-        const maxRow = Math.floor(Math.max(...playedMoves) / BOARD_SIZE);
-        const minCol = Math.min(...playedMoves) % BOARD_SIZE;
-        const maxCol = Math.max(...playedMoves) % BOARD_SIZE;
-
-        // Mở rộng vùng tìm kiếm
-        const searchMinRow = Math.max(0, minRow - 2);
-        const searchMaxRow = Math.min(BOARD_SIZE - 1, maxRow + 2);
-        const searchMinCol = Math.max(0, minCol - 2);
-        const searchMaxCol = Math.min(BOARD_SIZE - 1, maxCol + 2);
-
-        // Tìm ô trống tốt nhất trong vùng tìm kiếm
-        let bestScore = -Infinity;
-        let bestMove = -1;
-
-        for (let row = searchMinRow; row <= searchMaxRow; row++) {
-            for (let col = searchMinCol; col <= searchMaxCol; col++) {
-                const index = row * BOARD_SIZE + col;
-                if (currentBoard[index] === null) {
-                    const score = evaluateMove(currentBoard, index);
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestMove = index;
-                    }
-                }
-            }
-        }
-
-        return bestMove !== -1 ? bestMove : currentBoard.findIndex(cell => cell === null);
-    };
-
-    // Hàm đánh giá điểm số cho một nước đi
-    const evaluateMove = (board: Board, index: number): number => {
-        const row = Math.floor(index / BOARD_SIZE);
-        const col = index % BOARD_SIZE;
-        let score = 0;
-
-        const directions = [
-            [-1, -1], [-1, 0], [-1, 1],
-            [0, -1], [0, 1],
-            [1, -1], [1, 0], [1, 1]
-        ];
-
-        for (const [dx, dy] of directions) {
-            let countX = 0;
-            let countO = 0;
-            let empty = 0;
-            let blocked = false;
-            let nearX = 0;
-            let nearO = 0;
-            let openEnds = 0; // Đếm số đầu mở
-
-            // Kiểm tra cả hai đầu của dãy quân
-            const checkLine = (startOffset: number, endOffset: number) => {
-                for (let i = startOffset; i <= endOffset; i++) {
-                    const newRow = row + dx * i;
-                    const newCol = col + dy * i;
-
-                    if (newRow < 0 || newRow >= BOARD_SIZE || newCol < 0 || newCol >= BOARD_SIZE) {
-                        blocked = true;
-                        continue;
-                    }
-
-                    const cell = board[newRow * BOARD_SIZE + newCol];
-                    if (cell === 'X') {
-                        countX++;
-                        if (Math.abs(i) <= 2) nearX++;
-                    }
-                    else if (cell === 'O') {
-                        countO++;
-                        if (Math.abs(i) <= 2) nearO++;
-                    }
-                    else {
-                        empty++;
-                        // Kiểm tra xem đây có phải là đầu mở không
-                        if (i === startOffset || i === endOffset) {
-                            openEnds++;
-                        }
-                    }
-                }
-            };
-
-            // Kiểm tra 6 ô liên tiếp để có thể thấy được cả hai đầu của dãy 4 quân
-            checkLine(-5, 5);
-
-            // Tính điểm với logic mới
-            if (countX === 4) {
-                if (openEnds === 2) {
-                    score += 200000; // Ưu tiên cao nhất cho việc chặn 4 quân 2 đầu mở
-                } else if (openEnds === 1) {
-                    score += 90000; // Chặn 4 quân 1 đầu mở
-                }
-            }
-
-            if (countO === 4) {
-                if (openEnds >= 1) {
-                    score += 180000; // Tạo 5 quân để thắng
-                }
-            }
-
-            // Các trường hợp khác
-            if (countO === 3 && empty >= 2 && openEnds === 2) score += 70000;  // Tạo thế 3 quân 2 đầu mở
-            if (countX === 3 && empty >= 2 && openEnds === 2) score += 65000;  // Chặn thế 3 quân 2 đầu mở
-            if (countO === 3 && empty >= 2 && !blocked) score += 50000;  // Tạo cơ hội thắng
-            if (countX === 3 && empty >= 2 && !blocked) score += 45000;  // Chặn 3 quân
-            if (countO === 2 && empty >= 3 && openEnds === 2) score += 2000;   // Tạo thế 2 quân 2 đầu mở
-            if (countX === 2 && empty >= 3 && openEnds === 2) score += 1800;   // Chặn thế 2 quân 2 đầu mở
-
-            // Thêm điểm cho các tình huống đặc biệt
-            if (nearO >= 2) score += 300;
-            if (nearX >= 2) score += 250;
-
-            // Thêm điểm cho vị trí chiến lược
-            const centerBonus = Math.abs(row - BOARD_SIZE / 2) + Math.abs(col - BOARD_SIZE / 2);
-            score += (BOARD_SIZE - centerBonus) * 10;
-        }
-
-        score += Math.random() * 50; // Giảm yếu tố ngẫu nhiên để AI ổn định hơn
-
-        return score;
-    };
-
-    const handleClick = async (index: number) => {
-        if (board[index] || gameOver || !isPlayerTurn || isLoading) return;
-
-        const newBoard = [...board];
-        newBoard[index] = 'X';
-        setBoard(newBoard);
-        setIsPlayerTurn(false);
-
-        const winner = checkWinner(newBoard, index);
-        if (winner || !newBoard.includes(null)) {
-            handleGameEnd(winner);
-            return;
-        }
-
-        // Lượt của AI
-        const aiMove = await getAIMove(newBoard);
-        newBoard[aiMove] = 'O';
-        setBoard(newBoard);
-        setIsPlayerTurn(true);
-
-        const finalWinner = checkWinner(newBoard, aiMove);
-        if (finalWinner || !newBoard.includes(null)) {
-            handleGameEnd(finalWinner);
-        }
     };
 
     const handleGameEnd = (winner: Player) => {
