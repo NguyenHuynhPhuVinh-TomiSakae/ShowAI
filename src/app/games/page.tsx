@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion';
-import { FaWordpress, FaSmile, FaRobot, FaPaintBrush, FaHandRock, FaThLarge } from 'react-icons/fa';
+import { FaWordpress, FaSmile, FaRobot, FaPaintBrush, FaHandRock, FaThLarge, FaBrain, FaLink, FaUserSlash, FaQuestion } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import type { MotionProps } from 'framer-motion';
 
@@ -94,6 +94,77 @@ export default function GamesPage() {
                             </h2>
                             <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
                                 Thử thách khả năng viết prompt và tạo hình ảnh với AI.
+                            </p>
+                        </motion.div>
+                        <motion.div
+                            {...{
+                                initial: { opacity: 0, y: 20 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { duration: 0.5 },
+                                className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                                onClick: () => router.push('/games/memory-game')
+                            } as ModalBackdropProps}
+                        >
+                            <FaBrain className="text-6xl sm:text-7xl text-pink-400 mx-auto mb-6" />
+                            <h2 className="text-xl sm:text-2xl font-bold text-pink-300 mb-4">
+                                Trò Chơi Trí Nhớ
+                            </h2>
+                            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
+                                Thử thách trí nhớ của bạn với các thẻ bài do AI tạo ra.
+                            </p>
+                        </motion.div>
+
+                        <motion.div
+                            {...{
+                                initial: { opacity: 0, y: 20 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { duration: 0.5 },
+                                className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                                onClick: () => router.push('/games/word-chain')
+                            } as ModalBackdropProps}
+                        >
+                            <FaLink className="text-6xl sm:text-7xl text-cyan-400 mx-auto mb-6" />
+                            <h2 className="text-xl sm:text-2xl font-bold text-cyan-300 mb-4">
+                                Nối Từ
+                            </h2>
+                            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
+                                Chơi trò chơi nối từ với AI, ai không nghĩ ra từ sẽ thua.
+                            </p>
+                        </motion.div>
+
+                        <motion.div
+                            {...{
+                                initial: { opacity: 0, y: 20 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { duration: 0.5 },
+                                className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                                onClick: () => router.push('/games/hangman')
+                            } as ModalBackdropProps}
+                        >
+                            <FaUserSlash className="text-6xl sm:text-7xl text-indigo-400 mx-auto mb-6" />
+                            <h2 className="text-xl sm:text-2xl font-bold text-indigo-300 mb-4">
+                                Người Treo Cổ
+                            </h2>
+                            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
+                                Đoán từ do AI nghĩ ra trước khi người bị treo.
+                            </p>
+                        </motion.div>
+
+                        <motion.div
+                            {...{
+                                initial: { opacity: 0, y: 20 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { duration: 0.5 },
+                                className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                                onClick: () => router.push('/games/quiz-battle')
+                            } as ModalBackdropProps}
+                        >
+                            <FaQuestion className="text-6xl sm:text-7xl text-emerald-400 mx-auto mb-6" />
+                            <h2 className="text-xl sm:text-2xl font-bold text-emerald-300 mb-4">
+                                Đấu Trí Quiz
+                            </h2>
+                            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
+                                Trả lời các câu hỏi kiến thức do AI tạo ra.
                             </p>
                         </motion.div>
                     </div>
