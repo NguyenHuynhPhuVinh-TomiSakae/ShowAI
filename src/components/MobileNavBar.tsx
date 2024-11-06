@@ -1,6 +1,6 @@
 import { IoClose } from 'react-icons/io5';
 import { FaBars } from 'react-icons/fa';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad, FaTheaterMasks } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -207,6 +207,16 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                 >
                                                     <FaComments className="mr-3" />
                                                     Trò Chuyện
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        router.push('/roleplay');
+                                                        toggleSidebar();
+                                                    }}
+                                                    className="dropdown-item text-green-500 hover:bg-green-500 hover:text-gray-800"
+                                                >
+                                                    <FaTheaterMasks className="mr-3" />
+                                                    Nhập Vai
                                                 </button>
                                             </motion.div>
                                         )}
