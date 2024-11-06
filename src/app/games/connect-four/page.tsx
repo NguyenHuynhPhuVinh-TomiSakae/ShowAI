@@ -237,35 +237,44 @@ export default function ConnectFourGame() {
                     </div>
                 </div>
 
-                <div className="overflow-auto p-4">
-                    <div className="grid grid-cols-7 gap-[2px] max-w-fit mx-auto mb-8 bg-gray-700">
-                        {board.map((cell, index) => (
-                            <motion.button
-                                key={index}
-                                whileHover={{ scale: !gameOver && isPlayerTurn ? 1.05 : 1 }}
-                                whileTap={{ scale: !gameOver && isPlayerTurn ? 0.95 : 1 }}
-                                onClick={() => handleClick(index % COLS)}
-                                disabled={gameOver || !isPlayerTurn || isLoading}
-                                className={`aspect-square min-w-[40px] min-h-[40px] text-2xl font-bold flex items-center justify-center
-                                    ${cell ? 'bg-gray-700' : 'bg-purple-600 hover:bg-purple-700'}
-                                    ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
-                                    ${index === lastMove ? 'text-red-500' : ''}
-                                    ${cell === 'X' ? 'text-yellow-400' : cell === 'O' ? 'text-red-400' : ''}
-                                `}
-                            >
-                                {isLoading && !cell ? (
-                                    <Skeleton
-                                        width={30}
-                                        height={30}
-                                        baseColor="#1F2937"
-                                        highlightColor="#374151"
-                                        borderRadius={6}
-                                    />
-                                ) : (
-                                    cell && '●'
-                                )}
-                            </motion.button>
-                        ))}
+                <div className="overflow-x-auto overflow-y-hidden pb-4">
+                    <div className="min-w-[320px] w-full max-w-[560px] mx-auto p-4">
+                        <div className="grid grid-cols-7 bg-gray-700 p-1 gap-1 rounded-lg">
+                            {board.map((cell, index) => (
+                                <motion.button
+                                    key={index}
+                                    whileHover={{ scale: !gameOver && isPlayerTurn ? 1.05 : 1 }}
+                                    whileTap={{ scale: !gameOver && isPlayerTurn ? 0.95 : 1 }}
+                                    onClick={() => handleClick(index % COLS)}
+                                    disabled={gameOver || !isPlayerTurn || isLoading}
+                                    className={`relative w-full pt-[100%] 
+                                        ${cell ? 'bg-gray-700' : 'bg-purple-600 hover:bg-purple-700'}
+                                        ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
+                                        ${index === lastMove ? 'ring-2 ring-yellow-400' : ''}
+                                        rounded-full
+                                    `}
+                                >
+                                    {(cell || isLoading) && (
+                                        <div className={`absolute inset-0 flex items-center justify-center
+                                            text-3xl sm:text-4xl md:text-5xl font-bold
+                                            ${cell === 'X' ? 'text-yellow-400' : cell === 'O' ? 'text-red-400' : ''}
+                                        `}>
+                                            {isLoading && !cell ? (
+                                                <Skeleton
+                                                    width="70%"
+                                                    height="70%"
+                                                    baseColor="#1F2937"
+                                                    highlightColor="#374151"
+                                                    borderRadius="50%"
+                                                />
+                                            ) : (
+                                                cell && '●'
+                                            )}
+                                        </div>
+                                    )}
+                                </motion.button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

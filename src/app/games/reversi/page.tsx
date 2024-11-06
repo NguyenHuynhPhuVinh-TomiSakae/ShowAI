@@ -288,36 +288,45 @@ export default function ReversiGame() {
                     )}
                 </div>
 
-                <div className="overflow-auto p-4">
-                    <div className="grid grid-cols-8 gap-[2px] max-w-fit mx-auto mb-8 bg-gray-700">
-                        {board.map((cell, index) => (
-                            <motion.button
-                                key={index}
-                                whileHover={{ scale: !gameOver && isPlayerTurn && isValidMove(board, index, 'B') ? 1.05 : 1 }}
-                                whileTap={{ scale: !gameOver && isPlayerTurn && isValidMove(board, index, 'B') ? 0.95 : 1 }}
-                                onClick={() => handleClick(index)}
-                                disabled={gameOver || !isPlayerTurn || isLoading || !isValidMove(board, index, 'B')}
-                                className={`aspect-square min-w-[40px] min-h-[40px] text-2xl font-bold flex items-center justify-center
-                                    ${cell ? 'bg-green-800' : 'bg-green-600 hover:bg-green-700'}
-                                    ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
-                                    ${index === lastMove ? 'ring-2 ring-yellow-400' : ''}
-                                    ${cell === 'B' ? 'text-black' : cell === 'W' ? 'text-white' : ''}
-                                    ${!cell && isValidMove(board, index, 'B') ? 'ring-2 ring-yellow-400 ring-opacity-50' : ''}
-                                `}
-                            >
-                                {isLoading && !cell ? (
-                                    <Skeleton
-                                        width={30}
-                                        height={30}
-                                        baseColor="#1F2937"
-                                        highlightColor="#374151"
-                                        borderRadius={15}
-                                    />
-                                ) : (
-                                    cell && '●'
-                                )}
-                            </motion.button>
-                        ))}
+                <div className="overflow-x-auto overflow-y-hidden pb-4">
+                    <div className="min-w-[320px] w-full max-w-[640px] mx-auto p-4">
+                        <div className="grid grid-cols-8 bg-gray-700 p-1 gap-1 rounded-lg">
+                            {board.map((cell, index) => (
+                                <motion.button
+                                    key={index}
+                                    whileHover={{ scale: !gameOver && isPlayerTurn && isValidMove(board, index, 'B') ? 1.05 : 1 }}
+                                    whileTap={{ scale: !gameOver && isPlayerTurn && isValidMove(board, index, 'B') ? 0.95 : 1 }}
+                                    onClick={() => handleClick(index)}
+                                    disabled={gameOver || !isPlayerTurn || isLoading || !isValidMove(board, index, 'B')}
+                                    className={`relative w-full pt-[100%]
+                                        ${cell ? 'bg-green-800' : 'bg-green-600 hover:bg-green-700'}
+                                        ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
+                                        ${index === lastMove ? 'ring-2 ring-yellow-400' : ''}
+                                        ${!cell && isValidMove(board, index, 'B') ? 'ring-2 ring-yellow-400 ring-opacity-50' : ''}
+                                        rounded-lg
+                                    `}
+                                >
+                                    {(cell || isLoading) && (
+                                        <div className={`absolute inset-0 flex items-center justify-center
+                                            text-3xl sm:text-4xl md:text-5xl font-bold
+                                            ${cell === 'B' ? 'text-black' : cell === 'W' ? 'text-white' : ''}
+                                        `}>
+                                            {isLoading && !cell ? (
+                                                <Skeleton
+                                                    width="70%"
+                                                    height="70%"
+                                                    baseColor="#1F2937"
+                                                    highlightColor="#374151"
+                                                    borderRadius="50%"
+                                                />
+                                            ) : (
+                                                cell && '●'
+                                            )}
+                                        </div>
+                                    )}
+                                </motion.button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
