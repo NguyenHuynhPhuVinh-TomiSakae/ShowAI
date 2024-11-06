@@ -43,7 +43,8 @@ export default function Home() {
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    router.prefetch('/show');
+  }, [router]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
