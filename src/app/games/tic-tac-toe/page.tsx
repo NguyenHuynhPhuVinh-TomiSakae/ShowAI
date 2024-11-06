@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FaSync } from 'react-icons/fa';
 import { toast, Toaster } from 'react-hot-toast';
@@ -40,6 +40,7 @@ export default function TicTacToeGame() {
     const [score, setScore] = useState({ player: 0, computer: 0 });
     const [isLoading, setIsLoading] = useState(false);
     const [, setGameHistory] = useState<GameHistory>([]);
+    const isGameEndingRef = useRef(false);
 
     // Khởi tạo worker
     useEffect(() => {
@@ -49,21 +50,23 @@ export default function TicTacToeGame() {
                 const result = e.data;
                 if (result.bestmove) {
                     const moveIndex = result.bestmove.i * BOARD_SIZE + result.bestmove.j;
+
                     setBoard(prevBoard => {
                         const newBoard = [...prevBoard];
                         newBoard[moveIndex] = 'O';
+
+                        if (!gameOver) {
+                            const winner = checkWinner(newBoard, moveIndex);
+                            if (winner || !newBoard.includes(null)) {
+                                handleGameEnd(winner);
+                            }
+                        }
+
                         return newBoard;
                     });
+
                     setIsLoading(false);
                     setIsPlayerTurn(true);
-
-                    // Kiểm tra người thắng sau khi AI đánh
-                    const newBoard = [...board];
-                    newBoard[moveIndex] = 'O';
-                    const winner = checkWinner(newBoard, moveIndex);
-                    if (winner || !newBoard.includes(null)) {
-                        handleGameEnd(winner);
-                    }
                 }
             };
         }
@@ -99,7 +102,6 @@ export default function TicTacToeGame() {
     const handleClick = async (index: number) => {
         if (board[index] || gameOver || !isPlayerTurn || isLoading) return;
 
-        // Tạo bản sao của bảng với nước đi mới của người chơi
         const newBoard = [...board];
         newBoard[index] = 'X';
         setBoard(newBoard);
@@ -183,6 +185,9 @@ export default function TicTacToeGame() {
     };
 
     const handleGameEnd = (winner: Player) => {
+        if (isGameEndingRef.current) return;
+        isGameEndingRef.current = true;
+
         setGameOver(true);
         let result: GameResult = null;
 
@@ -201,10 +206,7 @@ export default function TicTacToeGame() {
 
         setGameHistory(prev => [...prev, {
             board: [...board],
-            result,
-            lastMove: board.findIndex((cell, i) =>
-                prev.length === 0 || prev[prev.length - 1].board[i] !== cell
-            )
+            result
         }]);
     };
 
@@ -212,6 +214,7 @@ export default function TicTacToeGame() {
         setBoard(Array(BOARD_SIZE * BOARD_SIZE).fill(null));
         setIsPlayerTurn(true);
         setGameOver(false);
+        isGameEndingRef.current = false;
     };
 
     const resetScore = () => {
