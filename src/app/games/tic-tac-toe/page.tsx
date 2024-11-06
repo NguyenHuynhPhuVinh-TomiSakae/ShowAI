@@ -273,18 +273,20 @@ export default function TicTacToeGame() {
                 <Toaster position="top-center" />
             </ModalPortal>
 
-            <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-4">Cờ Caro</h1>
-                <p className="text-base sm:text-lg max-w-3xl mx-auto">
+            {/* Header responsive */}
+            <div className="bg-[#2A3284] text-center py-4 sm:py-8 mb-4 sm:mb-8 px-2 sm:px-4">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4">Cờ Caro</h1>
+                <p className="text-sm sm:text-base md:text-lg max-w-3xl mx-auto">
                     Đấu với AI thông minh!
                 </p>
             </div>
 
-            <div className="container mx-auto px-4 py-8">
-                <div className="flex justify-center gap-4 mb-8">
+            <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+                {/* Buttons responsive */}
+                <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-4 sm:mb-8">
                     <button
                         onClick={resetGame}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                        className="flex items-center gap-1 sm:gap-2 bg-blue-600 hover:bg-blue-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
                         disabled={isLoading}
                     >
                         <FaSync className={isLoading ? 'animate-spin' : ''} />
@@ -292,29 +294,31 @@ export default function TicTacToeGame() {
                     </button>
                     <button
                         onClick={resetScore}
-                        className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
+                        className="bg-red-600 hover:bg-red-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
                         disabled={isLoading}
                     >
                         Reset tất cả
                     </button>
                     <button
                         onClick={() => setShowLeaderboard(true)}
-                        className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg"
+                        className="bg-yellow-600 hover:bg-yellow-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
                         disabled={isLoading}
                     >
                         Bảng xếp hạng
                     </button>
                 </div>
 
-                <div className="text-center mb-8">
-                    <div className="text-xl font-bold">
+                {/* Score responsive */}
+                <div className="text-center mb-4 sm:mb-8">
+                    <div className="text-base sm:text-xl font-bold">
                         Tỉ số: Bạn {score.player} - {score.computer} AI
                     </div>
                 </div>
 
+                {/* Game board responsive */}
                 <div className="overflow-x-auto overflow-y-hidden pb-4">
-                    <div className="min-w-[320px] w-full max-w-[640px] mx-auto p-4">
-                        <div className={`grid grid-cols-[repeat(15,1fr)] gap-1 rounded-lg
+                    <div className="min-w-[280px] sm:min-w-[320px] w-full max-w-[640px] mx-auto p-2 sm:p-4">
+                        <div className={`grid grid-cols-[repeat(15,1fr)] gap-0.5 sm:gap-1 rounded-lg
                             ${isLoading ? 'opacity-50' : ''}`}>
                             {board.map((cell, index) => (
                                 <motion.button
@@ -325,13 +329,13 @@ export default function TicTacToeGame() {
                                     disabled={!!cell || gameOver || !isPlayerTurn || isLoading}
                                     className={`relative w-full pt-[100%] bg-white/10
                                         ${isLoading ? 'cursor-not-allowed opacity-50' : ''}
-                                        ${index === lastMove ? 'ring-2 ring-yellow-400' : ''}
-                                        rounded-lg
+                                        ${index === lastMove ? 'ring-1 sm:ring-2 ring-yellow-400' : ''}
+                                        rounded-md sm:rounded-lg
                                     `}
                                 >
                                     {(cell || isLoading) && (
                                         <div className={`absolute inset-0 flex items-center justify-center
-                                            text-xl sm:text-2xl md:text-3xl font-bold
+                                            text-base sm:text-xl md:text-2xl lg:text-3xl font-bold
                                             ${cell === 'X' ? 'text-yellow-400' : cell === 'O' ? 'text-red-400' : ''}
                                         `}>
                                             {isLoading && !cell ? (
