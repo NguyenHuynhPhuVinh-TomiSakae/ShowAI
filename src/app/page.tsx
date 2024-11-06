@@ -4,8 +4,8 @@ import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import WebsiteList from '@/components/WebsiteList';
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import ParallaxHeader from '@/components/ParallaxHeader'
 
 interface AIWebsite {
@@ -102,32 +102,26 @@ export default function Home() {
   const SkeletonLoader = () => (
     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: 8 }).map((_, index) => (
-        <Card key={index} className="bg-gray-800 border-2 border-gray-700">
-          <CardHeader>
-            <Skeleton className="h-48 w-full animate-pulse" />
-          </CardHeader>
-          <CardContent>
+        <div key={index} className="bg-gray-800 border-2 border-gray-700 rounded-lg shadow-lg overflow-hidden">
+          <Skeleton height={192} baseColor="#1F2937" highlightColor="#374151" />
+          <div className="p-5">
             <div className="flex justify-between items-center mb-3">
-              <Skeleton className="h-4 w-[150px] animate-pulse" />
-              <Skeleton className="h-4 w-4 rounded-full animate-pulse" />
+              <Skeleton width={150} baseColor="#1F2937" highlightColor="#374151" />
+              <Skeleton circle={true} height={20} width={20} baseColor="#1F2937" highlightColor="#374151" />
             </div>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full animate-pulse" />
-              <Skeleton className="h-4 w-full animate-pulse" />
-              <Skeleton className="h-4 w-3/4 animate-pulse" />
-            </div>
+            <Skeleton count={3} baseColor="#1F2937" highlightColor="#374151" />
             <div className="flex items-center space-x-4 my-4">
-              <Skeleton className="h-4 w-[50px] animate-pulse" />
-              <Skeleton className="h-4 w-[50px] animate-pulse" />
-              <Skeleton className="h-4 w-[50px] animate-pulse" />
+              {Array(3).fill(0).map((_, i) => (
+                <Skeleton key={i} width={50} baseColor="#1F2937" highlightColor="#374151" />
+              ))}
             </div>
             <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-4 w-[60px] animate-pulse" />
-              <Skeleton className="h-4 w-[60px] animate-pulse" />
-              <Skeleton className="h-4 w-[60px] animate-pulse" />
+              {Array(3).fill(0).map((_, i) => (
+                <Skeleton key={i} width={60} baseColor="#1F2937" highlightColor="#374151" />
+              ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
     </div>
   );

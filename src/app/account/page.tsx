@@ -431,16 +431,6 @@ const AccountPage = () => {
                             Truy cập trang Admin
                         </button>
                     )}
-                    {!isMobile && (
-                        <button
-                            onClick={toggle3DMode}
-                            className={`flex items-center gap-2 font-bold py-2 px-4 rounded transition duration-300 ${is3DEnabled ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-500 hover:bg-gray-600'
-                                }`}
-                        >
-                            <FaCube />
-                            Chế độ 3D {is3DEnabled ? 'Bật' : 'Tắt'}
-                        </button>
-                    )}
                 </div>
             </div>
             <div className="container mx-auto px-4">
@@ -499,16 +489,33 @@ const AccountPage = () => {
                                 initialName={user.displayName || ''}
                                 onSave={handleSaveName}
                             />
-                            <div className="mt-4">
-                                <label className="inline-flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={isSubscribed}
-                                        onChange={handleToggleUpdates}
-                                        className="form-checkbox h-5 w-5 text-blue-600"
-                                    />
-                                    <span className="ml-2">Nhận thông tin AI mới qua email</span>
-                                </label>
+                            <div className="mt-4 space-y-4">
+                                <div>
+                                    <label className="inline-flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isSubscribed}
+                                            onChange={handleToggleUpdates}
+                                            className="form-checkbox h-5 w-5 text-blue-600"
+                                        />
+                                        <span className="ml-2">Nhận thông tin AI mới qua email</span>
+                                    </label>
+                                </div>
+                                {!isMobile && (
+                                    <div>
+                                        <label className="inline-flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={is3DEnabled}
+                                                onChange={toggle3DMode}
+                                                className="form-checkbox h-5 w-5 text-blue-600"
+                                            />
+                                            <span className="ml-2 flex items-center gap-2">
+                                                <FaCube /> Chế độ 3D
+                                            </span>
+                                        </label>
+                                    </div>
+                                )}
                             </div>
                             <div className="mt-6 flex flex-wrap gap-4">
                                 {!isGoogleUser && (
