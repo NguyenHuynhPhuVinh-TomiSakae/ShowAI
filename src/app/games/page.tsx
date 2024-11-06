@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion';
-import { FaWordpress, FaSmile, FaRobot, FaPaintBrush, FaHandRock, FaThLarge, FaBrain, FaLink, FaUserSlash, FaQuestion } from 'react-icons/fa';
+import { FaWordpress, FaSmile, FaRobot, FaPaintBrush, FaHandRock, FaThLarge, FaBrain, FaLink, FaUserSlash, FaQuestion, FaCircle, FaYinYang } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import type { MotionProps } from 'framer-motion';
 
@@ -206,6 +206,42 @@ export default function GamesPage() {
                             </h2>
                             <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
                                 Đấu trí với AI trong trò chơi cờ caro hấp dẫn.
+                            </p>
+                        </motion.div>
+
+                        <motion.div
+                            {...{
+                                initial: { opacity: 0, y: 20 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { duration: 0.5 },
+                                className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                                onClick: () => router.push('/games/connect-four')
+                            } as ModalBackdropProps}
+                        >
+                            <FaCircle className="text-6xl sm:text-7xl text-yellow-400 mx-auto mb-6" />
+                            <h2 className="text-xl sm:text-2xl font-bold text-yellow-300 mb-4">
+                                Cờ Thả
+                            </h2>
+                            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
+                                Thử thách trí tuệ với AI trong trò chơi cờ thả 4 quân liên tiếp.
+                            </p>
+                        </motion.div>
+
+                        <motion.div
+                            {...{
+                                initial: { opacity: 0, y: 20 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { duration: 0.5 },
+                                className: "bg-gray-800 p-8 rounded-lg shadow-lg text-center cursor-pointer hover:bg-gray-700",
+                                onClick: () => router.push('/games/reversi')
+                            } as ModalBackdropProps}
+                        >
+                            <FaYinYang className="text-6xl sm:text-7xl text-purple-400 mx-auto mb-6" />
+                            <h2 className="text-xl sm:text-2xl font-bold text-purple-300 mb-4">
+                                Cờ Lật
+                            </h2>
+                            <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
+                                Chiến thuật lật cờ thông minh cùng AI trong trò chơi Reversi.
                             </p>
                         </motion.div>
                     </div>
