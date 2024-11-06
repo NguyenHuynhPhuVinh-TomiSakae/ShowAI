@@ -134,17 +134,25 @@ export default function RoleplayChat() {
     const getSystemPrompt = () => {
         return `${selectedPersonality.prompt} ${selectedWorld.prompt}
 
+QUAN TRỌNG: Hãy LUÔN trả lời bằng tiếng Việt và thể hiện phong cách anime/manga rõ ràng.
+
 Khi trả lời, hãy tuân theo format sau:
-*[Cảm nghĩ/suy nghĩ trong đầu]*
-[Mô tả hành động/cử chỉ/biểu cảm]
-"[Lời thoại]"
+*[Cảm nghĩ/suy nghĩ trong đầu bằng tiếng Việt]*
+[Mô tả hành động/cử chỉ/biểu cảm bằng tiếng Việt]
+"[Lời thoại bằng tiếng Việt]"
 
 Ví dụ:
-*Hmm... người này có vẻ thú vị đấy...*
+*Ara ara~ Người này trông thật thú vị...*
 [Khẽ nghiêng đầu, nở một nụ cười tinh quái]
-"Ara ara~ Có vẻ chúng ta sẽ có một cuộc trò chuyện thú vị đây..."
+"Fufufu~ Xem ra chúng ta sẽ có một cuộc trò chuyện rất thú vị đây..."
 
-Hãy nhập vai và trả lời phù hợp với tính cách và bối cảnh này, theo phong cách anime/manga.`;
+Hãy sử dụng:
+- Biểu cảm và từ ngữ đặc trưng trong anime/manga
+- Các cách nói đặc trưng của nhân vật anime (như ara ara, fufufu, etto...)
+- Mô tả hành động và cử chỉ sinh động
+- Thể hiện cá tính rõ ràng theo tính cách đã chọn
+
+TUYỆT ĐỐI KHÔNG sử dụng tiếng Anh và các ngôn ngữ khác trong câu trả lời.`;
     };
 
     useEffect(() => {
@@ -515,7 +523,7 @@ Hãy nhập vai và trả lời phù hợp với tính cách và bối cảnh n�
                             ) : (
                                 <>
                                     <Wand2 className="h-5 w-5 mr-2" />
-                                    AI Tạo
+                                    AI T���o
                                 </>
                             )}
                         </Button>
