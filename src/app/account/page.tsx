@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirebase } from '@/components/FirebaseConfig';
-import { FaUser, FaHeart, FaPlus, FaCube } from 'react-icons/fa';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { FaUser, FaHeart, FaPlus, FaCube, FaStar } from 'react-icons/fa';
+import { doc, getDoc, updateDoc, deleteDoc, collection, where, query, getDocs } from 'firebase/firestore';
 import { signOut, deleteUser } from 'firebase/auth';
 import WebsiteList from '@/components/WebsiteList';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,6 +43,11 @@ const AccountPage = () => {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [is3DEnabled, setIs3DEnabled] = useState(false);
     const isMobile = useMediaQuery({ maxWidth: 768 });
+    const [isVIP, setIsVIP] = useState(false);
+    const [showVIPModal, setShowVIPModal] = useState(false);
+    const [vipCode, setVipCode] = useState('');
+    const [userVIPCode, setUserVIPCode] = useState<string>('');
+    const [vipCodeUsed, setVipCodeUsed] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth?.onAuthStateChanged((currentUser) => {
@@ -85,6 +90,12 @@ const AccountPage = () => {
         check3DMode();
         // ... rest of existing useEffect code ...
     }, []);
+
+    useEffect(() => {
+        if (user?.uid && db) {
+            checkVIPStatus(user.uid);
+        }
+    }, [user, db]);
 
     const fetchUserData = async (userId: string) => {
         setIsLoading(true);
@@ -365,6 +376,92 @@ const AccountPage = () => {
         setIs3DEnabled(newMode);
     };
 
+    const checkVIPStatus = async (userId: string) => {
+        try {
+            if (!db) {
+                console.error('Firestore chưa được khởi tạo');
+                return;
+            }
+
+            const userDoc = doc(db, 'users', userId);
+            const userSnapshot = await getDoc(userDoc);
+
+            if (userSnapshot.exists()) {
+                const userData = userSnapshot.data();
+                setIsVIP(userData.isVIP === true);
+                setUserVIPCode(userData.vipCode || '');
+                setVipCodeUsed(userData.vipCodeUsed || false);
+            }
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra trạng thái VIP:', error);
+        }
+    };
+
+    const activateVIP = async () => {
+        if (!db || !user?.uid) {
+            setErrorMessage('Có lỗi xảy ra. Vui lòng thử lại sau.');
+            return;
+        }
+
+        if (!vipCode || vipCode.length !== 5 || !/^\d+$/.test(vipCode)) {
+            setErrorMessage('Mã VIP phải là 5 chữ số');
+            return;
+        }
+
+        try {
+            // Tìm user có mã VIP này
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('vipCode', '==', vipCode));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                setErrorMessage('Mã VIP không hợp lệ');
+                return;
+            }
+
+            const vipOwnerDoc = querySnapshot.docs[0];
+            const vipOwnerData = vipOwnerDoc.data();
+
+            // Kiểm tra xem mã đã được sử dụng chưa
+            if (vipOwnerData.vipCodeUsed) {
+                setErrorMessage('Mã VIP này đã được sử dụng');
+                return;
+            }
+
+            // Không cho phép sử dụng mã VIP của chính mình
+            if (vipOwnerDoc.id === user.uid) {
+                setErrorMessage('Không thể sử dụng mã VIP của chính mình');
+                return;
+            }
+
+            // Cập nhật trạng thái VIP cho user hiện tại
+            const userDoc = doc(db, 'users', user.uid);
+            await updateDoc(userDoc, {
+                isVIP: true,
+                vipActivatedAt: new Date().toISOString(),
+                activatedWithCode: vipCode
+            });
+
+            // Đánh dấu mã VIP đã được sử dụng
+            const vipOwnerRef = doc(db, 'users', vipOwnerDoc.id);
+            await updateDoc(vipOwnerRef, {
+                vipCodeUsed: true
+            });
+
+            setIsVIP(true);
+            setSuccessMessage('Kích hoạt VIP thành công!');
+            setShowVIPModal(false);
+            setVipCode('');
+
+            // Cập nhật lại trạng thái VIP và mã VIP
+            await checkVIPStatus(user.uid);
+
+        } catch (error) {
+            console.error('Lỗi khi kích hoạt VIP:', error);
+            setErrorMessage('Có lỗi xảy ra. Vui lòng thử lại sau.');
+        }
+    };
+
     const SkeletonLoader = () => (
         <div className="bg-gray-800 p-6 rounded-lg shadow-md">
             <Skeleton width={200} height={24} baseColor="#1F2937" highlightColor="#374151" className="mb-4" />
@@ -489,6 +586,20 @@ const AccountPage = () => {
                                 initialName={user.displayName || ''}
                                 onSave={handleSaveName}
                             />
+                            {userVIPCode && !vipCodeUsed && (
+                                <div className="mt-4 p-4 bg-gray-700 rounded-lg">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <FaStar className="text-yellow-300" />
+                                            <span className="font-semibold">Mã VIP của bạn:</span>
+                                        </div>
+                                        <span className="font-mono text-lg text-yellow-300">{userVIPCode}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-400 mt-2">
+                                        Chia sẻ mã này cho bạn bè để họ có thể kích hoạt tài khoản VIP
+                                    </p>
+                                </div>
+                            )}
                             <div className="mt-4 space-y-4">
                                 <div>
                                     <label className="inline-flex items-center">
@@ -538,6 +649,21 @@ const AccountPage = () => {
                                 >
                                     Đăng Xuất
                                 </button>
+                                {!isVIP && (
+                                    <button
+                                        onClick={() => setShowVIPModal(true)}
+                                        className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
+                                    >
+                                        <FaStar className="text-yellow-300" />
+                                        Kích Hoạt VIP
+                                    </button>
+                                )}
+                                {isVIP && (
+                                    <div className="bg-purple-500 text-white font-bold py-2 px-4 rounded flex items-center gap-2">
+                                        <FaStar className="text-yellow-300" />
+                                        Tài Khoản VIP
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -678,6 +804,46 @@ const AccountPage = () => {
                                         className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
                                     >
                                         Xác nhận
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showVIPModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+                            <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
+                                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                    <FaStar className="text-yellow-300" />
+                                    Kích Hoạt VIP
+                                </h2>
+                                <p className="text-gray-300 mb-4">
+                                    Nhập mã VIP 5 chữ số để kích hoạt tài khoản VIP của bạn
+                                </p>
+                                <input
+                                    type="text"
+                                    maxLength={5}
+                                    value={vipCode}
+                                    onChange={(e) => setVipCode(e.target.value.replace(/[^0-9]/g, ''))}
+                                    className="w-full p-2 rounded bg-gray-700 text-white mb-4"
+                                    placeholder="Nhập mã VIP 5 chữ số"
+                                />
+                                <div className="flex justify-end space-x-4">
+                                    <button
+                                        onClick={() => {
+                                            setShowVIPModal(false);
+                                            setVipCode('');
+                                        }}
+                                        className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        onClick={activateVIP}
+                                        className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
+                                    >
+                                        <FaStar className="text-yellow-300" />
+                                        Kích Hoạt
                                     </button>
                                 </div>
                             </div>

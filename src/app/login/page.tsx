@@ -58,6 +58,10 @@ const LoginPage = () => {
         }
     };
 
+    const generateVIPCode = () => {
+        return Math.floor(10000 + Math.random() * 90000).toString();
+    };
+
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -90,13 +94,19 @@ const LoginPage = () => {
             } else {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-                // Get the current user count from Firestore
+                const vipCode = generateVIPCode();
                 const displayName = `User${user.uid}`;
+
                 await addUserToFirestore(user.uid, {
                     email: user.email,
                     username: username,
-                    displayName: displayName
+                    displayName: displayName,
+                    vipCode: vipCode,
+                    isVIP: false,
+                    vipCodeUsed: false,
+                    createdAt: new Date().toISOString()
                 });
+
                 setIsLogin(true);
                 router.push('/');
             }
@@ -131,11 +141,17 @@ const LoginPage = () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             const userDoc = await getUserFromFirestore(user.uid);
+
             if (!userDoc) {
+                const vipCode = generateVIPCode();
                 await addUserToFirestore(user.uid, {
                     email: user.email,
                     username: user.displayName,
-                    displayName: user.displayName || `User${Date.now()}`
+                    displayName: user.displayName || `User${Date.now()}`,
+                    vipCode: vipCode,
+                    isVIP: false,
+                    vipCodeUsed: false,
+                    createdAt: new Date().toISOString()
                 });
             }
             router.push('/');
