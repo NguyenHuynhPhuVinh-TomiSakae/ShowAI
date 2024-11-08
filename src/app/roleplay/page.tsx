@@ -11,7 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import SimpleMarkdown from '@/components/SimpleMarkdown';
+import RoleplayMarkdown from '@/components/RoleplayMarkdown';
 import { useMediaQuery } from 'react-responsive';
 import {
     Dialog,
@@ -580,7 +580,7 @@ ${rawResponse}`;
                                         {message.isUser ? (
                                             <span className="text-base sm:text-lg whitespace-pre-wrap">{message.text}</span>
                                         ) : (
-                                            <SimpleMarkdown content={message.text} />
+                                            <RoleplayMarkdown content={message.text} />
                                         )}
                                     </div>
                                 ))}
