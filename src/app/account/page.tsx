@@ -409,7 +409,7 @@ const AccountPage = () => {
         }
 
         try {
-            // Tìm user có mã VIP này
+            // Tìm tất cả user có mã VIP này
             const usersRef = collection(db, 'users');
             const q = query(usersRef, where('vipCode', '==', vipCode));
             const querySnapshot = await getDocs(q);
@@ -419,17 +419,23 @@ const AccountPage = () => {
                 return;
             }
 
-            const vipOwnerDoc = querySnapshot.docs[0];
-            const vipOwnerData = vipOwnerDoc.data();
+            // Kiểm tra xem có mã VIP nào chưa được sử dụng không
+            let validVIPOwner = null;
+            for (const doc of querySnapshot.docs) {
+                const data = doc.data();
+                if (!data.vipCodeUsed) {
+                    validVIPOwner = { id: doc.id, data };
+                    break;
+                }
+            }
 
-            // Kiểm tra xem mã đã được sử dụng chưa
-            if (vipOwnerData.vipCodeUsed) {
+            if (!validVIPOwner) {
                 setErrorMessage('Mã VIP này đã được sử dụng');
                 return;
             }
 
             // Không cho phép sử dụng mã VIP của chính mình
-            if (vipOwnerDoc.id === user.uid) {
+            if (validVIPOwner.id === user.uid) {
                 setErrorMessage('Không thể sử dụng mã VIP của chính mình');
                 return;
             }
@@ -443,7 +449,7 @@ const AccountPage = () => {
             });
 
             // Đánh dấu mã VIP đã được sử dụng
-            const vipOwnerRef = doc(db, 'users', vipOwnerDoc.id);
+            const vipOwnerRef = doc(db, 'users', validVIPOwner.id);
             await updateDoc(vipOwnerRef, {
                 vipCodeUsed: true
             });
