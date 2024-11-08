@@ -56,12 +56,9 @@ export default function ChatBox() {
     const [isVipMode, setIsVipMode] = useState(false);
     const currentModelGroups = isVipMode ? vipModelGroups : freeModelGroups;
 
-    // Tìm nhóm Google và model đầu tiên của Google
-    const googleGroup = currentModelGroups.find(group => group.provider === "Google");
-    const defaultModel = googleGroup?.models[0];
-
-    const [selectedProvider, setSelectedProvider] = useState("Google");
-    const [selectedModel, setSelectedModel] = useState(defaultModel || currentModelGroups[0].models[0]);
+    // Lấy provider và model đầu tiên làm mặc định
+    const [selectedProvider, setSelectedProvider] = useState(currentModelGroups[0].provider);
+    const [selectedModel, setSelectedModel] = useState(currentModelGroups[0].models[0]);
     const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean; images?: string[] }>>([]);
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -101,13 +98,14 @@ export default function ChatBox() {
         checkVIPStatus();
     }, [auth?.currentUser?.uid, db]);
 
-    // Thêm useEffect để cập nhật model khi chuyển đổi mode
+    // Sửa useEffect để cập nhật cả provider và model khi chuyển đổi mode
     useEffect(() => {
-        const newGoogleGroup = currentModelGroups.find(group => group.provider === "Google");
-        const newDefaultModel = newGoogleGroup?.models[0];
-        if (newDefaultModel) {
-            setSelectedModel(newDefaultModel);
-        }
+        // Lấy provider và model đầu tiên của mode mới
+        const newProvider = currentModelGroups[0].provider;
+        const newDefaultModel = currentModelGroups[0].models[0];
+
+        setSelectedProvider(newProvider);
+        setSelectedModel(newDefaultModel);
     }, [isVipMode, currentModelGroups]);
 
     const scrollToBottom = () => {

@@ -1,5 +1,11 @@
 export const modelGroups = [
     {
+        provider: 'Google',
+        models: [
+            { name: 'Gemma 2 9B', icon: '💎', modal: 'google/gemma-2-9b-it:free' },
+        ]
+    },
+    {
         provider: 'Meta',
         models: [
             { name: 'Llama 3.1 405B', icon: '🦙', modal: 'meta-llama/llama-3.1-405b-instruct:free' },
@@ -47,12 +53,6 @@ export const modelGroups = [
         provider: 'Qwen',
         models: [
             { name: 'Qwen 2 7B', icon: '🐼', modal: 'qwen/qwen-2-7b-instruct:free' },
-        ]
-    },
-    {
-        provider: 'Google',
-        models: [
-            { name: 'Gemma 2 9B', icon: '💎', modal: 'google/gemma-2-9b-it:free' },
         ]
     },
     {
