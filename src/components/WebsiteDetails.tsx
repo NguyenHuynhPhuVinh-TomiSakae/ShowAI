@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FaEye, FaHeart, FaThumbtack } from 'react-icons/fa';
+import { FaEye, FaHeart, FaThumbtack, FaSpinner } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import AdditionalInfoButton from './AdditionalInfoButton';
-import { FaSpinner } from 'react-icons/fa';
 import { useFirebase } from './FirebaseConfig';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import Rating from './Rating';
@@ -18,6 +17,7 @@ import type { MotionProps } from 'framer-motion';
 import { useMediaQuery } from 'react-responsive';
 import AIChart from './AIChart';
 import AIRating from './AIRating';
+import AIButton from './AIButton';
 
 type ModalBackdropProps = MotionProps & {
     className?: string;
@@ -244,6 +244,12 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                     >
                         <FaThumbtack />
                     </button>
+
+                    <AIButton
+                        websiteName={website.name}
+                        description={website.description}
+                        keyFeatures={website.keyFeatures}
+                    />
                 </div>
                 <Link
                     href={website.link}
