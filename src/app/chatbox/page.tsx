@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { IoTrash, IoArrowUndo, IoClose } from "react-icons/io5";
+import { IoTrash, IoArrowUndo, IoClose, IoCheckmark, IoCopy } from "react-icons/io5";
 import { ArrowUp, Square, LoaderIcon, Paperclip } from 'lucide-react';
 import TextareaAutosize from 'react-textarea-autosize';
 import {
@@ -18,7 +18,11 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import SimpleMarkdown from '@/components/SimpleMarkdown';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import 'github-markdown-css/github-markdown-light.css';
 import { useMediaQuery } from 'react-responsive';
 import { modelGroups as freeModelGroups } from './modelGroups';
 import { modelGroups as vipModelGroups } from './vipModelGroups';
@@ -68,6 +72,18 @@ export default function ChatBox() {
 
     // Thêm state để theo dõi trạng thái VIP
     const [isVIPEnabled, setIsVIPEnabled] = useState(false);
+
+    // Thêm state và function cho copy code
+    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+    const copyToClipboard = (text: string, index: number) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopiedIndex(index);
+            setTimeout(() => setCopiedIndex(null), 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    };
 
     // Thêm useEffect để kiểm tra trạng thái VIP khi component được mount
     useEffect(() => {
@@ -291,6 +307,9 @@ export default function ChatBox() {
         setIsVipMode(!isVipMode);
     };
 
+    // Thêm state để kiểm soát hiển thị tooltip
+    const [showVIPTooltip, setShowVIPTooltip] = useState(true);
+
     return (
         <>
             <ModalPortal>
@@ -311,13 +330,87 @@ export default function ChatBox() {
                                 <span className="text-base sm:text-lg">Trò chuyện với</span>
                                 <span className="text-[#4ECCA3] text-lg sm:text-xl font-bold">ShowAI</span>
                             </div>
-                            <button
-                                onClick={handleVIPModeToggle}
-                                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${isVipMode ? 'bg-[#4ECCA3] text-black hover:bg-[#3DB392]' : 'bg-gray-700 text-white hover:bg-gray-600'
-                                    }`}
-                            >
-                                {isVipMode ? 'VIP' : 'Free'}
-                            </button>
+                            <TooltipProvider>
+                                <Tooltip
+                                    open={!isVipMode && showVIPTooltip}
+                                    delayDuration={0}
+                                >
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            onClick={() => {
+                                                handleVIPModeToggle();
+                                                setShowVIPTooltip(false);
+                                            }}
+                                            className={`
+                                                px-3 py-1.5 
+                                                rounded-full 
+                                                text-sm sm:text-base 
+                                                font-semibold 
+                                                transition-all 
+                                                duration-300 
+                                                shadow-lg
+                                                ${isVipMode
+                                                    ? 'bg-gradient-to-r from-[#4ECCA3] to-[#2EAF7D] text-white hover:shadow-[#4ECCA3]/50 scale-105 hover:scale-110'
+                                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                                }
+                                            `}
+                                        >
+                                            {isVipMode ? (
+                                                <span className="flex items-center gap-1">
+                                                    <span className="animate-pulse">⭐</span>
+                                                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 to-yellow-500">
+                                                        VIP
+                                                    </span>
+                                                </span>
+                                            ) : 'Free'}
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                        side="bottom"
+                                        sideOffset={5}
+                                        className="
+                                            relative
+                                            bg-[#1A1A2E] 
+                                            text-white 
+                                            border-[#4ECCA3] 
+                                            px-3 sm:px-4 
+                                            py-1.5 sm:py-2 
+                                            text-xs sm:text-base
+                                            rounded-lg
+                                            shadow-lg
+                                            shadow-[#4ECCA3]/20
+                                            animate-fade-in-down
+                                            z-50
+                                            max-w-[150px] sm:max-w-[300px]
+                                            text-center
+                                            before:content-['']
+                                            before:absolute
+                                            before:top-[-8px]
+                                            before:left-1/2
+                                            before:-translate-x-1/2
+                                            before:border-[8px]
+                                            before:border-transparent
+                                            before:border-b-[#4ECCA3]
+                                            after:content-['']
+                                            after:absolute
+                                            after:top-[-7px]
+                                            after:left-1/2
+                                            after:-translate-x-1/2
+                                            after:border-[7px]
+                                            after:border-transparent
+                                            after:border-b-[#1A1A2E]
+                                            sm:whitespace-normal
+                                            whitespace-nowrap
+                                        "
+                                    >
+                                        <p className="font-medium">
+                                            <span className="hidden sm:inline">Nhấn để sử dụng </span>
+                                            <span className="sm:hidden">Sử dụng </span>
+                                            <span className="text-[#4ECCA3] font-bold">VIP</span>
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         </div>
                         <div className="flex items-center gap-3">
                             <button
@@ -356,7 +449,50 @@ export default function ChatBox() {
                                         {message.isUser ? (
                                             <span className="text-base sm:text-lg whitespace-pre-wrap">{message.text}</span>
                                         ) : (
-                                            <SimpleMarkdown content={message.text} />
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    code({ inline, className, children, ...props }: {
+                                                        inline?: boolean;
+                                                        className?: string;
+                                                        children?: React.ReactNode;
+                                                    }) {
+                                                        const match = /language-(\w+)/.exec(className || '')
+                                                        return !inline && match ? (
+                                                            <div className="relative">
+                                                                <SyntaxHighlighter
+                                                                    style={vscDarkPlus}
+                                                                    language={match[1]}
+                                                                    PreTag="div"
+                                                                    className="rounded-xl shadow-lg !bg-[#1A1A1A] !p-4 my-4"
+                                                                    {...props}
+                                                                >
+                                                                    {String(children).replace(/\n$/, '')}
+                                                                </SyntaxHighlighter>
+                                                                <button
+                                                                    onClick={() => copyToClipboard(String(children), index)}
+                                                                    className="absolute top-2 right-2 p-1.5 rounded-lg 
+                                                                             bg-gray-700/50 hover:bg-gray-700 text-white/70 
+                                                                             hover:text-white transition-all duration-200"
+                                                                >
+                                                                    {copiedIndex === index ? (
+                                                                        <IoCheckmark className="h-4 w-4" />
+                                                                    ) : (
+                                                                        <IoCopy className="h-4 w-4" />
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <code className={className} {...props}>
+                                                                {children}
+                                                            </code>
+                                                        )
+                                                    }
+                                                }}
+                                                className="markdown-body dark"
+                                            >
+                                                {message.text}
+                                            </ReactMarkdown>
                                         )}
                                         {message.images && message.images.length > 0 && (
                                             <div className="flex flex-wrap gap-2 mt-2">
