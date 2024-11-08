@@ -73,8 +73,7 @@ export const modelGroups = [
         models: [
             { name: 'Toppy M 7B', icon: '🔝', modal: 'undi95/toppy-m-7b:free' },
         ]
-    },
-
+    }
 ];
 
 export type ModelGroup = {

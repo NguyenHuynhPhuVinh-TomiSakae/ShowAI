@@ -45,11 +45,5 @@ export const modelGroups: ModelGroup[] = [
         models: [
             { name: 'Mixtral 8x7B', icon: '🌪️', modal: 'mixtral-8x7b-32768' },
         ]
-    },
-    {
-        provider: 'Other',
-        models: [
-            { name: 'LLaVA 1.5 7B', icon: '👁️', modal: 'llava-v1.5-7b-4096-preview' },
-        ]
-    },
+    }
 ];
