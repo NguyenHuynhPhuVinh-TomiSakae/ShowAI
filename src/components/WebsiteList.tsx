@@ -3,6 +3,8 @@ import { useRouter } from 'next/navigation';
 import { FaExternalLinkAlt, FaEye, FaHeart, FaStar } from 'react-icons/fa';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import Image from 'next/image';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useFirebase } from '@/components/FirebaseConfig';
 
 interface AIWebsite {
     _id: string;
@@ -251,23 +253,51 @@ const WebsiteCard: React.FC<{
 
 const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSidebar = false, isRandom = false, isShuffled = false }) => {
     const router = useRouter();
+    const { auth, db } = useFirebase();
 
     const handleWebsiteClick = async (id: string) => {
-        try {
-            // Gọi API để tăng lượt xem
-            await fetch('/api/incrementView', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id }),
-            });
-        } catch (error) {
-            console.error('Lỗi khi tăng lượt xem:', error);
-        }
-
-        // Chuyển hướng đến trang chi tiết
+        // Chuyển hướng ngay lập tức
         router.push(`/show?id=${id}`);
+
+        try {
+            // Xử lý tăng view và lưu lịch sử ở background
+            await Promise.all([
+                // Gọi API tăng lượt xem
+                fetch('/api/incrementView', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id }),
+                }),
+
+                // Lưu lịch sử xem vào Firestore nếu user đã đăng nhập
+                (async () => {
+                    const user = auth?.currentUser;
+                    if (user && db) {
+                        const userRef = doc(db, 'users', user.uid);
+                        const userDoc = await getDoc(userRef);
+                        const userData = userDoc.exists() ? userDoc.data() : {};
+
+                        const currentHistory = userData.viewHistory || [];
+                        const newHistory = [
+                            {
+                                websiteId: id,
+                                viewedAt: new Date().toISOString()
+                            },
+                            ...currentHistory.filter((item: any) => item.websiteId !== id)
+                        ].slice(0, 50);
+
+                        await updateDoc(userRef, {
+                            viewHistory: newHistory
+                        });
+                    }
+                })()
+            ]);
+        } catch (error) {
+            console.error('Lỗi khi xử lý lượt xem:', error);
+            // Không cần xử lý lỗi vì người dùng đã được chuyển hướng
+        }
     };
 
     return (

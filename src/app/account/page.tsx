@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirebase } from '@/components/FirebaseConfig';
-import { FaUser, FaHeart, FaPlus, FaCube, FaStar } from 'react-icons/fa';
+import { FaUser, FaHeart, FaPlus, FaCube, FaStar, FaHistory } from 'react-icons/fa';
 import { doc, getDoc, updateDoc, deleteDoc, collection, where, query, getDocs } from 'firebase/firestore';
 import { signOut, deleteUser } from 'firebase/auth';
 import WebsiteList from '@/components/WebsiteList';
@@ -48,6 +48,8 @@ const AccountPage = () => {
     const [vipCode, setVipCode] = useState('');
     const [userVIPCode, setUserVIPCode] = useState<string>('');
     const [vipCodeUsed, setVipCodeUsed] = useState(false);
+    const [historyWebsites, setHistoryWebsites] = useState<any[]>([]);
+    const [isHistoryLoading, setIsHistoryLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribe = auth?.onAuthStateChanged((currentUser) => {
@@ -68,6 +70,7 @@ const AccountPage = () => {
                 setReceiveUpdates(storedReceiveUpdates === 'true');
                 fetchUserPreferences(currentUser.uid);
                 checkEmailSubscription(currentUser.uid);
+                fetchHistoryWebsites(currentUser.uid);
             } else {
                 router.push('/login');
             }
@@ -468,6 +471,46 @@ const AccountPage = () => {
         }
     };
 
+    const fetchHistoryWebsites = async (userId: string) => {
+        setIsHistoryLoading(true);
+        try {
+            if (db) {
+                const userDoc = doc(db, 'users', userId);
+                const userSnapshot = await getDoc(userDoc);
+                if (userSnapshot.exists()) {
+                    const viewHistory = userSnapshot.data().viewHistory || [];
+                    if (viewHistory.length === 0) {
+                        setHistoryWebsites([]);
+                        setIsHistoryLoading(false);
+                        return;
+                    }
+
+                    const historyIds = viewHistory.map((item: any) => item.websiteId);
+                    const uniqueIds = [...new Set(historyIds)]; // Loại bỏ các ID trùng lặp
+                    const historyIdsQuery = uniqueIds.join(',');
+
+                    const response = await fetch(`/api/showai?list=${historyIdsQuery}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.data) {
+                            // Sắp xếp theo thứ tự trong viewHistory
+                            const sortedWebsites = data.data.sort((a: any, b: any) => {
+                                const aIndex = viewHistory.findIndex((item: any) => item.websiteId === a.id);
+                                const bIndex = viewHistory.findIndex((item: any) => item.websiteId === b.id);
+                                return aIndex - bIndex;
+                            });
+                            setHistoryWebsites(sortedWebsites);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi khi lấy lịch sử xem:', error);
+        } finally {
+            setIsHistoryLoading(false);
+        }
+    };
+
     const SkeletonLoader = () => (
         <div className="bg-gray-800 p-6 rounded-lg shadow-md">
             <Skeleton width={200} height={24} baseColor="#1F2937" highlightColor="#374151" className="mb-4" />
@@ -571,6 +614,14 @@ const AccountPage = () => {
                     >
                         <FaPlus className="mr-2" />
                         <span className="hidden sm:inline">Đăng bài</span>
+                    </button>
+                    <button
+                        className={`py-2 px-4 rounded-lg flex items-center ${activeTab === 'history' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300'
+                            }`}
+                        onClick={() => setActiveTab('history')}
+                    >
+                        <FaHistory className="mr-2" />
+                        <span className="hidden sm:inline">Lịch sử</span>
                     </button>
                 </div>
 
@@ -712,6 +763,34 @@ const AccountPage = () => {
                             transition={{ duration: 0.5 }}
                         >
                             <PostSubmission />
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'history' && (
+                        <motion.div
+                            key="history"
+                            {...{
+                                variants: tabVariants,
+                                initial: "hidden",
+                                animate: "visible",
+                                exit: "exit",
+                                transition: { duration: 0.5 },
+                                className: "bg-gray-800 p-6 rounded-lg shadow-md"
+                            } as ModalBackdropProps}
+                        >
+                            <h2 className="text-xl font-semibold mb-4 text-blue-300">Lịch sử xem</h2>
+                            {isHistoryLoading ? (
+                                <FavoritesSkeletonLoader />
+                            ) : historyWebsites.length > 0 ? (
+                                <WebsiteList
+                                    websites={historyWebsites}
+                                    onTagClick={handleTagClick}
+                                    isSidebar={false}
+                                    isShuffled={true}
+                                />
+                            ) : (
+                                <p>Bạn chưa xem trang web nào.</p>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
