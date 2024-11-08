@@ -20,97 +20,79 @@ import {
 } from '@/components/ui/tooltip';
 import SimpleMarkdown from '@/components/SimpleMarkdown';
 import { useMediaQuery } from 'react-responsive';
+import { modelGroups as freeModelGroups } from './modelGroups';
+import { modelGroups as vipModelGroups } from './vipModelGroups';
+import { Groq } from 'groq-sdk';
+import { doc, getDoc } from 'firebase/firestore';
+import { useFirebase } from '@/components/FirebaseConfig';
+import { toast, Toaster } from 'react-hot-toast';
+import ModalPortal from '@/components/ModalPortal';
 
-const modelGroups = [
-    {
-        provider: 'Meta',
-        models: [
-            { name: 'Llama 3.1 405B', icon: '🦙', modal: 'meta-llama/llama-3.1-405b-instruct:free' },
-            { name: 'Llama 3.1 70B', icon: '🦙', modal: 'meta-llama/llama-3.1-70b-instruct:free' },
-            { name: 'Llama 3.2 3B', icon: '🦙', modal: 'meta-llama/llama-3.2-3b-instruct:free' },
-            { name: 'Llama 3.2 1B', icon: '🦙', modal: 'meta-llama/llama-3.2-1b-instruct:free' },
-            { name: 'Llama 3.1 8B', icon: '🦙', modal: 'meta-llama/llama-3.1-8b-instruct:free' },
-            { name: 'Llama 3 8B', icon: '🦙', modal: 'meta-llama/llama-3-8b-instruct:free' },
-            { name: 'Llama 3.2 11B Vision', icon: '👁️', modal: 'meta-llama/llama-3.2-11b-vision-instruct:free' },
-        ]
-    },
-    {
-        provider: 'Nous',
-        models: [
-            { name: 'Hermes 3 405B', icon: '🧠', modal: 'nousresearch/hermes-3-llama-3.1-405b:free' },
-        ]
-    },
-    {
-        provider: 'Mistral AI',
-        models: [
-            { name: 'Mistral 7B', icon: '🌪️', modal: 'mistralai/mistral-7b-instruct:free' },
-            { name: 'Codestral Mamba', icon: '🐍', modal: 'mistralai/codestral-mamba' },
-        ]
-    },
-    {
-        provider: 'Microsoft',
-        models: [
-            { name: 'Phi-3 Medium', icon: '🔬', modal: 'microsoft/phi-3-medium-128k-instruct:free' },
-            { name: 'Phi-3 Mini', icon: '🔬', modal: 'microsoft/phi-3-mini-128k-instruct:free' },
-        ]
-    },
-    {
-        provider: 'Hugging Face',
-        models: [
-            { name: 'Zephyr 7B', icon: '🌬️', modal: 'huggingfaceh4/zephyr-7b-beta:free' },
-        ]
-    },
-    {
-        provider: 'Liquid',
-        models: [
-            { name: 'LFM 40B', icon: '💧', modal: 'liquid/lfm-40b:free' },
-        ]
-    },
-    {
-        provider: 'Qwen',
-        models: [
-            { name: 'Qwen 2 7B', icon: '🐼', modal: 'qwen/qwen-2-7b-instruct:free' },
-        ]
-    },
-    {
-        provider: 'Google',
-        models: [
-            { name: 'Gemma 2 9B', icon: '💎', modal: 'google/gemma-2-9b-it:free' },
-        ]
-    },
-    {
-        provider: 'OpenChat',
-        models: [
-            { name: 'OpenChat 7B', icon: '💬', modal: 'openchat/openchat-7b:free' },
-        ]
-    },
-    {
-        provider: 'Gryphe',
-        models: [
-            { name: 'Mythomist 7B', icon: '🧙', modal: 'gryphe/mythomist-7b:free' },
-            { name: 'Mythomax L2 13B', icon: '🧙', modal: 'gryphe/mythomax-l2-13b:free' },
-        ]
-    },
-    {
-        provider: 'Undi95',
-        models: [
-            { name: 'Toppy M 7B', icon: '🔝', modal: 'undi95/toppy-m-7b:free' },
-        ]
-    },
+// Định nghĩa type cho messages theo đúng yêu cầu của Groq
+type ChatMessage = {
+    role: "user" | "assistant" | "system";
+    content: string;
+    name?: string;
+};
 
-];
+// Thêm style cho toast
+const toastStyle = {
+    style: {
+        background: '#1E293B',
+        color: '#fff',
+        border: '1px solid #3B82F6',
+        borderRadius: '0.5rem',
+        padding: '1rem',
+    },
+};
 
 export default function ChatBox() {
+    const { auth, db } = useFirebase();
     const [message, setMessage] = useState('');
-    const [selectedProvider, setSelectedProvider] = useState('Google');
-    const [selectedModel, setSelectedModel] = useState(modelGroups.find(group => group.provider === 'Google')?.models[0] || modelGroups[0].models[0]);
+    const [isVipMode, setIsVipMode] = useState(false);
+    const currentModelGroups = isVipMode ? vipModelGroups : freeModelGroups;
+
+    // Tìm nhóm Google và model đầu tiên của Google
+    const googleGroup = currentModelGroups.find(group => group.provider === "Google");
+    const defaultModel = googleGroup?.models[0];
+
+    const [selectedProvider, setSelectedProvider] = useState("Google");
+    const [selectedModel, setSelectedModel] = useState(defaultModel || currentModelGroups[0].models[0]);
     const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean; images?: string[] }>>([]);
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isAIResponding, setIsAIResponding] = useState(false);
     const [files, setFiles] = useState<{ file: File; base64: string }[]>([]);
-    const [chatHistory, setChatHistory] = useState<Array<{ role: string; content: any }>>([]);
+    const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
     const isMobile = useMediaQuery({ maxWidth: 767 });
+
+    // Thêm state để theo dõi trạng thái VIP
+    const [isVIPEnabled, setIsVIPEnabled] = useState(false);
+
+    // Thêm useEffect để kiểm tra trạng thái VIP khi component được mount
+    useEffect(() => {
+        const checkVIPStatus = async () => {
+            if (auth?.currentUser?.uid && db) {
+                const userDoc = doc(db, 'users', auth.currentUser.uid);
+                const userSnapshot = await getDoc(userDoc);
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.data();
+                    setIsVIPEnabled(userData.isVIP === true);
+                }
+            }
+        };
+
+        checkVIPStatus();
+    }, [auth?.currentUser?.uid, db]);
+
+    // Thêm useEffect để cập nhật model khi chuyển đổi mode
+    useEffect(() => {
+        const newGoogleGroup = currentModelGroups.find(group => group.provider === "Google");
+        const newDefaultModel = newGoogleGroup?.models[0];
+        if (newDefaultModel) {
+            setSelectedModel(newDefaultModel);
+        }
+    }, [isVipMode, currentModelGroups]);
 
     const scrollToBottom = () => {
         if (chatContainerRef.current) {
@@ -152,19 +134,13 @@ export default function ChatBox() {
             const newUserMessage = { text: message, isUser: true, images: imageBases64 };
             setMessages(prevMessages => [...prevMessages, newUserMessage]);
 
-            // Cập nhật lịch sử chat
-            let messageContent: any = message;
-            if (selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && files.length > 0) {
-                messageContent = [
-                    { type: "text", text: message },
-                    ...imageBases64.map(img => ({ type: "image_url", image_url: { url: img } }))
-                ];
-            }
+            // Đơn giản hóa messageContent khi sử dụng với Groq
+            const newMessage: ChatMessage = {
+                role: "user",
+                content: message
+            };
 
-            const newChatHistory = [
-                ...chatHistory,
-                { role: "user", content: messageContent }
-            ];
+            const newChatHistory = [...chatHistory, newMessage];
             setChatHistory(newChatHistory);
 
             setMessage('');
@@ -172,51 +148,112 @@ export default function ChatBox() {
             setIsAIResponding(true);
 
             try {
-                // Lấy khóa OPENROUTER từ API
-                const keyResponse = await fetch('/api/openrouter-key');
-                const { key } = await keyResponse.json();
+                if (isVipMode) {
+                    const groqKeyResponse = await fetch('/api/groq-key');
+                    const data = await groqKeyResponse.json();
 
-                if (!key) {
-                    throw new Error('Không thể lấy khóa OPENROUTER');
-                }
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
 
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${key}`,
-                        "HTTP-Referer": `${process.env.NEXT_PUBLIC_SITE_URL}`,
-                        "X-Title": `${process.env.NEXT_PUBLIC_SITE_NAME}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        "model": selectedModel.modal,
-                        "messages": newChatHistory
-                    })
-                });
+                    const groq = new Groq({
+                        apiKey: data.key,
+                        dangerouslyAllowBrowser: true
+                    });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                    const groqMessages = newChatHistory.map(msg => ({
+                        role: msg.role,
+                        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+                    }));
 
-                const data = await response.json();
+                    const chatCompletion = await groq.chat.completions.create({
+                        messages: groqMessages,
+                        model: selectedModel.modal,
+                        temperature: 1,
+                        max_tokens: 1024,
+                        top_p: 1,
+                        stream: true,
+                        stop: null
+                    });
 
-                if (data && data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
-                    const aiResponse = data.choices[0].message.content.trim();
-                    setMessages(prevMessages => [...prevMessages, { text: aiResponse, isUser: false }]);
+                    let fullResponse = '';
+                    for await (const chunk of chatCompletion) {
+                        const content = chunk.choices[0]?.delta?.content || '';
+                        fullResponse += content;
 
-                    // Cập nhật lịch sử chat với phản hồi của AI
-                    setChatHistory(prevHistory => [...prevHistory, { role: "assistant", content: aiResponse }]);
-                } else if (data && data.error) {
-                    console.error("Lỗi từ API:", data.error);
-                    throw new Error(data.error.message || 'Lỗi không xác định từ API');
+                        setMessages(prevMessages => {
+                            const newMessages = [...prevMessages];
+                            const lastMessage = newMessages[newMessages.length - 1];
+
+                            if (lastMessage && !lastMessage.isUser) {
+                                newMessages[newMessages.length - 1] = {
+                                    ...lastMessage,
+                                    text: fullResponse
+                                };
+                            } else {
+                                newMessages.push({
+                                    text: fullResponse,
+                                    isUser: false
+                                });
+                            }
+
+                            return newMessages;
+                        });
+                    }
+
+                    // Cập nhật chatHistory với response từ AI
+                    setChatHistory(prevHistory => [
+                        ...prevHistory,
+                        {
+                            role: "assistant",
+                            content: fullResponse
+                        }
+                    ]);
+
                 } else {
-                    console.error("Cấu trúc phản hồi không hợp lệ:", data);
-                    throw new Error('Phản hồi từ API không hợp lệ');
+                    const keyResponse = await fetch('/api/openrouter-key');
+                    const { key } = await keyResponse.json();
+
+                    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${key}`,
+                            "HTTP-Referer": `${process.env.NEXT_PUBLIC_SITE_URL}`,
+                            "X-Title": `${process.env.NEXT_PUBLIC_SITE_NAME}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            "model": selectedModel.modal,
+                            "messages": newChatHistory
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    if (data && data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+                        const aiResponse = data.choices[0].message.content.trim();
+                        setMessages(prevMessages => [...prevMessages, { text: aiResponse, isUser: false }]);
+
+                        setChatHistory(prevHistory => [...prevHistory, { role: "assistant", content: aiResponse }]);
+                    } else if (data && data.error) {
+                        console.error("Lỗi từ API:", data.error);
+                        throw new Error(data.error.message || 'Lỗi không xác định từ API');
+                    } else {
+                        console.error("Cấu trúc phản hồi không hợp lệ:", data);
+                        throw new Error('Phản hồi từ API không hợp lệ');
+                    }
                 }
             } catch (error: unknown) {
                 console.error("Lỗi khi gọi API:", error);
                 const errorMessage = error instanceof Error ? error.message : 'Lỗi không xác định';
-                setMessages(prevMessages => [...prevMessages, { text: `Xin lỗi, đã xảy ra lỗi: ${errorMessage}`, isUser: false }]);
+                setMessages(prevMessages => [
+                    ...prevMessages,
+                    { text: `Xin lỗi, đã xảy ra lỗi: ${errorMessage}`, isUser: false }
+                ]);
             } finally {
                 setIsLoading(false);
                 setIsAIResponding(false);
@@ -227,14 +264,14 @@ export default function ChatBox() {
 
     const handleClearMessages = () => {
         setMessages([]);
-        setChatHistory([]); // Xóa cả lịch sử chat
+        setChatHistory([]);
     };
 
     const handleUndo = () => {
         if (messages.length > 0) {
             const newMessages = messages.slice(0, -2);
             setMessages(newMessages);
-            setChatHistory(prevHistory => prevHistory.slice(0, -2)); // Xóa 2 tin nhắn cuối cùng khỏi lịch sử chat
+            setChatHistory(prevHistory => prevHistory.slice(0, -2));
         }
     };
 
@@ -245,8 +282,21 @@ export default function ChatBox() {
         }
     };
 
+    // Sửa đổi phần xử lý chuyển đổi mode
+    const handleVIPModeToggle = () => {
+        if (!isVIPEnabled && !isVipMode) {
+            toast.error('Bạn cần kích hoạt tài khoản VIP để sử dụng tính năng này', toastStyle);
+            return;
+        }
+        setIsVipMode(!isVipMode);
+    };
+
     return (
         <>
+            <ModalPortal>
+                <Toaster position="top-center" />
+            </ModalPortal>
+
             <div className="bg-[#2A3284] text-center py-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold mb-4">Trò chuyện</h1>
                 <p className="text-base sm:text-lg max-w-3xl mx-auto">
@@ -255,11 +305,19 @@ export default function ChatBox() {
             </div>
             <main className="flex min-h-screen bg-[#0F172A] text-white">
                 <div className="w-full max-w-4xl mx-auto px-4 py-6">
-                    {/* Navbar được làm mới */}
-                    <nav className="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
-                        <div className="flex items-center gap-2">
-                            <span className="text-lg">Trò chuyện với</span>
-                            <span className="text-[#4ECCA3] text-xl font-bold">ShowAI</span>
+                    <nav className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 pb-4 border-b border-gray-800 gap-4 sm:gap-0">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <span className="text-base sm:text-lg">Trò chuyện với</span>
+                                <span className="text-[#4ECCA3] text-lg sm:text-xl font-bold">ShowAI</span>
+                            </div>
+                            <button
+                                onClick={handleVIPModeToggle}
+                                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${isVipMode ? 'bg-[#4ECCA3] text-black hover:bg-[#3DB392]' : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    }`}
+                            >
+                                {isVipMode ? 'VIP' : 'Free'}
+                            </button>
                         </div>
                         <div className="flex items-center gap-3">
                             <button
@@ -279,7 +337,6 @@ export default function ChatBox() {
                         </div>
                     </nav>
 
-                    {/* Messages container được làm mới */}
                     <div ref={chatContainerRef} className="space-y-6 mb-6 overflow-y-auto">
                         {messages.length === 0 ? (
                             <div className="text-center py-20">
@@ -325,22 +382,21 @@ export default function ChatBox() {
                         )}
                     </div>
 
-                    {/* Input container được làm mới */}
                     <form onSubmit={handleSubmit} className="border border-[#2A3284] rounded-xl bg-[#1E293B]">
                         <div className="p-4 space-y-4">
-                            <div className="flex gap-4">
+                            <div className="flex flex-col sm:flex-row gap-4">
                                 <Select
                                     value={selectedProvider}
                                     onValueChange={(value) => {
                                         setSelectedProvider(value);
-                                        setSelectedModel(modelGroups.find(group => group.provider === value)?.models[0] || modelGroups[0].models[0]);
+                                        setSelectedModel(currentModelGroups.find(group => group.provider === value)?.models[0] || currentModelGroups[0].models[0]);
                                     }}
                                 >
-                                    <SelectTrigger className="w-[200px] bg-[#0F172A] border-[#2A3284]">
+                                    <SelectTrigger className="w-full sm:w-[200px] bg-[#0F172A] border-[#2A3284]">
                                         <SelectValue placeholder="Chọn nhà cung cấp" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {modelGroups.map((group) => (
+                                        {currentModelGroups.map((group) => (
                                             <SelectItem key={group.provider} value={group.provider}>
                                                 {group.provider}
                                             </SelectItem>
@@ -351,7 +407,7 @@ export default function ChatBox() {
                                 <Select
                                     value={selectedModel.modal}
                                     onValueChange={(value) => {
-                                        const newModel = modelGroups
+                                        const newModel = currentModelGroups
                                             .find(group => group.provider === selectedProvider)
                                             ?.models.find(model => model.modal === value);
                                         if (newModel) {
@@ -359,11 +415,11 @@ export default function ChatBox() {
                                         }
                                     }}
                                 >
-                                    <SelectTrigger className="w-[200px] bg-[#0F172A] border-[#2A3284]">
+                                    <SelectTrigger className="w-full sm:w-[200px] bg-[#0F172A] border-[#2A3284]">
                                         <SelectValue placeholder="Chọn mô hình" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {modelGroups
+                                        {currentModelGroups
                                             .find(group => group.provider === selectedProvider)
                                             ?.models.map((model) => (
                                                 <SelectItem key={model.modal} value={model.modal}>
@@ -437,7 +493,7 @@ export default function ChatBox() {
                                     {isLoading ? (
                                         <Square className="h-4 w-4 sm:h-5 sm:w-5" onClick={(e) => {
                                             e.preventDefault();
-                                            // Thêm hàm dừng tạo ở đây
+                                            // Thêm hàm dừng tạo  đây
                                         }} />
                                     ) : (
                                         <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5" />
