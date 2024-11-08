@@ -310,6 +310,11 @@ export default function ChatBox() {
     // Thêm state để kiểm soát hiển thị tooltip
     const [showVIPTooltip, setShowVIPTooltip] = useState(true);
 
+    // Thêm hàm kiểm tra vision model
+    const isVisionModel = (modelName: string) => {
+        return modelName.toLowerCase().includes('vision');
+    };
+
     return (
         <>
             <ModalPortal>
@@ -577,7 +582,7 @@ export default function ChatBox() {
 
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center flex-1 gap-1 sm:gap-2">
-                                    {selectedModel.modal === 'meta-llama/llama-3.2-11b-vision-instruct:free' && (
+                                    {isVisionModel(selectedModel.modal) && (
                                         <>
                                             <TooltipProvider>
                                                 <Tooltip delayDuration={0}>
