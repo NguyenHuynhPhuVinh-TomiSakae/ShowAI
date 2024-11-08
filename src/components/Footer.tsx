@@ -25,7 +25,7 @@ const Footer = () => {
     return (
         <footer className={`${footerStyles.bgColor} ${footerStyles.textColor} ${footerStyles.padding}`}>
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     <div className="flex flex-col items-start">
                         <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Về ShowAI</h3>
                         <p className="text-sm leading-relaxed">ShowAI là nền tảng giúp bạn khám phá và tìm kiếm các công cụ AI hữu ích cho công việc và cuộc sống.</p>
@@ -71,14 +71,6 @@ const Footer = () => {
                             <a href="https://github.com/TomiSakae" target="_blank" rel="noopener noreferrer" className="hover:text-white transition duration-300">
                                 <FaGithub size={28} />
                             </a>
-                        </div>
-                    </div>
-                    <div className="flex flex-col items-start sm:col-span-2 lg:col-span-1">
-                        <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Diễn đàn</h3>
-                        <div className="space-y-2">
-                            <p className="text-sm leading-relaxed flex items-center">
-                                Đang trong quá trình phát triển...
-                            </p>
                         </div>
                     </div>
                 </div>
