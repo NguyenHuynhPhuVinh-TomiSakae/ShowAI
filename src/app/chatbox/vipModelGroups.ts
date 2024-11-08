@@ -25,12 +25,6 @@ export const modelGroups: ModelGroup[] = [
         ]
     },
     {
-        provider: 'Hugging Face',
-        models: [
-            { name: 'Distil Whisper', icon: '🗣️', modal: 'distil-whisper-large-v3-en' },
-        ]
-    },
-    {
         provider: 'Meta',
         models: [
             { name: 'Llama 3.1 70B Versatile', icon: '🦙', modal: 'llama-3.1-70b-versatile' },
@@ -50,13 +44,6 @@ export const modelGroups: ModelGroup[] = [
         provider: 'Mistral AI',
         models: [
             { name: 'Mixtral 8x7B', icon: '🌪️', modal: 'mixtral-8x7b-32768' },
-        ]
-    },
-    {
-        provider: 'OpenAI',
-        models: [
-            { name: 'Whisper Large V3', icon: '🗣️', modal: 'whisper-large-v3' },
-            { name: 'Whisper Large V3 Turbo', icon: '🗣️', modal: 'whisper-large-v3-turbo' },
         ]
     },
     {
