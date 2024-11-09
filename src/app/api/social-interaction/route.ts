@@ -103,7 +103,11 @@ async function generateComment(post: any, character: any) {
 }
 
 async function getRandomPost(postsRef: Reference) {
-    const snapshot = await postsRef.once('value');
+    // Lấy 10 bài viết mới nhất
+    const snapshot = await postsRef
+        .orderByChild('timestamp')
+        .limitToLast(10)
+        .once('value');
     const posts = snapshot.val();
     if (!posts) return null;
 
