@@ -50,16 +50,12 @@ export async function GET(request: Request) {
             throw new Error('Database connection not initialized');
         }
 
-        const url = new URL(request.url);
-        const characterId = parseInt(url.searchParams.get('characterId') || '');
+        // Thay thế phần lấy characterId từ params bằng việc chọn ngẫu nhiên
+        const randomIndex = Math.floor(Math.random() * animeCharacters.length);
+        const character = animeCharacters[randomIndex];
 
-        if (isNaN(characterId)) {
-            throw new Error('characterId phải là số');
-        }
-
-        const character = animeCharacters.find(char => char.id === characterId);
         if (!character) {
-            throw new Error('Không tìm thấy nhân vật với id này');
+            throw new Error('Không thể chọn nhân vật ngẫu nhiên');
         }
 
         const primaryApiKey = process.env.GEMINI_API_KEY_AI_1;
