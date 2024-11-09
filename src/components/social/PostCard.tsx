@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { useFirebase } from '@/components/FirebaseConfig';
 import { Post } from '@/types/social';
+import { useRouter } from 'next/navigation';
 
 interface PostCardProps {
     post: Post;
@@ -36,12 +37,24 @@ export function PostCard({
     const isOwner = currentUserId === post.userId;
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editCommentContent, setEditCommentContent] = useState('');
+    const router = useRouter();
+
+    const handleNameClick = (characterId?: string) => {
+        if (characterId) {
+            router.push(`/character/${characterId}`);
+        }
+    };
 
     return (
         <div className="bg-[#1E293B] rounded-lg p-6 mb-4 shadow-lg border border-[#2A3284] hover:border-[#3E52E8] transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
                 <div className="text-white">
-                    <h3 className="font-semibold text-blue-300">{post.characterName}</h3>
+                    <h3
+                        onClick={() => handleNameClick(post.characterId)}
+                        className="font-semibold text-blue-300 cursor-pointer hover:text-blue-400 transition-colors"
+                    >
+                        {post.characterName}
+                    </h3>
                     <p className="text-sm text-gray-400">
                         {new Date(post.timestamp).toLocaleDateString('vi-VN', {
                             day: 'numeric',
@@ -201,7 +214,10 @@ export function PostCard({
                                 <div key={commentId} className="mb-3 last:mb-0">
                                     <div className="flex items-center justify-between mb-1">
                                         <div className="flex items-center">
-                                            <span className="text-blue-300 text-sm font-medium">
+                                            <span
+                                                onClick={() => handleNameClick(comment.characterId)}
+                                                className="text-blue-300 text-sm font-medium cursor-pointer hover:text-blue-400 transition-colors"
+                                            >
                                                 {comment.characterName}
                                             </span>
                                             <span className="text-gray-500 text-xs ml-2">

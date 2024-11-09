@@ -153,6 +153,7 @@ export default function SocialPage() {
                 content: newPost.trim(),
                 hashtags: hashtags.split(',').map(tag => tag.trim()).filter(tag => tag),
                 characterName: auth.currentUser?.displayName || 'Người dùng ẩn danh',
+                characterId: auth.currentUser?.uid,
                 timestamp: Date.now(),
                 likes: 0,
                 likedBy: {},
@@ -209,6 +210,7 @@ export default function SocialPage() {
             const newComment = {
                 content: comment.trim(),
                 characterName: auth.currentUser?.displayName || 'Người dùng ẩn danh',
+                characterId: auth.currentUser?.uid,
                 timestamp: Date.now(),
                 userId: auth.currentUser?.uid
             };

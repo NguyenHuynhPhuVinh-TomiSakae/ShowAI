@@ -11,6 +11,7 @@ export interface Post {
         [key: string]: Comment
     };
     isEditing?: boolean;
+    characterId?: string;
 }
 
 export interface Comment {
@@ -18,4 +19,5 @@ export interface Comment {
     characterName: string;
     timestamp: number;
     userId: string;
+    characterId?: string;
 }
