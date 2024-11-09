@@ -12,7 +12,7 @@ import SocialNav from '@/components/social/SocialNav';
 
 export default function CharacterPage() {
     const params = useParams();
-    const characterId = params.id as string;
+    const characterId = !isNaN(Number(params.id)) ? Number(params.id) : params.id as string;
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [characterName, setCharacterName] = useState<string>('');
@@ -28,7 +28,7 @@ export default function CharacterPage() {
                 const userPostsQuery = query(
                     postsRef,
                     orderByChild('characterId'),
-                    equalTo(Number(characterId))
+                    equalTo(characterId)
                 );
 
                 const snapshot = await get(userPostsQuery);
@@ -77,7 +77,7 @@ export default function CharacterPage() {
                             id,
                             ...data
                         }))
-                        .filter(post => post.characterId === Number(characterId)) // Lọc theo characterId
+                        .filter(post => post.characterId === characterId) // Lọc theo characterId
                         .sort((a, b) => b.timestamp - a.timestamp);
 
                     setPosts(postsArray);
@@ -261,6 +261,7 @@ export default function CharacterPage() {
                             toggleEditing={toggleEditing}
                             onEditComment={handleEditComment}
                             onDeleteComment={handleDeleteComment}
+                            isSocialPage={true}
                         />
                     ))
                 ) : (
