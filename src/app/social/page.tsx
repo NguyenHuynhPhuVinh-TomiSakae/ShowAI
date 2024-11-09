@@ -16,11 +16,8 @@ export default function SocialPage() {
     const [loading, setLoading] = useState(true);
     const [lastTimestamp, setLastTimestamp] = useState<number | null>(null);
     const [hasMore, setHasMore] = useState(true);
-    const [newPost, setNewPost] = useState('');
-    const [hashtags, setHashtags] = useState('');
     const { auth } = useFirebase();
 
-    const isAuthenticated = auth?.currentUser != null;
     const currentUserId = auth?.currentUser?.uid;
 
     const fetchPosts = useCallback(async (lastTs: number | null = null) => {
@@ -141,34 +138,6 @@ export default function SocialPage() {
         };
     }, [posts]); // Thêm posts vào dependencies
 
-    const handleCreatePost = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!auth?.currentUser || !newPost.trim()) return;
-
-        try {
-            const database = await initializeFirebase();
-            const postsRef = ref(database, 'posts');
-            const newPostRef = push(postsRef);
-
-            const postData = {
-                content: newPost.trim(),
-                hashtags: hashtags.split(',').map(tag => tag.trim()).filter(tag => tag),
-                characterName: auth.currentUser?.displayName || 'Người dùng ẩn danh',
-                characterId: auth.currentUser?.uid,
-                timestamp: Date.now(),
-                likes: 0,
-                likedBy: {},
-                userId: auth.currentUser?.uid
-            };
-
-            await set(newPostRef, postData);
-            setNewPost('');
-            setHashtags('');
-        } catch (error) {
-            console.error('Lỗi khi đăng bài:', error);
-        }
-    };
-
     const handleLike = async (postId: string, currentLikes: number, likedBy: Record<string, boolean> = {}) => {
         if (!auth?.currentUser) return;
 
@@ -232,53 +201,6 @@ export default function SocialPage() {
             }));
         } catch (error) {
             console.error('Lỗi khi bình luận:', error);
-        }
-    };
-
-    const handleEditPost = async (postId: string, newContent: string, newHashtags: string) => {
-        if (!auth?.currentUser) return;
-
-        try {
-            const database = await initializeFirebase();
-            const postRef = ref(database, `posts/${postId}`);
-
-            const updates = {
-                content: newContent.trim(),
-                hashtags: newHashtags.split(',').map(tag => tag.trim()).filter(tag => tag),
-            };
-
-            await update(postRef, updates);
-
-            // Cập nhật UI
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId) {
-                    return {
-                        ...post,
-                        ...updates,
-                        isEditing: false
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi cập nhật bài viết:', error);
-        }
-    };
-
-    const handleDeletePost = async (postId: string) => {
-        if (!auth?.currentUser) return;
-
-        if (window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
-            try {
-                const database = await initializeFirebase();
-                const postRef = ref(database, `posts/${postId}`);
-                await set(postRef, null);
-
-                // Cập nhật UI
-                setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
-            } catch (error) {
-                console.error('Lỗi khi xóa bài viết:', error);
-            }
         }
     };
 
@@ -358,70 +280,19 @@ export default function SocialPage() {
             <SocialNav />
 
             <div className="max-w-2xl mx-auto px-4 pb-8">
-                {isAuthenticated && (
-                    <form onSubmit={handleCreatePost} className="bg-[#1E293B] rounded-xl p-4 mb-6 border border-[#2A3284]">
-                        <div className="mb-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#4ECCA3]" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-2 0c0 3.314-2.686 6-6 6s-6-2.686-6-6 2.686-6 6-6 6 2.686 6 6z" clipRule="evenodd" />
-                                    <path fillRule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                </svg>
-                                <span className="text-[#4ECCA3] font-medium">Chia sẻ trải nghiệm</span>
-                            </div>
-                            <textarea
-                                value={newPost}
-                                onChange={(e) => setNewPost(e.target.value)}
-                                placeholder="Chia sẻ trải nghiệm AI của bạn..."
-                                className="w-full bg-[#0F172A] text-white rounded-lg p-3 min-h-[100px] resize-none 
-                                          focus:outline-none focus:ring-2 focus:ring-[#2A3284]"
-                                rows={4}
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#4ECCA3]" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M9.243 3.03a1 1 0 01.727 1.213L9.53 6h2.94l.56-2.243a1 1 0 111.94.486L14.53 6H17a1 1 0 110 2h-2.97l-1 4H15a1 1 0 110 2h-2.47l-.56 2.242a1 1 0 11-1.94-.485L10.47 14H7.53l-.56 2.242a1 1 0 11-1.94-.485L5.47 14H3a1 1 0 110-2h2.97l1-4H5a1 1 0 110-2h2.47l.56-2.243a1 1 0 011.213-.727zM9.03 8l-1 4h2.938l1-4H9.031z" clipRule="evenodd" />
-                                </svg>
-                                <span className="text-[#4ECCA3] font-medium">Hashtags</span>
-                            </div>
-                            <input
-                                type="text"
-                                value={hashtags}
-                                onChange={(e) => setHashtags(e.target.value)}
-                                placeholder="Thêm hashtag (phân cách bằng dấu phẩy)"
-                                className="w-full bg-[#0F172A] text-white rounded-lg p-3
-                                          focus:outline-none focus:ring-2 focus:ring-[#2A3284]"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={!newPost.trim()}
-                            className="rounded-xl h-10 w-full sm:w-auto px-6 bg-[#3E52E8] hover:bg-[#4B5EFF] 
-                                     text-white flex items-center justify-center gap-2 disabled:opacity-50
-                                     disabled:cursor-not-allowed"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-                            </svg>
-                            Đăng bài
-                        </button>
-                    </form>
-                )}
-
                 {posts.map((post) => (
                     <PostCard
                         key={post.id}
                         post={post}
                         onComment={handleComment}
                         onLike={handleLike}
-                        onEdit={handleEditPost}
-                        onDelete={handleDeletePost}
+                        onEdit={async () => { }}
+                        onDelete={async () => { }}
                         currentUserId={currentUserId}
                         toggleEditing={toggleEditing}
                         onEditComment={handleEditComment}
                         onDeleteComment={handleDeleteComment}
+                        isSocialPage={true}
                     />
                 ))}
 

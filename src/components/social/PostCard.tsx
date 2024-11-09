@@ -14,6 +14,7 @@ interface PostCardProps {
     toggleEditing: (postId: string, isEditing: boolean) => void;
     onEditComment: (postId: string, commentId: string, newContent: string) => Promise<void>;
     onDeleteComment: (postId: string, commentId: string) => Promise<void>;
+    isSocialPage?: boolean;
 }
 
 export function PostCard({
@@ -25,7 +26,8 @@ export function PostCard({
     currentUserId,
     toggleEditing,
     onEditComment,
-    onDeleteComment
+    onDeleteComment,
+    isSocialPage
 }: PostCardProps) {
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState('');
@@ -69,7 +71,7 @@ export function PostCard({
                         })}
                     </p>
                 </div>
-                {isOwner && (
+                {isOwner && !isSocialPage && (
                     <div className="flex gap-2">
                         <button
                             onClick={() => {
