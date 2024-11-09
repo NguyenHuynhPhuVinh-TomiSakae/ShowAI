@@ -33,32 +33,41 @@ export async function GET() {
             throw new Error('Database connection not initialized');
         }
 
-        // Tạo profile cho mỗi character
-        const profiles = animeCharacters.map(character => ({
-            id: character.id,
-            name: character.name,
-            createdAt: ServerValue.TIMESTAMP,
-            followCount: 0,
-            followers: {}
-        }));
-
-        // Lưu profiles vào Firebase
         const profilesRef = database.ref('profiles');
 
-        // Tạo một object với key là character.id
+        // Đọc profiles hiện có
+        const snapshot = await profilesRef.once('value');
+        const existingProfiles = snapshot.val() || {};
+
+        // Tạo profile cho các character chưa tồn tại
+        const profiles = animeCharacters.map(character => {
+            // Nếu profile đã tồn tại, giữ nguyên data cũ
+            if (existingProfiles[character.id]) {
+                return existingProfiles[character.id];
+            }
+            // Nếu chưa tồn tại, tạo mới
+            return {
+                id: character.id,
+                name: character.name,
+                createdAt: ServerValue.TIMESTAMP,
+                followCount: 0,
+                followers: {}
+            };
+        });
+
+        // Chuyển đổi thành object và update
         const profilesData = profiles.reduce((acc, profile) => {
             acc[profile.id] = profile;
             return acc;
         }, {} as Record<string, any>);
 
-        // Cập nhật tất cả profiles cùng một lúc
-        await profilesRef.set(profilesData);
+        // Update thay vì set để không ghi đè data
+        await profilesRef.update(profilesData);
 
         return NextResponse.json({
             success: true,
             data: profiles
         });
-
     } catch (error: any) {
         console.error('Chi tiết lỗi:', error);
         return NextResponse.json(
