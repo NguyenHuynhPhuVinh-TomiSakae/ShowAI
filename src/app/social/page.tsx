@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { initializeFirebase } from '@/lib/firebase';
-import { ref, query, orderByChild, get, limitToLast, endBefore } from 'firebase/database';
+import { ref, query, orderByChild, get, limitToLast, endBefore, onValue } from 'firebase/database';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -23,7 +23,8 @@ export default function SocialPage() {
     const [lastTimestamp, setLastTimestamp] = useState<number | null>(null);
     const [hasMore, setHasMore] = useState(true);
 
-    const fetchPosts = async (lastTs: number | null = null) => {
+    const fetchPosts = useCallback(async (lastTs: number | null = null) => {
+        setLoading(true);
         try {
             const database = await initializeFirebase();
             const postsRef = ref(database, 'posts');
@@ -60,28 +61,44 @@ export default function SocialPage() {
                     setPosts(sortedPosts);
                 }
 
-                const lastPost = sortedPosts[sortedPosts.length - 1];
-                setLastTimestamp(lastPost?.timestamp || null);
-                setHasMore(sortedPosts.length >= POSTS_PER_PAGE);
+                if (sortedPosts.length > 0) {
+                    const lastPost = sortedPosts[sortedPosts.length - 1];
+                    setLastTimestamp(lastPost.timestamp);
+                    setHasMore(sortedPosts.length >= POSTS_PER_PAGE);
+                } else {
+                    setHasMore(false);
+                }
             } else {
                 setHasMore(false);
             }
         } catch (error) {
             console.error('Lỗi khi tải bài đăng:', error);
+            setHasMore(false);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    // Xử lý infinite scroll
     const handleScroll = useCallback(() => {
-        if (window.innerHeight + document.documentElement.scrollTop
-            === document.documentElement.offsetHeight) {
-            if (hasMore && !loading && lastTimestamp) {
+        if (loading || !hasMore) return;
+
+        const buffer = 200;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight || window.innerHeight;
+
+        if (scrollTop + clientHeight + buffer >= scrollHeight) {
+            if (lastTimestamp) {
                 fetchPosts(lastTimestamp);
             }
         }
-    }, [hasMore, loading, lastTimestamp]);
+    }, [loading, hasMore, lastTimestamp, fetchPosts]);
+
+    useEffect(() => {
+        if (!loading && posts.length === 0) {
+            fetchPosts();
+        }
+    }, []);
 
     useEffect(() => {
         window.addEventListener('scroll', handleScroll);
@@ -89,8 +106,40 @@ export default function SocialPage() {
     }, [handleScroll]);
 
     useEffect(() => {
-        fetchPosts();
-    }, []);
+        const initializeRealtimeUpdates = async () => {
+            const database = await initializeFirebase();
+            const postsRef = ref(database, 'posts');
+            const recentPostsQuery = query(
+                postsRef,
+                orderByChild('timestamp'),
+                limitToLast(1)
+            );
+
+            // Lắng nghe các thay đổi realtime
+            return onValue(recentPostsQuery, async (snapshot) => {
+                if (snapshot.exists()) {
+                    const newPostData = snapshot.val();
+                    const newPost = Object.entries(newPostData).map(([id, data]: [string, any]) => ({
+                        id,
+                        ...data
+                    }))[0];
+
+                    // Kiểm tra xem bài đăng mới có timestamp lớn hơn bài mới nhất hiện tại
+                    if (!posts.length || newPost.timestamp > posts[0].timestamp) {
+                        // Tải lại toàn bộ danh sách bài đăng
+                        await fetchPosts();
+                    }
+                }
+            });
+        };
+
+        const unsubscribe = initializeRealtimeUpdates();
+
+        // Cleanup listener khi component unmount
+        return () => {
+            unsubscribe.then(unsubFn => unsubFn());
+        };
+    }, [posts]); // Thêm posts vào dependencies
 
     return (
         <div className="min-h-screen bg-[#0F172A]">
@@ -104,31 +153,28 @@ export default function SocialPage() {
             </div>
 
             <div className="max-w-2xl mx-auto px-4 pb-8">
-                {loading ? (
-                    // Hiển thị 3 skeleton khi đang loading
+                {posts.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                ))}
+
+                {loading && (
                     <>
                         <PostSkeleton />
                         <PostSkeleton />
                         <PostSkeleton />
                     </>
-                ) : (
-                    <>
-                        {posts.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                        ))}
+                )}
 
-                        {posts.length === 0 && (
-                            <div className="text-center text-gray-400 bg-[#1E293B] rounded-lg p-6">
-                                Chưa có bài đăng nào.
-                            </div>
-                        )}
+                {!loading && posts.length === 0 && (
+                    <div className="text-center text-gray-400 bg-[#1E293B] rounded-lg p-6">
+                        Chưa có bài đăng nào.
+                    </div>
+                )}
 
-                        {hasMore && (
-                            <div className="text-center text-gray-400 my-4">
-                                Kéo xuống để tải thêm...
-                            </div>
-                        )}
-                    </>
+                {!loading && hasMore && (
+                    <div className="text-center text-gray-400 my-4">
+                        Kéo xuống để tải thêm...
+                    </div>
                 )}
             </div>
         </div>
