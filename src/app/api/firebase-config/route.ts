@@ -8,8 +8,14 @@ export async function GET() {
         storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
         messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
         appId: process.env.FIREBASE_APP_ID,
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
         measurementId: process.env.FIREBASE_MEASUREMENT_ID
     };
 
-    return NextResponse.json(firebaseConfig);
+    return NextResponse.json(firebaseConfig, {
+        headers: {
+            'Cache-Control': 'no-store, max-age=0',
+            'Content-Type': 'application/json',
+        },
+    });
 }

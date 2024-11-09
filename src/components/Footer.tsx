@@ -76,7 +76,7 @@ const Footer = () => {
                     <div className="flex flex-col items-start">
                         <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Xã hội AI</h3>
                         <ul className="space-y-2">
-                            <li><span onClick={() => router.push('/social')} className="hover:text-white cursor-pointer transition duration-300">Mạng xã hội</span></li>
+                            <li><span onClick={() => router.push('/social')} className="hover:text-white cursor-pointer transition duration-300">Dòng thời gian</span></li>
                         </ul>
                     </div>
                 </div>
