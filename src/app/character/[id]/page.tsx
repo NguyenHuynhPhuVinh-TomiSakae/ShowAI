@@ -8,6 +8,7 @@ import { Post } from '@/types/social';
 import { PostCard } from '@/components/social/PostCard';
 import { PostSkeleton } from '@/components/social/PostSkeleton';
 import { useFirebase } from '@/components/FirebaseConfig';
+import SocialNav from '@/components/social/SocialNav';
 
 export default function CharacterPage() {
     const params = useParams();
@@ -229,7 +230,7 @@ export default function CharacterPage() {
 
     return (
         <div className="min-h-screen bg-[#0F172A]">
-            <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
+            <div className="bg-[#2A3284] text-center py-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                     {characterName || 'Trang cá nhân'}
                 </h1>
@@ -237,6 +238,8 @@ export default function CharacterPage() {
                     Tất cả bài viết của {characterName || 'người dùng này'}
                 </p>
             </div>
+
+            <SocialNav />
 
             <div className="max-w-2xl mx-auto px-4 pb-8">
                 {loading ? (

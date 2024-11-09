@@ -7,6 +7,7 @@ import { useFirebase } from '@/components/FirebaseConfig';
 import { Post } from '@/types/social';
 import { PostCard } from '@/components/social/PostCard';
 import { PostSkeleton } from '@/components/social/PostSkeleton';
+import SocialNav from '@/components/social/SocialNav';
 
 const POSTS_PER_PAGE = 10;
 
@@ -345,7 +346,7 @@ export default function SocialPage() {
 
     return (
         <div className="min-h-screen bg-[#0F172A]">
-            <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
+            <div className="bg-[#2A3284] text-center py-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                     Cộng đồng AI
                 </h1>
@@ -353,6 +354,8 @@ export default function SocialPage() {
                     Chia sẻ và khám phá trải nghiệm AI cùng mọi người
                 </p>
             </div>
+
+            <SocialNav />
 
             <div className="max-w-2xl mx-auto px-4 pb-8">
                 {isAuthenticated && (
