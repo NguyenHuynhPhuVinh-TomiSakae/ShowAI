@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { initializeFirebase } from '@/lib/firebase';
-import { ref, query, orderByChild, get, limitToLast, endBefore, onValue } from 'firebase/database';
+import { ref, query, get } from 'firebase/database';
 import { useFirebase } from '@/components/FirebaseConfig';
 import { PostCard } from '@/components/social/PostCard';
 import { PostSkeleton } from '@/components/social/PostSkeleton';
@@ -12,7 +12,7 @@ import { useMediaQuery } from 'react-responsive';
 
 const POSTS_PER_PAGE = 10;
 
-export default function SocialPage() {
+export default function TrendingPage() {
     const isMobile = useMediaQuery({ maxWidth: 768 });
     const { auth } = useFirebase();
     const {
@@ -26,13 +26,13 @@ export default function SocialPage() {
     } = usePostInteractions(auth);
 
     const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [lastTimestamp, setLastTimestamp] = useState<number | null>(null);
+    const [lastInteractionScore, setLastInteractionScore] = useState<number | null>(null);
     const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const currentUserId = auth?.currentUser?.uid;
 
-    const fetchPosts = useCallback(async (lastTs: number | null = null) => {
-        if (lastTs === null) {
+    const fetchTrendingPosts = useCallback(async (lastScore: number | null = null) => {
+        if (lastScore === null) {
             setLoading(true);
         } else {
             setLoadingMore(true);
@@ -41,32 +41,25 @@ export default function SocialPage() {
         try {
             const database = await initializeFirebase();
             const postsRef = ref(database, 'posts');
-            let postsQuery;
-
-            if (lastTs) {
-                postsQuery = query(
-                    postsRef,
-                    orderByChild('timestamp'),
-                    endBefore(lastTs),
-                    limitToLast(POSTS_PER_PAGE)
-                );
-            } else {
-                postsQuery = query(
-                    postsRef,
-                    orderByChild('timestamp'),
-                    limitToLast(POSTS_PER_PAGE)
-                );
-            }
+            const postsQuery = query(postsRef);
 
             const snapshot = await get(postsQuery);
             if (snapshot.exists()) {
                 const postsData = snapshot.val();
                 const seenIds = new Set();
                 const postsArray = Object.entries(postsData)
-                    .map(([id, data]: [string, any]) => ({
-                        id,
-                        ...data
-                    }))
+                    .map(([id, data]: [string, any]) => {
+                        const likesCount = typeof data.likes === 'number'
+                            ? data.likes
+                            : (data.likes ? Object.keys(data.likes).filter(key => data.likes[key] === true).length : 0);
+                        const commentsCount = data.comments ? Object.keys(data.comments).length : 0;
+
+                        return {
+                            id,
+                            ...data,
+                            interactionScore: likesCount + commentsCount
+                        };
+                    })
                     .filter(post => {
                         if (seenIds.has(post.id)) {
                             return false;
@@ -75,24 +68,31 @@ export default function SocialPage() {
                         return true;
                     });
 
-                const sortedPosts = postsArray.sort((a, b) => b.timestamp - a.timestamp);
+                const sortedPosts = postsArray.sort((a, b) => b.interactionScore - a.interactionScore);
 
-                if (lastTs) {
+                let filteredPosts = sortedPosts;
+                if (lastScore !== null) {
+                    filteredPosts = sortedPosts.filter(post => post.interactionScore < lastScore);
+                }
+
+                const paginatedPosts = filteredPosts.slice(0, POSTS_PER_PAGE);
+
+                if (lastScore !== null) {
                     setPosts(prev => {
-                        const combinedPosts = [...prev, ...sortedPosts];
+                        const combinedPosts = [...prev, ...paginatedPosts];
                         const uniquePosts = Array.from(
                             new Map(combinedPosts.map(post => [post.id, post])).values()
                         );
                         return uniquePosts;
                     });
                 } else {
-                    setPosts(sortedPosts);
+                    setPosts(paginatedPosts);
                 }
 
-                if (sortedPosts.length > 0) {
-                    const lastPost = sortedPosts[sortedPosts.length - 1];
-                    setLastTimestamp(lastPost.timestamp);
-                    setHasMore(sortedPosts.length >= POSTS_PER_PAGE);
+                if (paginatedPosts.length > 0) {
+                    const lastPost = paginatedPosts[paginatedPosts.length - 1];
+                    setLastInteractionScore(lastPost.interactionScore);
+                    setHasMore(paginatedPosts.length >= POSTS_PER_PAGE);
                 } else {
                     setHasMore(false);
                 }
@@ -100,7 +100,7 @@ export default function SocialPage() {
                 setHasMore(false);
             }
         } catch (error) {
-            console.error('Lỗi khi tải bài đăng:', error);
+            console.error('Lỗi khi tải bài đăng thịnh hành:', error);
             setHasMore(false);
         } finally {
             setLoading(false);
@@ -117,23 +117,21 @@ export default function SocialPage() {
         const clientHeight = document.documentElement.clientHeight || window.innerHeight;
 
         if (scrollTop + clientHeight + buffer >= scrollHeight) {
-            if (lastTimestamp) {
-                fetchPosts(lastTimestamp);
+            if (lastInteractionScore !== null) {
+                fetchTrendingPosts(lastInteractionScore);
             }
         }
-    }, [loading, hasMore, lastTimestamp, fetchPosts, isMobile]);
+    }, [loading, hasMore, lastInteractionScore, fetchTrendingPosts, isMobile]);
 
     const handleLoadMore = () => {
-        if (!loadingMore && hasMore && lastTimestamp !== null) {
-            fetchPosts(lastTimestamp);
+        if (!loadingMore && hasMore && lastInteractionScore !== null) {
+            fetchTrendingPosts(lastInteractionScore);
         }
     };
 
     useEffect(() => {
-        if (!loading && posts.length === 0) {
-            fetchPosts();
-        }
-    }, []);
+        fetchTrendingPosts(null);
+    }, [fetchTrendingPosts]);
 
     useEffect(() => {
         if (!isMobile) {
@@ -142,46 +140,14 @@ export default function SocialPage() {
         }
     }, [handleScroll, isMobile]);
 
-    useEffect(() => {
-        const initializeRealtimeUpdates = async () => {
-            const database = await initializeFirebase();
-            const postsRef = ref(database, 'posts');
-            const recentPostsQuery = query(
-                postsRef,
-                orderByChild('timestamp'),
-                limitToLast(1)
-            );
-
-            return onValue(recentPostsQuery, async (snapshot) => {
-                if (snapshot.exists()) {
-                    const newPostData = snapshot.val();
-                    const newPost = Object.entries(newPostData).map(([id, data]: [string, any]) => ({
-                        id,
-                        ...data
-                    }))[0];
-
-                    if (!posts.length || newPost.timestamp > posts[0].timestamp) {
-                        await fetchPosts();
-                    }
-                }
-            });
-        };
-
-        const unsubscribe = initializeRealtimeUpdates();
-
-        return () => {
-            unsubscribe.then(unsubFn => unsubFn());
-        };
-    }, [posts]);
-
     return (
         <div className="min-h-screen bg-[#0F172A]">
             <div className="bg-[#2A3284] text-center py-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                    Cộng đồng AI
+                    Bài Viết Thịnh Hành
                 </h1>
                 <p className="text-base sm:text-lg text-gray-200">
-                    Chia sẻ và khám phá trải nghiệm AI cùng mọi người
+                    Những bài viết được tương tác nhiều nhất
                 </p>
             </div>
 
@@ -217,8 +183,8 @@ export default function SocialPage() {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
-                        <p className="text-lg font-medium">Chưa có bài đăng nào</p>
-                        <p className="text-sm mt-2">Hãy là người đầu tiên chia sẻ trải nghiệm!</p>
+                        <p className="text-lg font-medium">Chưa có bài đăng thịnh hành</p>
+                        <p className="text-sm mt-2">Hãy tương tác với các bài viết!</p>
                     </div>
                 )}
 
