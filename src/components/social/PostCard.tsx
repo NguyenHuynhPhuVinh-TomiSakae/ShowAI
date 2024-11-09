@@ -107,6 +107,8 @@ export function PostCard({
                         onChange={(e) => setEditContent(e.target.value)}
                         className="w-full bg-[#0F172A] text-white rounded-lg p-3 mb-2
                                  focus:outline-none focus:ring-2 focus:ring-[#2A3284]"
+                        rows={4}
+                        placeholder="Nội dung bài viết..."
                     />
                     <input
                         type="text"

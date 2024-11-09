@@ -3,21 +3,30 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { initializeFirebase } from '@/lib/firebase';
-import { ref, query, orderByChild, equalTo, get, push, set, update, onValue } from 'firebase/database';
-import { Post } from '@/types/social';
+import { ref, query, orderByChild, equalTo, get, onValue } from 'firebase/database';
 import { PostCard } from '@/components/social/PostCard';
 import { PostSkeleton } from '@/components/social/PostSkeleton';
 import { useFirebase } from '@/components/FirebaseConfig';
 import SocialNav from '@/components/social/SocialNav';
+import { usePostInteractions } from '@/hooks/usePostInteractions';
 
 export default function CharacterPage() {
     const params = useParams();
     const characterId = !isNaN(Number(params.id)) ? Number(params.id) : params.id as string;
-    const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [characterName, setCharacterName] = useState<string>('');
     const { auth } = useFirebase();
     const currentUserId = auth?.currentUser?.uid;
+
+    const {
+        posts,
+        setPosts,
+        handleLike,
+        handleComment,
+        handleEditComment,
+        handleDeleteComment,
+        toggleEditing
+    } = usePostInteractions(auth);
 
     useEffect(() => {
         const fetchCharacterPosts = async () => {
@@ -99,134 +108,6 @@ export default function CharacterPage() {
             unsubscribe.then(unsubFn => unsubFn());
         };
     }, [characterId]);
-
-    const handleLike = async (postId: string, currentLikes: number, likedBy: Record<string, boolean> = {}) => {
-        if (!auth?.currentUser) return;
-
-        try {
-            const database = await initializeFirebase();
-            const postRef = ref(database, `posts/${postId}`);
-            const userId = auth.currentUser?.uid;
-            const isLiked = likedBy[userId || ''];
-
-            await update(postRef, {
-                likes: isLiked ? currentLikes - 1 : currentLikes + 1,
-                [`likedBy/${userId}`]: !isLiked
-            });
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId) {
-                    return {
-                        ...post,
-                        likes: isLiked ? currentLikes - 1 : currentLikes + 1,
-                        likedBy: {
-                            ...post.likedBy,
-                            [userId || '']: !isLiked
-                        }
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi thích bài viết:', error);
-        }
-    };
-
-    const handleComment = async (postId: string, comment: string) => {
-        if (!auth?.currentUser || !comment.trim()) return;
-
-        try {
-            const database = await initializeFirebase();
-            const commentRef = push(ref(database, `posts/${postId}/comments`));
-            const commentId = commentRef.key;
-            const newComment = {
-                content: comment.trim(),
-                characterName: auth.currentUser?.displayName || 'Người dùng ẩn danh',
-                characterId: auth.currentUser?.uid,
-                timestamp: Date.now(),
-                userId: auth.currentUser?.uid
-            };
-
-            await set(commentRef, newComment);
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId) {
-                    return {
-                        ...post,
-                        comments: {
-                            ...(post.comments || {}),
-                            [commentId || '']: newComment
-                        }
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi bình luận:', error);
-        }
-    };
-
-    const toggleEditing = (postId: string, isEditing: boolean) => {
-        setPosts(prev => prev.map(p =>
-            p.id === postId ? { ...p, isEditing } : p
-        ));
-    };
-
-    const handleEditComment = async (postId: string, commentId: string, newContent: string) => {
-        if (!auth?.currentUser || !newContent.trim()) return;
-
-        try {
-            const database = await initializeFirebase();
-            const commentRef = ref(database, `posts/${postId}/comments/${commentId}`);
-
-            await update(commentRef, {
-                content: newContent.trim()
-            });
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId && post.comments) {
-                    return {
-                        ...post,
-                        comments: {
-                            ...post.comments,
-                            [commentId]: {
-                                ...post.comments[commentId],
-                                content: newContent.trim()
-                            }
-                        }
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi cập nhật bình luận:', error);
-        }
-    };
-
-    const handleDeleteComment = async (postId: string, commentId: string) => {
-        if (!auth?.currentUser) return;
-
-        try {
-            const database = await initializeFirebase();
-            const commentRef = ref(database, `posts/${postId}/comments/${commentId}`);
-            await set(commentRef, null);
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId && post.comments) {
-                    const newComments = { ...post.comments };
-                    delete newComments[commentId];
-
-                    return {
-                        ...post,
-                        comments: newComments
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi xóa bình luận:', error);
-        }
-    };
 
     return (
         <div className="min-h-screen bg-[#0F172A]">

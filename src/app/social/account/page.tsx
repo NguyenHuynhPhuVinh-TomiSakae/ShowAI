@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { initializeFirebase } from '@/lib/firebase';
-import { ref, query, orderByChild, equalTo, push, set, update, onValue } from 'firebase/database';
+import { ref, query, orderByChild, equalTo, onValue } from 'firebase/database';
 import { useFirebase } from '@/components/FirebaseConfig';
 import { Post } from '@/types/social';
 import { PostCard } from '@/components/social/PostCard';
 import { PostSkeleton } from '@/components/social/PostSkeleton';
 import SocialNav from '@/components/social/SocialNav';
+import { usePostActions } from '@/hooks/usePostActions';
+import { usePostInteractions } from '@/hooks/usePostInteractions';
 
 export default function AccountPage() {
     const [posts, setPosts] = useState<Post[]>([]);
@@ -18,184 +20,16 @@ export default function AccountPage() {
     const [newPost, setNewPost] = useState('');
     const [hashtags, setHashtags] = useState('');
 
-    // Thêm các hàm xử lý tương tác
-    const handleLike = async (postId: string, currentLikes: number, likedBy: Record<string, boolean> = {}) => {
-        if (!auth?.currentUser) return;
-
-        try {
-            const database = await initializeFirebase();
-            const postRef = ref(database, `posts/${postId}`);
-            const userId = auth.currentUser?.uid;
-            const isLiked = likedBy[userId || ''];
-
-            await update(postRef, {
-                likes: isLiked ? currentLikes - 1 : currentLikes + 1,
-                [`likedBy/${userId}`]: !isLiked
-            });
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId) {
-                    return {
-                        ...post,
-                        likes: isLiked ? currentLikes - 1 : currentLikes + 1,
-                        likedBy: {
-                            ...post.likedBy,
-                            [userId || '']: !isLiked
-                        }
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi thích bài viết:', error);
-        }
-    };
-
-    const handleComment = async (postId: string, comment: string) => {
-        if (!auth?.currentUser || !comment.trim()) return;
-
-        try {
-            const database = await initializeFirebase();
-            const commentRef = push(ref(database, `posts/${postId}/comments`));
-            const commentId = commentRef.key;
-            const newComment = {
-                content: comment.trim(),
-                characterName: currentUserName,
-                characterId: currentUserId,
-                timestamp: Date.now(),
-                userId: currentUserId
-            };
-
-            await set(commentRef, newComment);
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId) {
-                    const updatedPost = {
-                        ...post,
-                        comments: {
-                            ...(post.comments || {}),
-                            [commentId || '']: {
-                                content: newComment.content,
-                                characterName: newComment.characterName,
-                                characterId: newComment.characterId || '',
-                                timestamp: newComment.timestamp,
-                                userId: newComment.userId || ''
-                            }
-                        }
-                    };
-                    return updatedPost;
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi bình luận:', error);
-        }
-    };
-
-    const handleEditPost = async (postId: string, newContent: string, newHashtags: string) => {
-        if (!auth?.currentUser) return;
-
-        try {
-            const database = await initializeFirebase();
-            const postRef = ref(database, `posts/${postId}`);
-
-            const updates = {
-                content: newContent.trim(),
-                hashtags: newHashtags.split(',').map(tag => tag.trim()).filter(tag => tag),
-            };
-
-            await update(postRef, updates);
-
-            // Cập nhật UI
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId) {
-                    return {
-                        ...post,
-                        ...updates,
-                        isEditing: false
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi cập nhật bài viết:', error);
-        }
-    };
-
-    const handleDeletePost = async (postId: string) => {
-        if (!auth?.currentUser) return;
-
-        if (window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
-            try {
-                const database = await initializeFirebase();
-                const postRef = ref(database, `posts/${postId}`);
-                await set(postRef, null);
-
-                // Cập nhật UI
-                setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
-            } catch (error) {
-                console.error('Lỗi khi xóa bài viết:', error);
-            }
-        }
-    };
-
-    const toggleEditing = (postId: string, isEditing: boolean) => {
-        setPosts(prev => prev.map(p =>
-            p.id === postId ? { ...p, isEditing } : p
-        ));
-    };
-
-    const handleEditComment = async (postId: string, commentId: string, newContent: string) => {
-        if (!currentUserId || !newContent.trim()) return;
-
-        try {
-            const database = await initializeFirebase();
-            const commentRef = ref(database, `posts/${postId}/comments/${commentId}`);
-
-            await update(commentRef, {
-                content: newContent.trim()
-            });
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId && post.comments) {
-                    return {
-                        ...post,
-                        comments: {
-                            ...post.comments,
-                            [commentId]: {
-                                ...post.comments[commentId],
-                                content: newContent.trim()
-                            }
-                        }
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi cập nhật bình luận:', error);
-        }
-    };
-
-    const handleDeleteComment = async (postId: string, commentId: string) => {
-        if (!currentUserId) return;
-
-        try {
-            const database = await initializeFirebase();
-            const commentRef = ref(database, `posts/${postId}/comments/${commentId}`);
-            await set(commentRef, null);
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId && post.comments) {
-                    const newComments = { ...post.comments };
-                    delete newComments[commentId];
-                    return { ...post, comments: newComments };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi xóa bình luận:', error);
-        }
-    };
+    // Sử dụng các hook mới
+    const { createPost, updatePost, deletePost } = usePostActions(currentUserId, currentUserName);
+    const {
+        handleLike,
+        handleComment,
+        handleEditComment,
+        handleDeleteComment,
+        toggleEditing,
+        isEditing
+    } = usePostInteractions(auth);
 
     // Thêm realtime updates
     useEffect(() => {
@@ -235,32 +69,28 @@ export default function AccountPage() {
         };
     }, [currentUserId]);
 
-    // Thêm hàm xử lý đăng bài
+    // Cập nhật hàm handleCreatePost
     const handleCreatePost = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!auth?.currentUser || !newPost.trim()) return;
+        if (!newPost.trim()) return;
 
-        try {
-            const database = await initializeFirebase();
-            const postsRef = ref(database, 'posts');
-            const newPostRef = push(postsRef);
-
-            const postData = {
-                content: newPost.trim(),
-                hashtags: hashtags.split(',').map(tag => tag.trim()).filter(tag => tag),
-                characterName: currentUserName,
-                characterId: currentUserId,
-                timestamp: Date.now(),
-                likes: 0,
-                likedBy: {},
-                userId: currentUserId
-            };
-
-            await set(newPostRef, postData);
+        const result = await createPost(newPost, hashtags);
+        if (result) {
             setNewPost('');
             setHashtags('');
-        } catch (error) {
-            console.error('Lỗi khi đăng bài:', error);
+        }
+    };
+
+    // Cập nhật hàm handleEditPost
+    const handleEditPost = async (postId: string, newContent: string, newHashtags: string) => {
+        await updatePost(postId, newContent, newHashtags);
+        toggleEditing(postId, false);
+    };
+
+    // Cập nhật hàm handleDeletePost
+    const handleDeletePost = async (postId: string) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+            await deletePost(postId);
         }
     };
 
@@ -355,7 +185,10 @@ export default function AccountPage() {
                     posts.map((post) => (
                         <PostCard
                             key={post.id}
-                            post={post}
+                            post={{
+                                ...post,
+                                isEditing: isEditing(post.id)
+                            }}
                             onComment={handleComment}
                             onLike={handleLike}
                             onEdit={handleEditPost}
@@ -364,6 +197,7 @@ export default function AccountPage() {
                             toggleEditing={toggleEditing}
                             onEditComment={handleEditComment}
                             onDeleteComment={handleDeleteComment}
+                            isSocialPage={false}
                         />
                     ))
                 )}

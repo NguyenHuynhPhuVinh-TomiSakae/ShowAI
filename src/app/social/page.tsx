@@ -2,22 +2,30 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { initializeFirebase } from '@/lib/firebase';
-import { ref, query, orderByChild, get, limitToLast, endBefore, onValue, push, set, update } from 'firebase/database';
+import { ref, query, orderByChild, get, limitToLast, endBefore, onValue } from 'firebase/database';
 import { useFirebase } from '@/components/FirebaseConfig';
-import { Post } from '@/types/social';
 import { PostCard } from '@/components/social/PostCard';
 import { PostSkeleton } from '@/components/social/PostSkeleton';
 import SocialNav from '@/components/social/SocialNav';
+import { usePostInteractions } from '@/hooks/usePostInteractions';
 
 const POSTS_PER_PAGE = 10;
 
 export default function SocialPage() {
-    const [posts, setPosts] = useState<Post[]>([]);
+    const { auth } = useFirebase();
+    const {
+        posts,
+        setPosts,
+        handleLike,
+        handleComment,
+        handleEditComment,
+        handleDeleteComment,
+        toggleEditing
+    } = usePostInteractions(auth);
+
     const [loading, setLoading] = useState(true);
     const [lastTimestamp, setLastTimestamp] = useState<number | null>(null);
     const [hasMore, setHasMore] = useState(true);
-    const { auth } = useFirebase();
-
     const currentUserId = auth?.currentUser?.uid;
 
     const fetchPosts = useCallback(async (lastTs: number | null = null) => {
@@ -137,134 +145,6 @@ export default function SocialPage() {
             unsubscribe.then(unsubFn => unsubFn());
         };
     }, [posts]); // Thêm posts vào dependencies
-
-    const handleLike = async (postId: string, currentLikes: number, likedBy: Record<string, boolean> = {}) => {
-        if (!auth?.currentUser) return;
-
-        try {
-            const database = await initializeFirebase();
-            const postRef = ref(database, `posts/${postId}`);
-            const userId = auth.currentUser?.uid;
-            const isLiked = likedBy[userId || ''];
-
-            await update(postRef, {
-                likes: isLiked ? currentLikes - 1 : currentLikes + 1,
-                [`likedBy/${userId}`]: !isLiked
-            });
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId) {
-                    return {
-                        ...post,
-                        likes: isLiked ? currentLikes - 1 : currentLikes + 1,
-                        likedBy: {
-                            ...post.likedBy,
-                            [userId || '']: !isLiked
-                        }
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi thích bài viết:', error);
-        }
-    };
-
-    const handleComment = async (postId: string, comment: string) => {
-        if (!auth?.currentUser || !comment.trim()) return;
-
-        try {
-            const database = await initializeFirebase();
-            const commentRef = push(ref(database, `posts/${postId}/comments`));
-            const commentId = commentRef.key;
-            const newComment = {
-                content: comment.trim(),
-                characterName: auth.currentUser?.displayName || 'Người dùng ẩn danh',
-                characterId: auth.currentUser?.uid,
-                timestamp: Date.now(),
-                userId: auth.currentUser?.uid
-            };
-
-            await set(commentRef, newComment);
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId) {
-                    return {
-                        ...post,
-                        comments: {
-                            ...(post.comments || {}),
-                            [commentId || '']: newComment
-                        }
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi bình luận:', error);
-        }
-    };
-
-    const toggleEditing = (postId: string, isEditing: boolean) => {
-        setPosts(prev => prev.map(p =>
-            p.id === postId ? { ...p, isEditing } : p
-        ));
-    };
-
-    const handleEditComment = async (postId: string, commentId: string, newContent: string) => {
-        if (!auth?.currentUser || !newContent.trim()) return;
-
-        try {
-            const database = await initializeFirebase();
-            const commentRef = ref(database, `posts/${postId}/comments/${commentId}`);
-
-            await update(commentRef, {
-                content: newContent.trim()
-            });
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId && post.comments) {
-                    return {
-                        ...post,
-                        comments: {
-                            ...post.comments,
-                            [commentId]: {
-                                ...post.comments[commentId],
-                                content: newContent.trim()
-                            }
-                        }
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi cập nhật bình luận:', error);
-        }
-    };
-
-    const handleDeleteComment = async (postId: string, commentId: string) => {
-        if (!auth?.currentUser) return;
-
-        try {
-            const database = await initializeFirebase();
-            const commentRef = ref(database, `posts/${postId}/comments/${commentId}`);
-            await set(commentRef, null);
-
-            setPosts(prevPosts => prevPosts.map(post => {
-                if (post.id === postId && post.comments) {
-                    const newComments = { ...post.comments };
-                    delete newComments[commentId];
-
-                    return {
-                        ...post,
-                        comments: newComments
-                    };
-                }
-                return post;
-            }));
-        } catch (error) {
-            console.error('Lỗi khi xóa bình luận:', error);
-        }
-    };
 
     return (
         <div className="min-h-screen bg-[#0F172A]">
