@@ -2,25 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { initializeFirebase } from '@/lib/firebase';
-import { ref, query, orderByChild, get, limitToLast, endBefore, onValue } from 'firebase/database';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
-
-interface Post {
-    id: string;
-    content: string;
-    hashtags: string[];
-    characterName: string;
-    timestamp: number;
-    likes: number;
-    comments?: {
-        [key: string]: {
-            content: string;
-            characterName: string;
-            timestamp: number;
-        }
-    };
-}
+import { ref, query, orderByChild, get, limitToLast, endBefore, onValue, push, set, update } from 'firebase/database';
+import { useFirebase } from '@/components/FirebaseConfig';
+import { Post } from '@/types/social';
+import { PostCard } from '@/components/social/PostCard';
+import { PostSkeleton } from '@/components/social/PostSkeleton';
 
 const POSTS_PER_PAGE = 10;
 
@@ -29,6 +15,12 @@ export default function SocialPage() {
     const [loading, setLoading] = useState(true);
     const [lastTimestamp, setLastTimestamp] = useState<number | null>(null);
     const [hasMore, setHasMore] = useState(true);
+    const [newPost, setNewPost] = useState('');
+    const [hashtags, setHashtags] = useState('');
+    const { auth } = useFirebase();
+
+    const isAuthenticated = auth?.currentUser != null;
+    const currentUserId = auth?.currentUser?.uid;
 
     const fetchPosts = useCallback(async (lastTs: number | null = null) => {
         setLoading(true);
@@ -131,7 +123,7 @@ export default function SocialPage() {
                         ...data
                     }))[0];
 
-                    // Kiểm tra xem bài đăng mới có timestamp lớn hơn bài mới nhất hiện tại
+                    // Kiểm tra xem bài đăng mới có timestamp lớn hơn bài mới nhất hiện t
                     if (!posts.length || newPost.timestamp > posts[0].timestamp) {
                         // Tải lại toàn bộ danh sách bài đăng
                         await fetchPosts();
@@ -148,215 +140,314 @@ export default function SocialPage() {
         };
     }, [posts]); // Thêm posts vào dependencies
 
+    const handleCreatePost = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!auth?.currentUser || !newPost.trim()) return;
+
+        try {
+            const database = await initializeFirebase();
+            const postsRef = ref(database, 'posts');
+            const newPostRef = push(postsRef);
+
+            const postData = {
+                content: newPost.trim(),
+                hashtags: hashtags.split(',').map(tag => tag.trim()).filter(tag => tag),
+                characterName: auth.currentUser?.displayName || 'Người dùng ẩn danh',
+                timestamp: Date.now(),
+                likes: 0,
+                likedBy: {},
+                userId: auth.currentUser?.uid
+            };
+
+            await set(newPostRef, postData);
+            setNewPost('');
+            setHashtags('');
+        } catch (error) {
+            console.error('Lỗi khi đăng bài:', error);
+        }
+    };
+
+    const handleLike = async (postId: string, currentLikes: number, likedBy: Record<string, boolean> = {}) => {
+        if (!auth?.currentUser) return;
+
+        try {
+            const database = await initializeFirebase();
+            const postRef = ref(database, `posts/${postId}`);
+            const userId = auth.currentUser?.uid;
+            const isLiked = likedBy[userId || ''];
+
+            await update(postRef, {
+                likes: isLiked ? currentLikes - 1 : currentLikes + 1,
+                [`likedBy/${userId}`]: !isLiked
+            });
+
+            setPosts(prevPosts => prevPosts.map(post => {
+                if (post.id === postId) {
+                    return {
+                        ...post,
+                        likes: isLiked ? currentLikes - 1 : currentLikes + 1,
+                        likedBy: {
+                            ...post.likedBy,
+                            [userId || '']: !isLiked
+                        }
+                    };
+                }
+                return post;
+            }));
+        } catch (error) {
+            console.error('Lỗi khi thích bài viết:', error);
+        }
+    };
+
+    const handleComment = async (postId: string, comment: string) => {
+        if (!auth?.currentUser || !comment.trim()) return;
+
+        try {
+            const database = await initializeFirebase();
+            const commentRef = push(ref(database, `posts/${postId}/comments`));
+            const commentId = commentRef.key;
+            const newComment = {
+                content: comment.trim(),
+                characterName: auth.currentUser?.displayName || 'Người dùng ẩn danh',
+                timestamp: Date.now(),
+                userId: auth.currentUser?.uid
+            };
+
+            await set(commentRef, newComment);
+
+            setPosts(prevPosts => prevPosts.map(post => {
+                if (post.id === postId) {
+                    return {
+                        ...post,
+                        comments: {
+                            ...(post.comments || {}),
+                            [commentId || '']: newComment
+                        }
+                    };
+                }
+                return post;
+            }));
+        } catch (error) {
+            console.error('Lỗi khi bình luận:', error);
+        }
+    };
+
+    const handleEditPost = async (postId: string, newContent: string, newHashtags: string) => {
+        if (!auth?.currentUser) return;
+
+        try {
+            const database = await initializeFirebase();
+            const postRef = ref(database, `posts/${postId}`);
+
+            const updates = {
+                content: newContent.trim(),
+                hashtags: newHashtags.split(',').map(tag => tag.trim()).filter(tag => tag),
+            };
+
+            await update(postRef, updates);
+
+            // Cập nhật UI
+            setPosts(prevPosts => prevPosts.map(post => {
+                if (post.id === postId) {
+                    return {
+                        ...post,
+                        ...updates,
+                        isEditing: false
+                    };
+                }
+                return post;
+            }));
+        } catch (error) {
+            console.error('Lỗi khi cập nhật bài viết:', error);
+        }
+    };
+
+    const handleDeletePost = async (postId: string) => {
+        if (!auth?.currentUser) return;
+
+        if (window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+            try {
+                const database = await initializeFirebase();
+                const postRef = ref(database, `posts/${postId}`);
+                await set(postRef, null);
+
+                // Cập nhật UI
+                setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+            } catch (error) {
+                console.error('Lỗi khi xóa bài viết:', error);
+            }
+        }
+    };
+
+    const toggleEditing = (postId: string, isEditing: boolean) => {
+        setPosts(prev => prev.map(p =>
+            p.id === postId ? { ...p, isEditing } : p
+        ));
+    };
+
+    const handleEditComment = async (postId: string, commentId: string, newContent: string) => {
+        if (!auth?.currentUser || !newContent.trim()) return;
+
+        try {
+            const database = await initializeFirebase();
+            const commentRef = ref(database, `posts/${postId}/comments/${commentId}`);
+
+            await update(commentRef, {
+                content: newContent.trim()
+            });
+
+            setPosts(prevPosts => prevPosts.map(post => {
+                if (post.id === postId && post.comments) {
+                    return {
+                        ...post,
+                        comments: {
+                            ...post.comments,
+                            [commentId]: {
+                                ...post.comments[commentId],
+                                content: newContent.trim()
+                            }
+                        }
+                    };
+                }
+                return post;
+            }));
+        } catch (error) {
+            console.error('Lỗi khi cập nhật bình luận:', error);
+        }
+    };
+
+    const handleDeleteComment = async (postId: string, commentId: string) => {
+        if (!auth?.currentUser) return;
+
+        try {
+            const database = await initializeFirebase();
+            const commentRef = ref(database, `posts/${postId}/comments/${commentId}`);
+            await set(commentRef, null);
+
+            setPosts(prevPosts => prevPosts.map(post => {
+                if (post.id === postId && post.comments) {
+                    const newComments = { ...post.comments };
+                    delete newComments[commentId];
+
+                    return {
+                        ...post,
+                        comments: newComments
+                    };
+                }
+                return post;
+            }));
+        } catch (error) {
+            console.error('Lỗi khi xóa bình luận:', error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#0F172A]">
             <div className="bg-[#2A3284] text-center py-8 mb-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                    Dòng thời gian
+                    Cộng đồng AI
                 </h1>
                 <p className="text-base sm:text-lg text-gray-200">
-                    AI chia sẻ những khoảnh khắc
+                    Chia sẻ và khám phá trải nghiệm AI cùng mọi người
                 </p>
             </div>
 
             <div className="max-w-2xl mx-auto px-4 pb-8">
+                {isAuthenticated && (
+                    <form onSubmit={handleCreatePost} className="bg-[#1E293B] rounded-xl p-4 mb-6 border border-[#2A3284]">
+                        <div className="mb-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#4ECCA3]" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-2 0c0 3.314-2.686 6-6 6s-6-2.686-6-6 2.686-6 6-6 6 2.686 6 6z" clipRule="evenodd" />
+                                    <path fillRule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-[#4ECCA3] font-medium">Chia sẻ trải nghiệm</span>
+                            </div>
+                            <textarea
+                                value={newPost}
+                                onChange={(e) => setNewPost(e.target.value)}
+                                placeholder="Chia sẻ trải nghiệm AI của bạn..."
+                                className="w-full bg-[#0F172A] text-white rounded-lg p-3 min-h-[100px] resize-none 
+                                          focus:outline-none focus:ring-2 focus:ring-[#2A3284]"
+                                rows={4}
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#4ECCA3]" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M9.243 3.03a1 1 0 01.727 1.213L9.53 6h2.94l.56-2.243a1 1 0 111.94.486L14.53 6H17a1 1 0 110 2h-2.97l-1 4H15a1 1 0 110 2h-2.47l-.56 2.242a1 1 0 11-1.94-.485L10.47 14H7.53l-.56 2.242a1 1 0 11-1.94-.485L5.47 14H3a1 1 0 110-2h2.97l1-4H5a1 1 0 110-2h2.47l.56-2.243a1 1 0 011.213-.727zM9.03 8l-1 4h2.938l1-4H9.031z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-[#4ECCA3] font-medium">Hashtags</span>
+                            </div>
+                            <input
+                                type="text"
+                                value={hashtags}
+                                onChange={(e) => setHashtags(e.target.value)}
+                                placeholder="Thêm hashtag (phân cách bằng dấu phẩy)"
+                                className="w-full bg-[#0F172A] text-white rounded-lg p-3
+                                          focus:outline-none focus:ring-2 focus:ring-[#2A3284]"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={!newPost.trim()}
+                            className="rounded-xl h-10 w-full sm:w-auto px-6 bg-[#3E52E8] hover:bg-[#4B5EFF] 
+                                     text-white flex items-center justify-center gap-2 disabled:opacity-50
+                                     disabled:cursor-not-allowed"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                            </svg>
+                            Đăng bài
+                        </button>
+                    </form>
+                )}
+
                 {posts.map((post) => (
-                    <PostCard key={post.id} post={post} />
+                    <PostCard
+                        key={post.id}
+                        post={post}
+                        onComment={handleComment}
+                        onLike={handleLike}
+                        onEdit={handleEditPost}
+                        onDelete={handleDeletePost}
+                        currentUserId={currentUserId}
+                        toggleEditing={toggleEditing}
+                        onEditComment={handleEditComment}
+                        onDeleteComment={handleDeleteComment}
+                    />
                 ))}
 
                 {loading && (
-                    <>
+                    <div className="space-y-4">
                         <PostSkeleton />
                         <PostSkeleton />
                         <PostSkeleton />
-                    </>
+                    </div>
                 )}
 
                 {!loading && posts.length === 0 && (
-                    <div className="text-center text-gray-400 bg-[#1E293B] rounded-lg p-6">
-                        Chưa có bài đăng nào.
+                    <div className="text-center text-gray-400 bg-[#1E293B] rounded-lg p-8 border border-[#2A3284]">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <p className="text-lg font-medium">Chưa có bài đăng nào</p>
+                        <p className="text-sm mt-2">Hãy là người đầu tiên chia sẻ trải nghiệm!</p>
                     </div>
                 )}
 
                 {!loading && hasMore && (
-                    <div className="text-center text-gray-400 my-4">
-                        Kéo xuống để tải thêm...
+                    <div className="text-center text-gray-400 my-6">
+                        <div className="animate-bounce">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                        <p className="mt-2">Kéo xuống để tải thêm</p>
                     </div>
                 )}
-            </div>
-        </div>
-    );
-}
-
-// Component hiển thị từng bài đăng
-function PostCard({ post }: { post: Post }) {
-    const [showComments, setShowComments] = useState(false);
-    const hasComments = Boolean(post.comments && Object.keys(post.comments).length > 0);
-
-    // Tạo một hàm helper để xử lý comments một cách an toàn
-    const getComments = () => {
-        if (!post.comments) return [];
-        const entries = Object.entries(post.comments) as [string, {
-            content: string;
-            characterName: string;
-            timestamp: number;
-        }][];
-        return entries;
-    };
-
-    return (
-        <div className="bg-[#1E293B] rounded-lg p-6 mb-4 shadow-lg border border-[#2A3284]">
-            <div className="flex items-center mb-4">
-                <div className="text-white">
-                    <h3 className="font-semibold text-blue-300">{post.characterName}</h3>
-                    <p className="text-sm text-gray-400">
-                        {new Date(post.timestamp).toLocaleDateString('vi-VN', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        })}
-                    </p>
-                </div>
-            </div>
-
-            <p className="text-white mb-4 whitespace-pre-wrap">{post.content}</p>
-
-            {post.hashtags && post.hashtags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                    {post.hashtags.map((tag, index) => (
-                        <span
-                            key={index}
-                            className="bg-[#3E52E8] hover:bg-[#2E42D8] text-sm text-white px-2 py-1 rounded-full transition-colors"
-                        >
-                            {tag}
-                        </span>
-                    ))}
-                </div>
-            )}
-
-            <div className="flex items-center text-gray-400 space-x-4">
-                <button className="flex items-center space-x-1 hover:text-blue-300 transition">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                    </svg>
-                    <span>{post.likes}</span>
-                </button>
-
-                {hasComments && (
-                    <button
-                        onClick={() => setShowComments(!showComments)}
-                        className="flex items-center space-x-1 hover:text-blue-300 transition"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                            />
-                        </svg>
-                        <span>{post.comments ? Object.keys(post.comments).length : 0}</span>
-                    </button>
-                )}
-            </div>
-
-            {showComments && hasComments && (
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                    {getComments().map(([commentId, comment]) => (
-                        <div key={commentId} className="mb-3 last:mb-0">
-                            <div className="flex items-center mb-1">
-                                <span className="text-blue-300 text-sm font-medium">
-                                    {comment.characterName}
-                                </span>
-                                <span className="text-gray-500 text-xs ml-2">
-                                    {new Date(comment.timestamp).toLocaleDateString('vi-VN', {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </span>
-                            </div>
-                            <p className="text-gray-300 text-sm">{comment.content}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-}
-
-// Thêm component PostSkeleton
-function PostSkeleton() {
-    return (
-        <div className="bg-[#1E293B] rounded-lg p-6 mb-4 shadow-lg border border-[#2A3284]">
-            <div className="flex items-center mb-4">
-                <div className="w-full">
-                    <Skeleton
-                        height={24}
-                        width={150}
-                        baseColor="#2A3284"
-                        highlightColor="#3E52E8"
-                    />
-                    <Skeleton
-                        height={16}
-                        width={120}
-                        baseColor="#2A3284"
-                        highlightColor="#3E52E8"
-                    />
-                </div>
-            </div>
-
-            <div className="mb-4">
-                <Skeleton
-                    count={3}
-                    height={16}
-                    baseColor="#2A3284"
-                    highlightColor="#3E52E8"
-                />
-            </div>
-
-            <div className="flex flex-wrap gap-2 mb-4">
-                <Skeleton
-                    height={24}
-                    width={60}
-                    borderRadius={20}
-                    baseColor="#2A3284"
-                    highlightColor="#3E52E8"
-                />
-                <Skeleton
-                    height={24}
-                    width={80}
-                    borderRadius={20}
-                    baseColor="#2A3284"
-                    highlightColor="#3E52E8"
-                />
-            </div>
-
-            <div className="flex items-center">
-                <Skeleton
-                    height={20}
-                    width={50}
-                    baseColor="#2A3284"
-                    highlightColor="#3E52E8"
-                />
             </div>
         </div>
     );
