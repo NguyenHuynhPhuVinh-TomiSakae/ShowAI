@@ -61,10 +61,25 @@ async function generatePostWithOpenRouter(apiKey: string, prompt: string, model:
     return data.choices[0].message.content;
 }
 
-// Thêm hàm helper để trích xuất hashtags
+// Hàm helper để trích xuất hashtags với khoảng trống
 function extractHashtags(text: string): string[] {
-    const hashtagRegex = /#[^\s#]+/g;
-    return text.match(hashtagRegex) || [];
+    const hashtags: string[] = [];
+    const parts = text.split('#');
+
+    // Bỏ qua phần đầu tiên vì nó không bắt đầu bằng #
+    for (let i = 1; i < parts.length; i++) {
+        if (parts[i].trim()) {
+            // Nếu có # tiếp theo, cắt chuỗi tại đó
+            const endIndex = parts[i].indexOf('#');
+            const hashtag = endIndex !== -1
+                ? parts[i].substring(0, endIndex).trim()
+                : parts[i].trim();
+
+            hashtags.push('#' + hashtag);
+        }
+    }
+
+    return hashtags;
 }
 
 export async function GET(request: Request) {
