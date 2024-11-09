@@ -29,7 +29,6 @@ try {
 
 // Thêm export config để ngăn pre-rendering
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge'; // optional
 
 async function generatePostWithGemini(apiKey: string, prompt: string) {
     const genAI = new GoogleGenerativeAI(apiKey);
