@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { initializeFirebase } from '@/lib/firebase';
-import { ref, query, orderByChild, equalTo, get, onValue } from 'firebase/database';
+import { ref, query, orderByChild, equalTo, get, onValue, set } from 'firebase/database';
 import { PostCard } from '@/components/social/PostCard';
 import { PostSkeleton } from '@/components/social/PostSkeleton';
 import { useFirebase } from '@/components/FirebaseConfig';
@@ -17,6 +17,8 @@ export default function CharacterPage() {
     const [characterName, setCharacterName] = useState<string>('');
     const { auth } = useFirebase();
     const currentUserId = auth?.currentUser?.uid;
+    const [followCount, setFollowCount] = useState(0);
+    const [isFollowing, setIsFollowing] = useState(false);
 
     const {
         posts,
@@ -109,15 +111,98 @@ export default function CharacterPage() {
         };
     }, [characterId]);
 
+    // Thêm useEffect để lấy thông tin follow
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            if (!characterId || !currentUserId) return;
+
+            const database = await initializeFirebase();
+            const profileRef = ref(database, `profiles/${characterId}`);
+
+            const unsubscribe = onValue(profileRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const profileData = snapshot.val();
+                    setFollowCount(profileData.followCount || 0);
+
+                    // Kiểm tra followers một cách chặt chẽ hơn
+                    const hasFollowers = profileData.followers && typeof profileData.followers === 'object';
+                    const isUserFollowing = hasFollowers && profileData.followers[currentUserId] === true;
+                    setIsFollowing(isUserFollowing);
+                } else {
+                    setFollowCount(0);
+                    setIsFollowing(false);
+                }
+            });
+
+            // Cleanup listener
+            return () => unsubscribe();
+        };
+
+        fetchProfileData();
+    }, [characterId, currentUserId]);
+
+    // Thêm hàm xử lý follow/unfollow
+    const handleFollowToggle = async () => {
+        if (!currentUserId) return;
+
+        const database = await initializeFirebase();
+        const followerRef = ref(database, `profiles/${characterId}/followers/${currentUserId}`);
+        const countRef = ref(database, `profiles/${characterId}/followCount`);
+
+        try {
+            if (isFollowing) {
+                // Cập nhật state trước khi gửi request
+                setIsFollowing(false);
+                await get(countRef).then((snapshot) => {
+                    const currentCount = snapshot.val() || 0;
+                    return Promise.all([
+                        set(followerRef, null),
+                        set(countRef, Math.max(0, currentCount - 1))
+                    ]);
+                });
+            } else {
+                // Cập nhật state trước khi gửi request
+                setIsFollowing(true);
+                await get(countRef).then((snapshot) => {
+                    const currentCount = snapshot.val() || 0;
+                    return Promise.all([
+                        set(followerRef, true),
+                        set(countRef, currentCount + 1)
+                    ]);
+                });
+            }
+        } catch (error) {
+            // Nếu có lỗi, khôi phục lại trạng thái ban đầu
+            setIsFollowing(!isFollowing);
+            console.error('Lỗi khi thay đổi trạng thái theo dõi:', error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#0F172A]">
             <div className="bg-[#2A3284] text-center py-8 px-4">
                 <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                     {characterName || 'Trang cá nhân'}
                 </h1>
-                <p className="text-base sm:text-lg text-gray-200">
+                <p className="text-base sm:text-lg text-gray-200 mb-4">
                     Tất cả bài viết của {characterName || 'người dùng này'}
                 </p>
+
+                {/* Thêm phần hiển thị follow */}
+                <div className="flex justify-center items-center gap-4">
+                    <span className="text-white">{followCount} người theo dõi</span>
+                    {currentUserId && (
+                        <button
+                            onClick={handleFollowToggle}
+                            className={`px-4 py-2 rounded-full ${isFollowing
+                                ? 'bg-gray-600 hover:bg-gray-700'
+                                : 'bg-blue-600 hover:bg-blue-700'
+                                } text-white transition-colors`}
+                        >
+                            {isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
+                        </button>
+                    )}
+                </div>
             </div>
 
             <SocialNav />
