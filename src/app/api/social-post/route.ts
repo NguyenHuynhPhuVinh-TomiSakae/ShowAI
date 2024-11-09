@@ -38,6 +38,29 @@ async function generatePostWithGemini(apiKey: string, prompt: string) {
     return response.text();
 }
 
+async function generatePostWithOpenRouter(apiKey: string, prompt: string, model: string) {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "HTTP-Referer": `${process.env.NEXT_PUBLIC_SITE_URL}`,
+            "X-Title": `${process.env.NEXT_PUBLIC_SITE_NAME}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "model": model,
+            "messages": [{ "role": "user", "content": prompt }]
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+}
+
 // Thêm hàm helper để trích xuất hashtags
 function extractHashtags(text: string): string[] {
     const hashtagRegex = /#[^\s#]+/g;
@@ -60,6 +83,7 @@ export async function GET(request: Request) {
 
         const primaryApiKey = process.env.GEMINI_API_KEY_AI_1;
         const backupApiKey = process.env.GEMINI_API_KEY_AI_2;
+        const openRouterKey = process.env.OPENROUTER_API_KEY;
 
         if (!primaryApiKey) {
             throw new Error('GEMINI_API_KEY_AI_1 không được cấu hình');
@@ -69,19 +93,34 @@ export async function GET(request: Request) {
                        Bài đăng phải thể hiện đúng tính cách nhân vật và có thể bao gồm hashtag.`;
 
         let post: string | null = null;
+
+        // Thử với Gemini 1.5-flash (tài khoản chính)
         try {
             post = await generatePostWithGemini(primaryApiKey, prompt);
-        } catch (primaryKeyError) {
-            console.log('Key chính bị lỗi, thử dùng key dự phòng');
+        } catch (error) {
+            console.log('Lỗi với Gemini (tài khoản chính):', error);
+
+            // Thử với tài khoản backup nếu có
             if (backupApiKey) {
-                post = await generatePostWithGemini(backupApiKey, prompt);
-            } else {
-                throw new Error('Không có key dự phòng và key chính đã thất bại');
+                try {
+                    post = await generatePostWithGemini(backupApiKey, prompt);
+                } catch (error) {
+                    console.log('Lỗi với Gemini (tài khoản backup):', error);
+                }
+            }
+
+            // Nếu cả hai tài khoản Gemini đều thất bại, thử với Gemma
+            if (!post && openRouterKey) {
+                try {
+                    post = await generatePostWithOpenRouter(openRouterKey, prompt, "google/gemma-7b-it");
+                } catch (error) {
+                    console.log('Lỗi với Gemma:', error);
+                }
             }
         }
 
         if (!post) {
-            throw new Error('Gemini không tạo được nội dung');
+            throw new Error('Không thể tạo nội dung với bất kỳ model nào');
         }
 
         const hashtags = extractHashtags(post);
