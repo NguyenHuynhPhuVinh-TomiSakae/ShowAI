@@ -69,13 +69,13 @@ function extractHashtags(text: string): string[] {
     // Bỏ qua phần đầu tiên vì nó không bắt đầu bằng #
     for (let i = 1; i < parts.length; i++) {
         if (parts[i].trim()) {
-            // Nếu có # tiếp theo, cắt chuỗi tại đó
             const endIndex = parts[i].indexOf('#');
             const hashtag = endIndex !== -1
                 ? parts[i].substring(0, endIndex).trim()
                 : parts[i].trim();
 
-            hashtags.push('#' + hashtag);
+            // Chỉ loại bỏ khoảng trắng, giữ nguyên chữ hoa/thường
+            hashtags.push('#' + hashtag.replace(/\s+/g, ''));
         }
     }
 
@@ -104,7 +104,10 @@ export async function GET(request: Request) {
         }
 
         const prompt = `Hãy viết một bài đăng mạng xã hội ngắn (dưới 280 ký tự) với tính cách của ${character.name} - ${character.personality}. 
-                       Bài đăng phải thể hiện đúng tính cách nhân vật và có thể bao gồm hashtag.`;
+                       Bài đăng phải thể hiện đúng tính cách nhân vật và có thể bao gồm hashtag. 
+                       Lưu ý quan trọng về hashtag:
+                       - Viết liền với dấu # không có khoảng trắng
+                       - Nếu hashtag có nhiều từ thì viết liền (ví dụ: #AnimeHayNhe hoặc #animehaynhe)`;
 
         let post: string | null = null;
 
