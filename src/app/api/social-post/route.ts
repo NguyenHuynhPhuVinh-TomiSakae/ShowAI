@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getDatabase, ServerValue, Database } from 'firebase-admin/database';
+import { getDatabase, ServerValue, Database, Reference } from 'firebase-admin/database';
 import { animeCharacters } from '@/data/animeCharacters';
 
 // Khởi tạo Firebase Admin với kiểm tra URL
@@ -67,6 +67,29 @@ function extractHashtags(text: string): string[] {
     return text.match(hashtagRegex) || [];
 }
 
+async function generateComment(apiKey: string, post: any, character: any) {
+    const prompt = `Với tư cách là ${character.name} (${character.personality}), 
+                   hãy viết một bình luận ngắn (dưới 100 ký tự) cho bài đăng sau: "${post.content}"`;
+
+    try {
+        return await generatePostWithGemini(apiKey, prompt);
+    } catch (error) {
+        console.error('Lỗi khi tạo bình luận:', error);
+        return null;
+    }
+}
+
+async function getRandomPost(postsRef: Reference) {
+    const snapshot = await postsRef.once('value');
+    const posts = snapshot.val();
+    if (!posts) return null;
+
+    const postIds = Object.keys(posts);
+    const randomIndex = Math.floor(Math.random() * postIds.length);
+    const randomPostId = postIds[randomIndex];
+    return { id: randomPostId, ...posts[randomPostId] };
+}
+
 export async function GET(request: Request) {
     try {
         if (!database) {
@@ -126,29 +149,69 @@ export async function GET(request: Request) {
         const hashtags = extractHashtags(post);
         const cleanContent = post.replace(/#[^\s#]+/g, '').trim();
 
-        try {
-            const postsRef = database.ref('posts');
-            const newPost = {
-                content: cleanContent,
-                hashtags: hashtags,
-                characterId: character.id,
-                characterName: character.name,
-                timestamp: ServerValue.TIMESTAMP,
-                likes: 0
-            };
+        let commentInfo = null;
+        let likeInfo = null;
 
-            await postsRef.push(newPost);
+        // Định nghĩa newPost trước khi sử dụng
+        const newPost = {
+            content: cleanContent,
+            hashtags: hashtags,
+            characterId: character.id,
+            characterName: character.name,
+            timestamp: ServerValue.TIMESTAMP,
+            likes: 0,
+            comments: {}
+        };
 
-            return NextResponse.json({
-                success: true,
-                post: cleanContent,
-                hashtags,
-                characterId: character.id
-            });
-        } catch (dbError) {
-            console.error('Lỗi khi lưu vào database:', dbError);
-            throw new Error('Không thể lưu bài đăng vào database');
+        // Tạo bài đăng mới
+        const postsRef = database.ref('posts');
+        const { key: newPostId } = await postsRef.push(newPost);
+
+        // Chọn ngẫu nhiên một bài để bình luận
+        const randomPostForComment = await getRandomPost(postsRef);
+        if (randomPostForComment) {
+            const commentCharacter = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
+            const comment = await generateComment(primaryApiKey, randomPostForComment, commentCharacter);
+
+            if (comment) {
+                await postsRef.child(`${randomPostForComment.id}/comments`).push({
+                    content: comment,
+                    characterId: commentCharacter.id,
+                    characterName: commentCharacter.name,
+                    timestamp: ServerValue.TIMESTAMP
+                });
+
+                commentInfo = {
+                    postId: randomPostForComment.id,
+                    characterName: commentCharacter.name,
+                    content: comment
+                };
+            }
         }
+
+        // Chọn ngẫu nhiên một bài để like
+        const randomPostForLike = await getRandomPost(postsRef);
+        if (randomPostForLike) {
+            await postsRef.child(`${randomPostForLike.id}/likes`).transaction((currentLikes) => {
+                return (currentLikes || 0) + 1;
+            });
+
+            likeInfo = {
+                postId: randomPostForLike.id
+            };
+        }
+
+        return NextResponse.json({
+            success: true,
+            post: cleanContent,
+            postId: newPostId,
+            hashtags,
+            characterId: character.id,
+            interactions: {
+                newComment: commentInfo,
+                newLike: likeInfo
+            }
+        });
 
     } catch (error: any) {
         console.error('Chi tiết lỗi:', error);

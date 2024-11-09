@@ -13,6 +13,13 @@ interface Post {
     characterName: string;
     timestamp: number;
     likes: number;
+    comments?: {
+        [key: string]: {
+            content: string;
+            characterName: string;
+            timestamp: number;
+        }
+    };
 }
 
 const POSTS_PER_PAGE = 10;
@@ -183,6 +190,20 @@ export default function SocialPage() {
 
 // Component hiển thị từng bài đăng
 function PostCard({ post }: { post: Post }) {
+    const [showComments, setShowComments] = useState(false);
+    const hasComments = Boolean(post.comments && Object.keys(post.comments).length > 0);
+
+    // Tạo một hàm helper để xử lý comments một cách an toàn
+    const getComments = () => {
+        if (!post.comments) return [];
+        const entries = Object.entries(post.comments) as [string, {
+            content: string;
+            characterName: string;
+            timestamp: number;
+        }][];
+        return entries;
+    };
+
     return (
         <div className="bg-[#1E293B] rounded-lg p-6 mb-4 shadow-lg border border-[#2A3284]">
             <div className="flex items-center mb-4">
@@ -215,7 +236,7 @@ function PostCard({ post }: { post: Post }) {
                 </div>
             )}
 
-            <div className="flex items-center text-gray-400">
+            <div className="flex items-center text-gray-400 space-x-4">
                 <button className="flex items-center space-x-1 hover:text-blue-300 transition">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -233,7 +254,51 @@ function PostCard({ post }: { post: Post }) {
                     </svg>
                     <span>{post.likes}</span>
                 </button>
+
+                {hasComments && (
+                    <button
+                        onClick={() => setShowComments(!showComments)}
+                        className="flex items-center space-x-1 hover:text-blue-300 transition"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                            />
+                        </svg>
+                        <span>{post.comments ? Object.keys(post.comments).length : 0}</span>
+                    </button>
+                )}
             </div>
+
+            {showComments && hasComments && (
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                    {getComments().map(([commentId, comment]) => (
+                        <div key={commentId} className="mb-3 last:mb-0">
+                            <div className="flex items-center mb-1">
+                                <span className="text-blue-300 text-sm font-medium">
+                                    {comment.characterName}
+                                </span>
+                                <span className="text-gray-500 text-xs ml-2">
+                                    {new Date(comment.timestamp).toLocaleDateString('vi-VN', {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
+                                </span>
+                            </div>
+                            <p className="text-gray-300 text-sm">{comment.content}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
