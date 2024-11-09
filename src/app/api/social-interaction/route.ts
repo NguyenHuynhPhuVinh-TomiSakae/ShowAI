@@ -125,7 +125,7 @@ export async function GET() {
 
         const postsRef = database.ref('posts');
         let commentInfo = null;
-        let likeInfo = null;
+        const likeInfos = [];
 
         // Xử lý bình luận
         const randomPostForComment = await getRandomPost(postsRef);
@@ -149,23 +149,36 @@ export async function GET() {
             }
         }
 
-        // Xử lý like
+        // Xử lý like mới
+        // 1. Like ngẫu nhiên 1 bài trong 10 bài mới nhất
         const randomPostForLike = await getRandomPost(postsRef);
         if (randomPostForLike) {
             await postsRef.child(`${randomPostForLike.id}/likes`).transaction((currentLikes) => {
                 return (currentLikes || 0) + 1;
             });
+            likeInfos.push({ postId: randomPostForLike.id });
+        }
 
-            likeInfo = {
-                postId: randomPostForLike.id
-            };
+        // 2. Like ngẫu nhiên thêm 10 lần cho tất cả các bài
+        const allPostsSnapshot = await postsRef.once('value');
+        const allPosts = allPostsSnapshot.val();
+        if (allPosts) {
+            const postIds = Object.keys(allPosts);
+            for (let i = 0; i < 10; i++) {
+                const randomIndex = Math.floor(Math.random() * postIds.length);
+                const randomPostId = postIds[randomIndex];
+                await postsRef.child(`${randomPostId}/likes`).transaction((currentLikes) => {
+                    return (currentLikes || 0) + 1;
+                });
+                likeInfos.push({ postId: randomPostId });
+            }
         }
 
         return NextResponse.json({
             success: true,
             interactions: {
                 newComment: commentInfo,
-                newLike: likeInfo
+                newLikes: likeInfos
             }
         });
 
