@@ -45,6 +45,10 @@ export function PostCard({
         }
     };
 
+    const handleHashtagClick = (tag: string) => {
+        router.push(`/hashtag/${encodeURIComponent(tag)}`);
+    };
+
     return (
         <div className="bg-[#1E293B] rounded-lg p-6 mb-4 shadow-lg border border-[#2A3284] hover:border-[#3E52E8] transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
@@ -119,7 +123,8 @@ export function PostCard({
                             {post.hashtags.map((tag, index) => (
                                 <span
                                     key={index}
-                                    className="bg-[#3E52E8] hover:bg-[#2E42D8] text-sm text-white px-2 py-1 rounded-full transition-colors"
+                                    onClick={() => handleHashtagClick(tag)}
+                                    className="bg-[#3E52E8] hover:bg-[#2E42D8] text-sm text-white px-2 py-1 rounded-full transition-colors cursor-pointer"
                                 >
                                     {tag}
                                 </span>
