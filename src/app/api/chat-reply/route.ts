@@ -2,16 +2,19 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getDatabase, ServerValue, Database } from 'firebase-admin/database';
-import { animeCharacters } from '@/data/animeCharacters';
-import { animeCharacters2 } from '@/data/animeCharacters2';
+import { programmingCharacters } from '@/data/programmingCharacters';
+import { programmingCharacters2 } from '@/data/programmingCharacters2';
 
 // Kết hợp 2 mảng nhân vật
-const allCharacters = [...animeCharacters, ...animeCharacters2];
+const allCharacters = [...programmingCharacters, ...programmingCharacters2];
 
-// Cập nhật system prompt để bao gồm thông tin nhân vật
+// Cập nhật system prompt để phản ánh vai trò mentor giáo dục
 const getSystemPrompt = (character: any) => ({
     role: "system",
-    content: `Bạn là ${character.name}, một nhân vật ${character.personality}. Hãy trả lời ngắn gọn (dưới 200 ký tự) và phù hợp với tính cách của bạn.`
+    content: `Bạn là ${character.name}, một công nghệ ${character.personality}. 
+    Hãy trả lời với vai trò là một mentor giáo dục, giải thích các khái niệm lập trình một cách dễ hiểu 
+    và đưa ra các ví dụ thực tế khi phù hợp. Giữ câu trả lời ngắn gọn (dưới 200 ký tự) 
+    và phản ánh đặc điểm của công nghệ ${character.name}.`
 });
 
 // Khởi tạo Firebase Admin
@@ -181,9 +184,9 @@ export async function GET() {
 
                 if (!reply && openRouterKey) {
                     try {
-                        const openRouterPrompt = `Bạn là ${character.name}, một nhân vật ${character.personality}. 
-                                                Hãy trả lời tin nhắn sau một cách ngắn gọn (dưới 200 ký tự) và phù hợp với tính cách của bạn: 
-                                                "${needsReply.content}"`;
+                        const openRouterPrompt = `Bạn là ${character.name}, một công nghệ ${character.personality}. 
+                                                Với vai trò là mentor giáo dục, hãy trả lời câu hỏi sau một cách ngắn gọn (dưới 200 ký tự), 
+                                                dễ hiểu và mang tính giáo dục: "${needsReply.content}"`;
                         reply = await generateReplyWithOpenRouter(
                             openRouterKey,
                             openRouterPrompt,

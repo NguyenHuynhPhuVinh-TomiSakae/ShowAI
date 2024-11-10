@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getDatabase, ServerValue, Database } from 'firebase-admin/database';
-import { animeCharacters } from '@/data/animeCharacters';
+import { programmingCharacters } from '@/data/programmingCharacters';
 import type { Reference } from 'firebase-admin/database';
 
 // Khởi tạo Firebase Admin với kiểm tra URL
@@ -70,7 +70,9 @@ async function generateComment(post: any, character: any) {
     }
 
     const prompt = `Với tư cách là ${character.name} (${character.personality}), 
-                   hãy viết một bình luận ngắn (dưới 100 ký tự) cho bài đăng sau: "${post.content}"`;
+                   hãy viết một bình luận ngắn và mang tính giáo dục (dưới 100 ký tự) 
+                   về chủ đề lập trình này: "${post.content}". 
+                   Hãy tập trung vào các khía cạnh kỹ thuật và thực tiễn.`;
 
     let comment: string | null = null;
 
@@ -130,7 +132,7 @@ export async function GET() {
         // Xử lý bình luận
         const randomPostForComment = await getRandomPost(postsRef);
         if (randomPostForComment) {
-            const commentCharacter = animeCharacters[Math.floor(Math.random() * animeCharacters.length)];
+            const commentCharacter = programmingCharacters[Math.floor(Math.random() * programmingCharacters.length)];
             const comment = await generateComment(randomPostForComment, commentCharacter);
 
             if (comment) {

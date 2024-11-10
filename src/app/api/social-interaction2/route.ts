@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getDatabase, ServerValue, Database } from 'firebase-admin/database';
-import { animeCharacters2 } from '@/data/animeCharacters2';
+import { programmingCharacters2 } from '@/data/programmingCharacters2';
 import type { Reference } from 'firebase-admin/database';
 
 // Khởi tạo Firebase Admin với kiểm tra URL
@@ -69,8 +69,10 @@ async function generateComment(post: any, character: any) {
         throw new Error('GEMINI_API_KEY_AI_1 không được cấu hình');
     }
 
-    const prompt = `Với tư cách là ${character.name} (${character.personality}), 
-                   hãy viết một bình luận ngắn (dưới 100 ký tự) cho bài đăng sau: "${post.content}"`;
+    const prompt = `Với vai trò là ${character.name} (${character.personality}), 
+                   hãy viết một bình luận mang tính giáo dục và chuyên môn (dưới 150 ký tự) 
+                   liên quan đến công nghệ/lập trình cho bài đăng sau: "${post.content}". 
+                   Bình luận nên thể hiện đặc trưng của công nghệ/framework này.`;
 
     let comment: string | null = null;
 
@@ -130,7 +132,7 @@ export async function GET() {
         // Xử lý bình luận
         const randomPostForComment = await getRandomPost(postsRef);
         if (randomPostForComment) {
-            const commentCharacter = animeCharacters2[Math.floor(Math.random() * animeCharacters2.length)];
+            const commentCharacter = programmingCharacters2[Math.floor(Math.random() * programmingCharacters2.length)];
             const comment = await generateComment(randomPostForComment, commentCharacter);
 
             if (comment) {

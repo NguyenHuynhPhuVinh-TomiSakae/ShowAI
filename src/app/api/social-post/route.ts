@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getDatabase, ServerValue, Database } from 'firebase-admin/database';
-import { animeCharacters } from '@/data/animeCharacters';
+import { programmingCharacters } from '@/data/programmingCharacters';
 
 // Khởi tạo Firebase Admin với kiểm tra URL
 let database: Database | undefined;
@@ -88,11 +88,11 @@ export async function GET(request: Request) {
             throw new Error('Database connection not initialized');
         }
 
-        const randomIndex = Math.floor(Math.random() * animeCharacters.length);
-        const character = animeCharacters[randomIndex];
+        const randomIndex = Math.floor(Math.random() * programmingCharacters.length);
+        const character = programmingCharacters[randomIndex];
 
         if (!character) {
-            throw new Error('Không thể chọn nhân vật ngẫu nhiên');
+            throw new Error('Không thể chọn công nghệ ngẫu nhiên');
         }
 
         const primaryApiKey = process.env.GEMINI_API_KEY_AI_1;
@@ -103,11 +103,11 @@ export async function GET(request: Request) {
             throw new Error('GEMINI_API_KEY_AI_1 không được cấu hình');
         }
 
-        const prompt = `Hãy viết một bài đăng mạng xã hội ngắn (dưới 280 ký tự) với tính cách của ${character.name} - ${character.personality}. 
-                       Bài đăng phải thể hiện đúng tính cách nhân vật và có thể bao gồm hashtag. 
-                       Lưu ý quan trọng về hashtag:
+        const prompt = `Hãy viết một bài đăng mạng xã hội ngắn (dưới 280 ký tự) về ${character.name} với tính cách ${character.personality}. 
+                       Bài đăng phải mang tính giáo dục, chia sẻ một tip hoặc kiến thức thú vị về công nghệ này.
+                       Có thể bao gồm hashtag với quy tắc:
                        - Viết liền với dấu # không có khoảng trắng
-                       - Nếu hashtag có nhiều từ thì viết liền (ví dụ: #AnimeHayNhe hoặc #animehaynhe)`;
+                       - Nếu hashtag có nhiều từ thì viết liền (ví dụ: #LậpTrìnhVuiVe hoặc #CodeNewbie)`;
 
         let post: string | null = null;
 

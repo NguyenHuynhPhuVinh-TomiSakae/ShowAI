@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { animeCharacters } from '@/data/animeCharacters';
+import { programmingCharacters2 } from '@/data/programmingCharacters2';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getDatabase, ServerValue, Database } from 'firebase-admin/database';
 
@@ -40,7 +40,7 @@ export async function GET() {
         const existingProfiles = snapshot.val() || {};
 
         // Tạo profile cho các character chưa tồn tại
-        const profiles = animeCharacters.map(character => {
+        const profiles = programmingCharacters2.map(character => {
             // Nếu profile đã tồn tại, giữ nguyên data cũ
             if (existingProfiles[character.id]) {
                 return existingProfiles[character.id];
