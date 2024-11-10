@@ -130,10 +130,8 @@ export default function SocialPage() {
     };
 
     useEffect(() => {
-        if (!loading && posts.length === 0) {
-            fetchPosts();
-        }
-    }, []);
+        fetchPosts();
+    }, [fetchPosts]);
 
     useEffect(() => {
         if (!isMobile) {
