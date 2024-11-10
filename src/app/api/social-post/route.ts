@@ -95,8 +95,8 @@ export async function GET(request: Request) {
             throw new Error('Không thể chọn công nghệ ngẫu nhiên');
         }
 
-        const primaryApiKey = process.env.GEMINI_API_KEY_AI_1;
-        const backupApiKey = process.env.GEMINI_API_KEY_AI_2;
+        const primaryApiKey = process.env.GEMINI_API_KEY_AI_7;
+        const backupApiKey = process.env.GEMINI_API_KEY_AI_8;
         const openRouterKey = process.env.OPENROUTER_API_KEY;
 
         if (!primaryApiKey) {
