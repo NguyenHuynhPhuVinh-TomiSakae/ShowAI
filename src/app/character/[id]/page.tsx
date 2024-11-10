@@ -50,11 +50,9 @@ export default function CharacterPage() {
                         ...data
                     }));
 
-                    // Sắp xếp bài viết theo thời gian mới nhất
                     const sortedPosts = postsArray.sort((a, b) => b.timestamp - a.timestamp);
                     setPosts(sortedPosts);
 
-                    // Lấy tên người dùng từ bài viết đầu tiên
                     if (sortedPosts.length > 0) {
                         setCharacterName(sortedPosts[0].characterName);
                     }
@@ -68,7 +66,7 @@ export default function CharacterPage() {
             }
         };
 
-        if (characterId) {
+        if (characterId !== undefined && characterId !== null) {
             fetchCharacterPosts();
         }
     }, [characterId]);
@@ -114,7 +112,7 @@ export default function CharacterPage() {
     // Thêm useEffect để lấy thông tin follow
     useEffect(() => {
         const fetchProfileData = async () => {
-            if (!characterId || !currentUserId) return;
+            if (characterId === undefined || characterId === null || !currentUserId) return;
 
             const database = await initializeFirebase();
             const profileRef = ref(database, `profiles/${characterId}`);

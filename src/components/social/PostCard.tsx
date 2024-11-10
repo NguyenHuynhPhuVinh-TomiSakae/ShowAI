@@ -42,7 +42,7 @@ export function PostCard({
     const router = useRouter();
 
     const handleNameClick = (characterId?: string) => {
-        if (characterId) {
+        if (characterId !== undefined && characterId !== null) {
             router.push(`/character/${characterId}`);
         }
     };
