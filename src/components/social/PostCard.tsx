@@ -235,7 +235,7 @@ export function PostCard({
                                                 })}
                                             </span>
                                         </div>
-                                        {currentUserId === comment.userId && (
+                                        {currentUserId === comment.userId && isAuthenticated && (
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => {

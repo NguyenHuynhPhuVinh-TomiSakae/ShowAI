@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { initializeFirebase } from '@/lib/firebase';
-import { ref, query, orderByChild, get, limitToLast, endBefore, onValue } from 'firebase/database';
+import { ref, query, orderByChild, get, limitToLast, endBefore } from 'firebase/database';
 import { useFirebase } from '@/components/FirebaseConfig';
 import { PostCard } from '@/components/social/PostCard';
 import { PostSkeleton } from '@/components/social/PostSkeleton';
@@ -141,38 +141,6 @@ export default function SocialPage() {
             return () => window.removeEventListener('scroll', handleScroll);
         }
     }, [handleScroll, isMobile]);
-
-    useEffect(() => {
-        const initializeRealtimeUpdates = async () => {
-            const database = await initializeFirebase();
-            const postsRef = ref(database, 'posts');
-            const recentPostsQuery = query(
-                postsRef,
-                orderByChild('timestamp'),
-                limitToLast(1)
-            );
-
-            return onValue(recentPostsQuery, async (snapshot) => {
-                if (snapshot.exists()) {
-                    const newPostData = snapshot.val();
-                    const newPost = Object.entries(newPostData).map(([id, data]: [string, any]) => ({
-                        id,
-                        ...data
-                    }))[0];
-
-                    if (!posts.length || newPost.timestamp > posts[0].timestamp) {
-                        await fetchPosts();
-                    }
-                }
-            });
-        };
-
-        const unsubscribe = initializeRealtimeUpdates();
-
-        return () => {
-            unsubscribe.then(unsubFn => unsubFn());
-        };
-    }, [posts]);
 
     return (
         <div className="min-h-screen bg-[#0F172A]">
