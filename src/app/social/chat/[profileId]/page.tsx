@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { ref, onValue, push, get, getDatabase } from 'firebase/database';
+import { ref, onValue, push, get, getDatabase, remove } from 'firebase/database';
 import { useFirebase } from '@/components/FirebaseConfig';
 import ChatNav from '@/components/chat/ChatNav';
+import { FaTrash } from 'react-icons/fa';
+import { IoSend } from 'react-icons/io5';
 
 interface Message {
     id: string;
@@ -71,8 +73,26 @@ export default function ChatPage() {
         setNewMessage('');
     };
 
+    const resetMessages = async () => {
+        if (!auth?.currentUser || profileId === undefined) return;
+
+        const isConfirmed = window.confirm('Bạn có chắc chắn muốn xóa tất cả tin nhắn?');
+        if (!isConfirmed) return;
+
+        const database = getDatabase();
+        const messagesRef = ref(database, `profiles/${profileId.toString()}/messages`);
+
+        try {
+            await remove(messagesRef);
+            setMessages([]); // Cập nhật state local
+        } catch (error) {
+            console.error('Lỗi khi xóa tin nhắn:', error);
+            alert('Có lỗi xảy ra khi xóa tin nhắn');
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-[#0F172A]">
+        <div className="flex flex-col min-h-screen bg-[#0F172A]">
             <div className="bg-[#2A3284] text-center py-8 px-4">
                 <h1 className="text-2xl font-bold text-white">
                     {profile?.name || 'Đang tải...'}
@@ -81,9 +101,9 @@ export default function ChatPage() {
 
             <ChatNav />
 
-            <div className="max-w-2xl mx-auto px-4 py-8">
-                <div className="bg-[#1E293B] rounded-lg p-4 h-[60vh] flex flex-col">
-                    <div className="flex-1 overflow-y-auto space-y-4">
+            <div className="flex-1 px-4 py-8">
+                <div className="max-w-2xl mx-auto bg-[#1E293B] rounded-lg p-4 h-auto">
+                    <div className="space-y-4">
                         {messages.map((message) => (
                             <div
                                 key={message.id}
@@ -109,10 +129,16 @@ export default function ChatPage() {
                             className="flex-1 bg-[#0F172A] text-white rounded-lg px-4 py-2"
                         />
                         <button
-                            onClick={sendMessage}
-                            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+                            onClick={resetMessages}
+                            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
                         >
-                            Gửi
+                            <FaTrash className="text-lg" />
+                        </button>
+                        <button
+                            onClick={sendMessage}
+                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                        >
+                            <IoSend className="text-xl" />
                         </button>
                     </div>
                 </div>

@@ -1,8 +1,82 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getDatabase, ref, get } from 'firebase/database';
+import { useFirebase } from '@/components/FirebaseConfig';
 import ChatNav from '@/components/chat/ChatNav';
+import { IoChevronForward } from "react-icons/io5";
+
+interface ChatProfile {
+    id: string;
+    name: string;
+    lastMessage: string;
+}
+
+interface ProfileData {
+    name: string;
+    messages?: {
+        [key: string]: {
+            userId: string;
+            content: string;
+            timestamp: number;
+        }
+    };
+}
 
 export default function ChatPage() {
+    const { auth } = useFirebase();
+    const [chatProfiles, setChatProfiles] = useState<ChatProfile[]>([]);
+    const [loading, setLoading] = useState(true);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchChatProfiles = async () => {
+            if (!auth?.currentUser) return;
+
+            try {
+                const db = getDatabase();
+                const profilesRef = ref(db, 'profiles');
+                const snapshot = await get(profilesRef);
+
+                if (snapshot.exists()) {
+                    const profiles = snapshot.val() as { [key: string]: ProfileData };
+                    const userChats: ChatProfile[] = [];
+
+                    for (const [profileId, profileData] of Object.entries(profiles)) {
+                        if (profileData.messages) {
+                            const hasUserMessages = Object.values(profileData.messages).some(
+                                (msg) => msg.userId === auth.currentUser?.uid
+                            );
+
+                            if (hasUserMessages) {
+                                const messages = Object.values(profileData.messages);
+                                const lastMessage = messages.sort((a, b) => b.timestamp - a.timestamp)[0];
+
+                                userChats.push({
+                                    id: profileId,
+                                    name: profileData.name,
+                                    lastMessage: lastMessage.content
+                                });
+                            }
+                        }
+                    }
+                    setChatProfiles(userChats);
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải danh sách chat:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchChatProfiles();
+    }, [auth]);
+
+    const handleClick = (profileId: string) => {
+        router.push(`/social/chat/${profileId}`);
+    };
+
     return (
         <div className="min-h-screen bg-[#0F172A]">
             <div className="bg-[#2A3284] text-center py-8 px-4">
@@ -16,15 +90,51 @@ export default function ChatPage() {
 
             <ChatNav />
 
-            <div className="max-w-2xl mx-auto px-4 pb-8">
-                {/* Nội dung trang chat sẽ được thêm vào đây */}
-                <div className="text-center text-gray-400 bg-[#1E293B] rounded-lg p-8 border border-[#2A3284]">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    <p className="text-lg font-medium">Chưa có tin nhắn nào</p>
-                    <p className="text-sm mt-2">Hãy bắt đầu một cuộc trò chuyện mới!</p>
-                </div>
+            <div className="max-w-2xl mx-auto px-4 pb-8 pt-4">
+                {loading ? (
+                    <div className="space-y-4">
+                        <div className="animate-pulse bg-[#1E293B] p-4 rounded-lg border border-[#2A3284]">
+                            <div className="flex items-center space-x-4">
+                                <div className="w-12 h-12 rounded-full bg-[#2A3284]"></div>
+                                <div className="flex-1">
+                                    <div className="h-4 bg-[#2A3284] rounded w-1/4 mb-2"></div>
+                                    <div className="h-3 bg-[#2A3284] rounded w-1/6"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : chatProfiles.length === 0 ? (
+                    <div className="text-center text-gray-400 bg-[#1E293B] rounded-lg p-8">
+                        <p className="text-lg">Chưa có cuộc trò chuyện nào</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {chatProfiles.map((profile) => (
+                            <div
+                                key={profile.id}
+                                onClick={() => handleClick(profile.id)}
+                                className="bg-[#1E293B] p-4 rounded-lg border border-[#2A3284] hover:border-blue-500 transition-colors cursor-pointer"
+                            >
+                                <div className="flex items-center justify-between space-x-4">
+                                    <div className="flex items-center space-x-4 min-w-0 flex-1">
+                                        <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-[#2A3284] text-white text-xl font-bold">
+                                            {profile.name.charAt(0)}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <h3 className="font-semibold text-white truncate">
+                                                {profile.name}
+                                            </h3>
+                                            <p className="text-sm text-gray-400 truncate">
+                                                {profile.lastMessage}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <IoChevronForward className="text-gray-400 text-xl flex-shrink-0" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
