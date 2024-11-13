@@ -50,78 +50,6 @@ const toastStyle = {
     },
 };
 
-// Thêm debounce hook
-const useDebounce = (value: string, delay: number) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-
-    return debouncedValue;
-};
-
-// Tách thành component riêng cho textarea
-const ChatInput = React.memo(({
-    value,
-    onChange,
-    onKeyDown,
-    disabled
-}: {
-    value: string;
-    onChange: (value: string) => void;
-    onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
-    disabled?: boolean;
-}) => {
-    // Sử dụng local state để xử lý input
-    const [localValue, setLocalValue] = useState(value);
-    const updateTimeoutRef = useRef<NodeJS.Timeout>();
-
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const newValue = e.target.value;
-        setLocalValue(newValue);
-
-        // Clear timeout cũ nếu có
-        if (updateTimeoutRef.current) {
-            clearTimeout(updateTimeoutRef.current);
-        }
-
-        // Đặt timeout mới
-        updateTimeoutRef.current = setTimeout(() => {
-            onChange(newValue);
-        }, 50);
-    };
-
-    // Sync với external value
-    useEffect(() => {
-        setLocalValue(value);
-    }, [value]);
-
-    return (
-        <TextareaAutosize
-            className="w-full bg-[#0F172A] rounded-lg p-3 min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-[#2A3284]"
-            placeholder="Hỏi bất cứ điều gì..."
-            value={localValue}
-            onChange={handleChange}
-            onKeyDown={onKeyDown}
-            maxLength={2000}
-            disabled={disabled}
-            style={{
-                caretColor: 'white',
-                WebkitTapHighlightColor: 'transparent'
-            }}
-        />
-    );
-});
-
-ChatInput.displayName = 'ChatInput';
-
 export default function ChatBox() {
     const { auth, db } = useFirebase();
     const [message, setMessage] = useState('');
@@ -235,82 +163,67 @@ export default function ChatBox() {
 
             try {
                 if (isVipMode) {
-                    let success = false;
-                    let attempts = 0;
-                    const maxAttempts = 3; // Số lần thử tối đa
+                    const groqKeyResponse = await fetch('/api/groq-key');
+                    const data = await groqKeyResponse.json();
 
-                    while (!success && attempts < maxAttempts) {
-                        try {
-                            attempts++;
-                            const groqKeyResponse = await fetch('/api/groq-key');
-                            const data = await groqKeyResponse.json();
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
 
-                            if (data.error) {
-                                throw new Error(data.error);
-                            }
+                    const groq = new Groq({
+                        apiKey: data.key,
+                        dangerouslyAllowBrowser: true
+                    });
 
-                            const groq = new Groq({
-                                apiKey: data.key,
-                                dangerouslyAllowBrowser: true
-                            });
+                    const groqMessages = newChatHistory.map(msg => ({
+                        role: msg.role,
+                        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+                    }));
 
-                            const groqMessages = newChatHistory.map(msg => ({
-                                role: msg.role,
-                                content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
-                            }));
+                    const chatCompletion = await groq.chat.completions.create({
+                        messages: groqMessages,
+                        model: selectedModel.modal,
+                        temperature: 1,
+                        max_tokens: 1024,
+                        top_p: 1,
+                        stream: true,
+                        stop: null
+                    });
 
-                            const chatCompletion = await groq.chat.completions.create({
-                                messages: groqMessages,
-                                model: selectedModel.modal,
-                                temperature: 1,
-                                max_tokens: 1024,
-                                top_p: 1,
-                                stream: true,
-                                stop: null,
-                            });
+                    let fullResponse = '';
+                    for await (const chunk of chatCompletion) {
+                        const content = chunk.choices[0]?.delta?.content || '';
+                        fullResponse += content;
 
-                            let fullResponse = '';
-                            for await (const chunk of chatCompletion) {
-                                const content = chunk.choices[0]?.delta?.content || '';
-                                fullResponse += content;
+                        setMessages(prevMessages => {
+                            const newMessages = [...prevMessages];
+                            const lastMessage = newMessages[newMessages.length - 1];
 
-                                setMessages(prevMessages => {
-                                    const newMessages = [...prevMessages];
-                                    const lastMessage = newMessages[newMessages.length - 1];
-
-                                    if (lastMessage && !lastMessage.isUser) {
-                                        newMessages[newMessages.length - 1] = {
-                                            ...lastMessage,
-                                            text: fullResponse
-                                        };
-                                    } else {
-                                        newMessages.push({
-                                            text: fullResponse,
-                                            isUser: false
-                                        });
-                                    }
-
-                                    return newMessages;
+                            if (lastMessage && !lastMessage.isUser) {
+                                newMessages[newMessages.length - 1] = {
+                                    ...lastMessage,
+                                    text: fullResponse
+                                };
+                            } else {
+                                newMessages.push({
+                                    text: fullResponse,
+                                    isUser: false
                                 });
                             }
 
-                            // Nếu thành công, cập nhật chatHistory và thoát vòng lặp
-                            setChatHistory(prevHistory => [
-                                ...prevHistory,
-                                {
-                                    role: "assistant",
-                                    content: fullResponse
-                                }
-                            ]);
-                            success = true;
-
-                        } catch (error) {
-                            console.error(`Lần thử ${attempts} thất bại:`, error);
-                            if (attempts === maxAttempts) {
-                                throw new Error(`Đã thử ${maxAttempts} lần nhưng không thành công`);
-                            }
-                        }
+                            return newMessages;
+                        });
                     }
+
+                    // Cập nhật chatHistory với response từ AI
+                    setChatHistory(prevHistory => [
+                        ...prevHistory,
+                        {
+                            role: "assistant",
+                            content: fullResponse
+                        }
+                    ]);
+
                 } else {
                     const keyResponse = await fetch('/api/openrouter-key');
                     const { key } = await keyResponse.json();
@@ -355,8 +268,6 @@ export default function ChatBox() {
                     ...prevMessages,
                     { text: `Xin lỗi, đã xảy ra lỗi: ${errorMessage}`, isUser: false }
                 ]);
-                // Hiển thị thông báo lỗi cho người dùng
-                toast.error(`Lỗi: ${errorMessage}`, toastStyle);
             } finally {
                 setIsLoading(false);
                 setIsAIResponding(false);
@@ -378,12 +289,12 @@ export default function ChatBox() {
         }
     };
 
-    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (!isMobile && e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSubmit(e);
         }
-    }, [isMobile, handleSubmit]);
+    };
 
     // Sửa đổi phần xử lý chuyển đổi mode
     const handleVIPModeToggle = () => {
@@ -401,18 +312,6 @@ export default function ChatBox() {
     const isVisionModel = (modelName: string) => {
         return modelName.toLowerCase().includes('vision');
     };
-
-    // Thêm state cho debounced message
-    const [inputMessage] = useState('');
-    const debouncedMessage = useDebounce(inputMessage, 100);
-
-    useEffect(() => {
-        setMessage(debouncedMessage);
-    }, [debouncedMessage]);
-
-    const handleMessageChange = useCallback((newValue: string) => {
-        setMessage(newValue);
-    }, []);
 
     return (
         <>
@@ -671,11 +570,12 @@ export default function ChatBox() {
                                 </Select>
                             </div>
 
-                            <ChatInput
+                            <TextareaAutosize
+                                className="w-full bg-[#0F172A] rounded-lg p-3 min-h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-[#2A3284]"
+                                placeholder="Hỏi bất cứ điều gì..."
                                 value={message}
-                                onChange={handleMessageChange}
+                                onChange={(e) => setMessage(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                disabled={isLoading}
                             />
 
                             <div className="flex items-center justify-between">
