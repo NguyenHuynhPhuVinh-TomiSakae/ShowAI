@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { ref, onValue, get, getDatabase } from 'firebase/database';
+import { ref, onValue, get, getDatabase, query, limitToLast, orderByChild } from 'firebase/database';
 import { useFirebase } from '@/components/FirebaseConfig';
 import ChatNav from '@/components/chat/ChatNav';
 
@@ -36,6 +36,9 @@ export default function GroupChatPage() {
     const { auth } = useFirebase();
     const [messages, setMessages] = useState<Message[]>([]);
     const [groupData, setGroupData] = useState<GroupData | null>(null);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const messagesPerPage = 20;
 
     useEffect(() => {
         if (!auth?.currentUser || groupId === undefined) return;
@@ -52,21 +55,84 @@ export default function GroupChatPage() {
             }
         });
 
-        // Lắng nghe tin nhắn realtime
+        // Sửa đổi phần lắng nghe tin nhắn
         const messagesRef = ref(database, `groups/${groupIdString}/messages`);
-        const unsubscribe = onValue(messagesRef, (snapshot) => {
+        const messagesQuery = query(
+            messagesRef,
+            orderByChild('timestamp'),
+            limitToLast(messagesPerPage)
+        );
+
+        const unsubscribe = onValue(messagesQuery, (snapshot) => {
             if (snapshot.exists()) {
                 const messagesData = snapshot.val();
-                const messagesList = Object.entries(messagesData).map(([id, data]: [string, any]) => ({
-                    id,
-                    ...data
-                }));
-                setMessages(messagesList.sort((a, b) => a.timestamp - b.timestamp));
+                const messagesList = Object.entries(messagesData)
+                    .map(([id, data]: [string, any]) => ({
+                        id,
+                        ...data
+                    }))
+                    .sort((a, b) => b.timestamp - a.timestamp);
+
+                const uniqueMessages = messagesList.filter((message, index, self) =>
+                    index === self.findIndex((m) => m.id === message.id)
+                );
+
+                setMessages(uniqueMessages);
             }
         });
 
         return () => unsubscribe();
     }, [auth, groupId]);
+
+    const loadMoreMessages = async () => {
+        if (isLoadingMore || !messages.length) return;
+
+        setIsLoadingMore(true);
+        const database = getDatabase();
+        const groupIdString = groupId?.toString() || '';
+        const oldestMessageTimestamp = messages[messages.length - 1]?.timestamp;
+
+        const messagesRef = ref(database, `groups/${groupIdString}/messages`);
+
+        try {
+            // Lấy tất cả tin nhắn và xử lý ở client
+            const snapshot = await get(messagesRef);
+            if (snapshot.exists()) {
+                const allMessages = Object.entries(snapshot.val())
+                    .map(([id, data]: [string, any]) => ({
+                        id,
+                        ...data
+                    }))
+                    // Lọc lấy tin nhắn cũ hơn tin nhắn cuối cùng hiện tại
+                    .filter(msg => msg.timestamp < oldestMessageTimestamp)
+                    .sort((a, b) => b.timestamp - a.timestamp);
+
+                // Lấy messagesPerPage tin nhắn tiếp theo
+                const moreMessages = allMessages.slice(0, messagesPerPage);
+
+                if (moreMessages.length === 0) {
+                    setHasMore(false);
+                } else {
+                    setMessages(prev => {
+                        const combinedMessages = [...prev, ...moreMessages];
+                        return combinedMessages
+                            .filter((message, index, self) =>
+                                index === self.findIndex((m) => m.id === message.id)
+                            )
+                            .sort((a, b) => b.timestamp - a.timestamp);
+                    });
+                    // Còn tin nhắn để load nếu còn tin nhắn trong allMessages
+                    setHasMore(allMessages.length > messagesPerPage);
+                }
+            } else {
+                setHasMore(false);
+            }
+        } catch (error) {
+            console.error('Error loading more messages:', error);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-[#0F172A]">
@@ -100,6 +166,18 @@ export default function GroupChatPage() {
                             );
                         })}
                     </div>
+
+                    {hasMore && (
+                        <div className="mt-4">
+                            <button
+                                onClick={loadMoreMessages}
+                                disabled={isLoadingMore}
+                                className="w-full py-2 bg-[#2A3284] text-white rounded-lg hover:bg-[#1E2563] disabled:opacity-50"
+                            >
+                                {isLoadingMore ? 'Đang tải...' : 'Xem thêm tin nhắn cũ'}
+                            </button>
+                        </div>
+                    )}
 
                     <div className="mt-4 p-4 bg-[#0F172A] rounded-lg">
                         <p className="text-gray-400 text-center">
