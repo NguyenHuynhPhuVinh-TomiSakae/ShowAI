@@ -163,67 +163,82 @@ export default function ChatBox() {
 
             try {
                 if (isVipMode) {
-                    const groqKeyResponse = await fetch('/api/groq-key');
-                    const data = await groqKeyResponse.json();
+                    let success = false;
+                    let attempts = 0;
+                    const maxAttempts = 3; // Số lần thử tối đa
 
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
+                    while (!success && attempts < maxAttempts) {
+                        try {
+                            attempts++;
+                            const groqKeyResponse = await fetch('/api/groq-key');
+                            const data = await groqKeyResponse.json();
 
-                    const groq = new Groq({
-                        apiKey: data.key,
-                        dangerouslyAllowBrowser: true
-                    });
+                            if (data.error) {
+                                throw new Error(data.error);
+                            }
 
-                    const groqMessages = newChatHistory.map(msg => ({
-                        role: msg.role,
-                        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
-                    }));
+                            const groq = new Groq({
+                                apiKey: data.key,
+                                dangerouslyAllowBrowser: true
+                            });
 
-                    const chatCompletion = await groq.chat.completions.create({
-                        messages: groqMessages,
-                        model: selectedModel.modal,
-                        temperature: 1,
-                        max_tokens: 1024,
-                        top_p: 1,
-                        stream: true,
-                        stop: null
-                    });
+                            const groqMessages = newChatHistory.map(msg => ({
+                                role: msg.role,
+                                content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+                            }));
 
-                    let fullResponse = '';
-                    for await (const chunk of chatCompletion) {
-                        const content = chunk.choices[0]?.delta?.content || '';
-                        fullResponse += content;
+                            const chatCompletion = await groq.chat.completions.create({
+                                messages: groqMessages,
+                                model: selectedModel.modal,
+                                temperature: 1,
+                                max_tokens: 1024,
+                                top_p: 1,
+                                stream: true,
+                                stop: null,
+                            });
 
-                        setMessages(prevMessages => {
-                            const newMessages = [...prevMessages];
-                            const lastMessage = newMessages[newMessages.length - 1];
+                            let fullResponse = '';
+                            for await (const chunk of chatCompletion) {
+                                const content = chunk.choices[0]?.delta?.content || '';
+                                fullResponse += content;
 
-                            if (lastMessage && !lastMessage.isUser) {
-                                newMessages[newMessages.length - 1] = {
-                                    ...lastMessage,
-                                    text: fullResponse
-                                };
-                            } else {
-                                newMessages.push({
-                                    text: fullResponse,
-                                    isUser: false
+                                setMessages(prevMessages => {
+                                    const newMessages = [...prevMessages];
+                                    const lastMessage = newMessages[newMessages.length - 1];
+
+                                    if (lastMessage && !lastMessage.isUser) {
+                                        newMessages[newMessages.length - 1] = {
+                                            ...lastMessage,
+                                            text: fullResponse
+                                        };
+                                    } else {
+                                        newMessages.push({
+                                            text: fullResponse,
+                                            isUser: false
+                                        });
+                                    }
+
+                                    return newMessages;
                                 });
                             }
 
-                            return newMessages;
-                        });
-                    }
+                            // Nếu thành công, cập nhật chatHistory và thoát vòng lặp
+                            setChatHistory(prevHistory => [
+                                ...prevHistory,
+                                {
+                                    role: "assistant",
+                                    content: fullResponse
+                                }
+                            ]);
+                            success = true;
 
-                    // Cập nhật chatHistory với response từ AI
-                    setChatHistory(prevHistory => [
-                        ...prevHistory,
-                        {
-                            role: "assistant",
-                            content: fullResponse
+                        } catch (error) {
+                            console.error(`Lần thử ${attempts} thất bại:`, error);
+                            if (attempts === maxAttempts) {
+                                throw new Error(`Đã thử ${maxAttempts} lần nhưng không thành công`);
+                            }
                         }
-                    ]);
-
+                    }
                 } else {
                     const keyResponse = await fetch('/api/openrouter-key');
                     const { key } = await keyResponse.json();
@@ -268,6 +283,8 @@ export default function ChatBox() {
                     ...prevMessages,
                     { text: `Xin lỗi, đã xảy ra lỗi: ${errorMessage}`, isUser: false }
                 ]);
+                // Hiển thị thông báo lỗi cho người dùng
+                toast.error(`Lỗi: ${errorMessage}`, toastStyle);
             } finally {
                 setIsLoading(false);
                 setIsAIResponding(false);
