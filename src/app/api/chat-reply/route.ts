@@ -90,6 +90,24 @@ async function generateReplyWithOpenRouter(apiKey: string, prompt: string, model
     return data.choices[0].message.content;
 }
 
+// Định nghĩa interface cho ProgrammingCharacter
+interface ProgrammingCharacter {
+    id: number;
+    name: string;
+    personality: string;
+}
+
+// Định nghĩa interface cho CustomCharacter
+interface CustomCharacter {
+    id: string;
+    name: string;
+    personality: string;
+    userId: string;
+}
+
+// Tạo type union để có thể sử dụng cả hai loại character
+type Character = ProgrammingCharacter | CustomCharacter;
+
 export async function GET() {
     try {
         if (!database) {
@@ -133,10 +151,30 @@ export async function GET() {
         // Nếu tìm thấy tin nhắn cần trả lời
         if (needsReply && profileToReply) {
             const profile = profiles[profileToReply];
-            const character = allCharacters.find(char => char.id === profile.id);
+
+            // Kiểm tra xem có phải là nhân vật có sẵn không
+            let character: Character | undefined = allCharacters.find(
+                char => char.id.toString() === profileToReply
+            );
+
+            // Nếu không tìm thấy trong danh sách có sẵn, kiểm tra trong database
+            if (!character) {
+                const customCharactersRef = database.ref('characters');
+                const customCharactersSnapshot = await customCharactersRef
+                    .child(profileToReply)  // Tìm trực tiếp theo profileId
+                    .once('value');
+
+                const customCharacterData = customCharactersSnapshot.val();
+                if (customCharacterData) {
+                    character = {
+                        id: profileToReply,
+                        ...customCharacterData
+                    } as CustomCharacter;
+                }
+            }
 
             if (!character) {
-                console.error(`Không tìm thấy nhân vật với id ${profile.id}`);
+                console.error(`Không tìm thấy nhân vật với profileId ${profileToReply}`);
                 return NextResponse.json({
                     success: false,
                     error: 'Không tìm thấy nhân vật'
