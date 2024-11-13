@@ -17,6 +17,7 @@
     "@ai-sdk/ui-utils": "^0.0.50",
     "@e2b/code-interpreter": "^0.0.9-beta.3",
     "@google/generative-ai": "^0.21.0",
+    "@heroicons/react": "^2.1.5",
     "@mediapipe/tasks-text": "^0.10.16",
     "@openreplay/tracker": "^14.0.12",
     "@openreplay/tracker-assist": "^10.0.0",
