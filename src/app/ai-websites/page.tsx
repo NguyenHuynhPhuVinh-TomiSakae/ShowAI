@@ -1,4 +1,5 @@
 interface AITool {
+    id: number;
     name: string;
     description: string;
     tags: string[];
@@ -6,6 +7,7 @@ interface AITool {
 }
 
 interface AIToolResponse {
+    id: number;
     aiTools: AITool[];
 }
 
@@ -14,7 +16,12 @@ async function getAITools() {
     if (!res.ok) {
         throw new Error('Không thể tải dữ liệu');
     }
-    return res.json();
+    const data = await res.json();
+
+    // Sắp xếp các nhóm theo id giảm dần
+    data.sort((a: AIToolResponse, b: AIToolResponse) => b.id - a.id);
+
+    return data;
 }
 
 export default async function AIWebsites() {
