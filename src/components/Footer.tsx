@@ -25,7 +25,7 @@ const Footer = () => {
     return (
         <footer className={`${footerStyles.bgColor} ${footerStyles.textColor} ${footerStyles.padding}`}>
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-8">
                     <div className="flex flex-col items-start">
                         <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Về ShowAI</h3>
                         <p className="text-sm leading-relaxed">ShowAI là nền tảng giúp bạn khám phá và tìm kiếm các công cụ AI hữu ích cho công việc và cuộc sống.</p>
@@ -78,6 +78,13 @@ const Footer = () => {
                         <ul className="space-y-2">
                             <li><span onClick={() => router.push('/social')} className="hover:text-white cursor-pointer transition duration-300">Dòng thời gian</span></li>
                             <li><span onClick={() => router.push('/social/chat')} className="hover:text-white cursor-pointer transition duration-300">Cuộc trò chuyện</span></li>
+                        </ul>
+                    </div>
+                    <div className="flex flex-col items-start">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">Thông tin thêm</h3>
+                        <ul className="space-y-2">
+                            <li><span onClick={() => router.push('/ai-websites')} className="hover:text-white cursor-pointer transition duration-300">Trang web AI</span></li>
+                            <li><span onClick={() => router.push('/ai-news')} className="hover:text-white cursor-pointer transition duration-300">Tin tức AI</span></li>
                         </ul>
                     </div>
                 </div>
