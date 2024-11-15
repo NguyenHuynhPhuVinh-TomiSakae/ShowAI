@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad, FaTheaterMasks } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad, FaTheaterMasks, FaGraduationCap } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type { MotionProps } from 'framer-motion';
@@ -127,6 +127,10 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                         <button onClick={() => { router.push('/roleplay'); setIsAIDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-green-500 hover:text-gray-800">
                                             <FaTheaterMasks className="mr-3" />
                                             Nhập Vai
+                                        </button>
+                                        <button onClick={() => { router.push('/study'); setIsAIDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-green-500 hover:text-gray-800">
+                                            <FaGraduationCap className="mr-3" />
+                                            Học Tập
                                         </button>
                                     </div>
                                 </motion.div>

@@ -1,6 +1,6 @@
 import { IoClose } from 'react-icons/io5';
 import { FaBars } from 'react-icons/fa';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad, FaTheaterMasks } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad, FaTheaterMasks, FaGraduationCap } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -217,6 +217,16 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                 >
                                                     <FaTheaterMasks className="mr-3" />
                                                     Nhập Vai
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        router.push('/study');
+                                                        toggleSidebar();
+                                                    }}
+                                                    className="dropdown-item text-green-500 hover:bg-green-500 hover:text-gray-800"
+                                                >
+                                                    <FaGraduationCap className="mr-3" />
+                                                    Học Tập
                                                 </button>
                                             </motion.div>
                                         )}
