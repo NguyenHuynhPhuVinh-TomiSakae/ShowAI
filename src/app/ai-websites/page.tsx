@@ -22,11 +22,12 @@ async function getAITools(page: number = 0) {
     return res.json();
 }
 
-type Props = {
-    searchParams: { [key: string]: string | string[] | undefined }
-}
+type PageProps = {
+    params: { id: string };
+    searchParams: { [key: string]: string | string[] | undefined };
+};
 
-export default async function AIWebsites({ searchParams }: Props) {
+export default async function AIWebsites({ searchParams }: PageProps) {
     const currentPage = typeof searchParams?.page === 'string'
         ? parseInt(searchParams.page)
         : 0;
