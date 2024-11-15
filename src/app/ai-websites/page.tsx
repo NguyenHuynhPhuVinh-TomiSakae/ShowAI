@@ -145,19 +145,56 @@ export default function AIWebsites() {
                         )}
 
                         {paginationInfo && (
-                            <div className="mt-8 flex justify-center gap-2">
-                                {Array.from({ length: paginationInfo.totalPages }, (_, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => handlePageChange(i)}
-                                        className={`px-4 py-2 rounded ${paginationInfo.pageNumber === i
-                                            ? 'bg-[#2A3284] text-white'
+                            <div className="mt-8 flex justify-center gap-2 flex-wrap px-4">
+                                <button
+                                    onClick={() => handlePageChange(0)}
+                                    disabled={paginationInfo.pageNumber === 0}
+                                    className={`px-3 py-1 rounded ${paginationInfo.pageNumber === 0
+                                            ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                             : 'bg-[#1E293B] text-gray-300 hover:bg-[#243351]'
-                                            }`}
-                                    >
-                                        {i + 1}
-                                    </button>
-                                ))}
+                                        }`}
+                                >
+                                    Đầu
+                                </button>
+
+                                {Array.from({ length: paginationInfo.totalPages }, (_, i) => {
+                                    // Hiển thị 3 trang trước và sau trang hiện tại
+                                    if (
+                                        i === 0 ||
+                                        i === paginationInfo.totalPages - 1 ||
+                                        (i >= paginationInfo.pageNumber - 2 && i <= paginationInfo.pageNumber + 2)
+                                    ) {
+                                        return (
+                                            <button
+                                                key={i}
+                                                onClick={() => handlePageChange(i)}
+                                                className={`px-3 py-1 rounded ${paginationInfo.pageNumber === i
+                                                        ? 'bg-[#2A3284] text-white'
+                                                        : 'bg-[#1E293B] text-gray-300 hover:bg-[#243351]'
+                                                    }`}
+                                            >
+                                                {i + 1}
+                                            </button>
+                                        );
+                                    } else if (
+                                        i === paginationInfo.pageNumber - 3 ||
+                                        i === paginationInfo.pageNumber + 3
+                                    ) {
+                                        return <span key={i} className="text-gray-500 px-2">...</span>;
+                                    }
+                                    return null;
+                                })}
+
+                                <button
+                                    onClick={() => handlePageChange(paginationInfo.totalPages - 1)}
+                                    disabled={paginationInfo.pageNumber === paginationInfo.totalPages - 1}
+                                    className={`px-3 py-1 rounded ${paginationInfo.pageNumber === paginationInfo.totalPages - 1
+                                            ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                            : 'bg-[#1E293B] text-gray-300 hover:bg-[#243351]'
+                                        }`}
+                                >
+                                    Cuối
+                                </button>
                             </div>
                         )}
                     </>
