@@ -22,12 +22,12 @@ async function getAITools(page: number = 0) {
     return res.json();
 }
 
-export default async function AIWebsites({
-    searchParams,
-}: {
-    searchParams: { [key: string]: string | string[] | undefined };
-}) {
-    const currentPage = typeof searchParams.page === 'string'
+type Props = {
+    searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function AIWebsites({ searchParams }: Props) {
+    const currentPage = typeof searchParams?.page === 'string'
         ? parseInt(searchParams.page)
         : 0;
 
@@ -86,8 +86,8 @@ export default async function AIWebsites({
                             key={i}
                             href={`/ai-websites?page=${i}`}
                             className={`px-4 py-2 rounded ${currentPage === i
-                                    ? 'bg-[#2A3284] text-white'
-                                    : 'bg-[#1E293B] text-gray-300 hover:bg-[#243351]'
+                                ? 'bg-[#2A3284] text-white'
+                                : 'bg-[#1E293B] text-gray-300 hover:bg-[#243351]'
                                 }`}
                         >
                             {i + 1}
