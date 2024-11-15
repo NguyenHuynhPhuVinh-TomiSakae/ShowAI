@@ -1,3 +1,9 @@
+'use client'
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
+
 interface AITool {
     id: number;
     name: string;
@@ -14,24 +20,76 @@ interface AIToolResponse {
     pageSize: number;
 }
 
-async function getAITools(page: number = 0) {
-    const res = await fetch(`https://showaisb.onrender.com/api/newly-launched?size=9&page=${page}`);
-    if (!res.ok) {
-        throw new Error('Không thể tải dữ liệu');
-    }
-    return res.json();
-}
+export default function AIWebsites() {
+    const [aiTools, setAiTools] = useState<AITool[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [paginationInfo, setPaginationInfo] = useState<AIToolResponse | null>(null);
+    const router = useRouter();
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const [, setIsMounted] = useState(false);
 
-export default async function AIWebsites({
-    searchParams,
-}: {
-    searchParams: Record<string, string | string[] | undefined>
-}) {
-    const currentPage = typeof searchParams?.page === 'string'
-        ? parseInt(searchParams.page)
-        : 0;
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
-    const data: AIToolResponse = await getAITools(currentPage);
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageParam = urlParams.get('page');
+        const initialPage = pageParam ? parseInt(pageParam) : 0;
+        fetchData(initialPage);
+
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, []);
+
+    const fetchData = async (page: number) => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            const res = await fetch(`/api/ai-tools?size=9&page=${page}`);
+
+            if (!res.ok) {
+                throw new Error(`Lỗi HTTP: ${res.status}`);
+            }
+
+            const data = await res.json();
+            setAiTools(data.content);
+            setPaginationInfo(data);
+        } catch (error) {
+            console.error('Chi tiết lỗi:', error);
+            setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 0 && newPage < (paginationInfo?.totalPages || 0)) {
+            fetchData(newPage);
+            router.push(`/ai-websites?page=${newPage}`);
+        }
+    };
+
+    const SkeletonLoader = () => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 9 }).map((_, index) => (
+                <div key={index} className="bg-[#1E293B] border border-[#2A3284] rounded-lg p-6">
+                    <Skeleton height={24} baseColor="#243351" highlightColor="#2A3284" />
+                    <Skeleton count={2} className="mt-3" baseColor="#243351" highlightColor="#2A3284" />
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        {Array(3).fill(0).map((_, i) => (
+                            <Skeleton key={i} width={60} height={24} baseColor="#243351" highlightColor="#2A3284" />
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-[#0F172A]">
@@ -45,55 +103,65 @@ export default async function AIWebsites({
             </div>
 
             <div className="max-w-6xl mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {data.content.map((tool) => (
-                        <a
-                            href={tool.link_ai_tool}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            key={tool.id}
-                            className="block bg-[#1E293B] border border-[#2A3284] rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow hover:bg-[#243351]"
-                        >
-                            <h2 className="text-xl font-semibold mb-3 text-white">{tool.name}</h2>
-                            <p className="text-gray-300 mb-4 line-clamp-2">{tool.description}</p>
-                            <div className="flex flex-wrap gap-2 overflow-hidden h-8">
-                                {tool.tags.map((tag, tagIndex) => (
-                                    <span
-                                        key={tagIndex}
-                                        className="bg-[#2A3284] text-gray-200 text-sm px-3 py-1 rounded-full whitespace-nowrap"
+                {isLoading ? (
+                    <SkeletonLoader />
+                ) : error ? (
+                    <div className="text-center text-red-500">{error}</div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {aiTools.map((tool) => (
+                                <a
+                                    href={tool.link_ai_tool}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    key={tool.id}
+                                    className="block bg-[#1E293B] border border-[#2A3284] rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow hover:bg-[#243351]"
+                                >
+                                    <h2 className="text-xl font-semibold mb-3 text-white">{tool.name}</h2>
+                                    <p className="text-gray-300 mb-4 line-clamp-2">{tool.description}</p>
+                                    <div className="flex flex-wrap gap-2 overflow-hidden h-8">
+                                        {tool.tags.map((tag, tagIndex) => (
+                                            <span
+                                                key={tagIndex}
+                                                className="bg-[#2A3284] text-gray-200 text-sm px-3 py-1 rounded-full whitespace-nowrap"
+                                            >
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+
+                        {aiTools.length === 0 && (
+                            <div className="text-center text-gray-400 bg-[#1E293B] rounded-lg p-8 border border-[#2A3284]">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                                <p className="text-lg font-medium">Chưa có công cụ AI nào</p>
+                                <p className="text-sm mt-2">Vui lòng quay lại sau!</p>
+                            </div>
+                        )}
+
+                        {paginationInfo && (
+                            <div className="mt-8 flex justify-center gap-2">
+                                {Array.from({ length: paginationInfo.totalPages }, (_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => handlePageChange(i)}
+                                        className={`px-4 py-2 rounded ${paginationInfo.pageNumber === i
+                                            ? 'bg-[#2A3284] text-white'
+                                            : 'bg-[#1E293B] text-gray-300 hover:bg-[#243351]'
+                                            }`}
                                     >
-                                        {tag}
-                                    </span>
+                                        {i + 1}
+                                    </button>
                                 ))}
                             </div>
-                        </a>
-                    ))}
-                </div>
-
-                {data.content.length === 0 && (
-                    <div className="text-center text-gray-400 bg-[#1E293B] rounded-lg p-8 border border-[#2A3284]">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                        <p className="text-lg font-medium">Chưa có công cụ AI nào</p>
-                        <p className="text-sm mt-2">Vui lòng quay lại sau!</p>
-                    </div>
+                        )}
+                    </>
                 )}
-
-                <div className="mt-8 flex justify-center gap-2">
-                    {Array.from({ length: data.totalPages }, (_, i) => (
-                        <a
-                            key={i}
-                            href={`/ai-websites?page=${i}`}
-                            className={`px-4 py-2 rounded ${currentPage === i
-                                ? 'bg-[#2A3284] text-white'
-                                : 'bg-[#1E293B] text-gray-300 hover:bg-[#243351]'
-                                }`}
-                        >
-                            {i + 1}
-                        </a>
-                    ))}
-                </div>
             </div>
         </div>
     );
