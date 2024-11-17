@@ -19,6 +19,7 @@
     "@google/generative-ai": "^0.21.0",
     "@heroicons/react": "^2.1.5",
     "@mediapipe/tasks-text": "^0.10.16",
+    "@monaco-editor/react": "^4.6.0",
     "@openreplay/tracker": "^14.0.12",
     "@openreplay/tracker-assist": "^10.0.0",
     "@radix-ui/react-avatar": "^1.1.0",

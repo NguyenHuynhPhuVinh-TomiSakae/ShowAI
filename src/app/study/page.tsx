@@ -14,6 +14,7 @@ import { Wand2 } from 'lucide-react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { toast } from 'react-hot-toast';
+import CodeChallenge from '@/components/CodeChallenge';
 
 // Danh sách loại câu hỏi
 const questionTypes = [
@@ -58,6 +59,7 @@ export default function StudyPage() {
     const [userAnswer, setUserAnswer] = useState<string>('');
     const [showResult, setShowResult] = useState(false);
     const [matchingAnswers, setMatchingAnswers] = useState<{ [key: string]: string }>({});
+    const [mode, setMode] = useState<'quiz' | 'code'>('quiz');
 
     const handleGenerate = async () => {
         setIsGenerating(true);
@@ -399,72 +401,91 @@ export default function StudyPage() {
                 </p>
             </div>
 
+            <div className="flex justify-center gap-4 py-4 bg-[#0F172A]">
+                <Button
+                    onClick={() => setMode('quiz')}
+                    className={`${mode === 'quiz' ? 'bg-[#3E52E8]' : 'bg-[#2A3284]'}`}
+                >
+                    Câu hỏi
+                </Button>
+                <Button
+                    onClick={() => setMode('code')}
+                    className={`${mode === 'code' ? 'bg-[#3E52E8]' : 'bg-[#2A3284]'}`}
+                >
+                    Lập trình
+                </Button>
+            </div>
+
             <main className="flex min-h-screen bg-[#0F172A] text-white">
                 <div className="w-full max-w-4xl mx-auto px-4 py-8">
-                    <div className="space-y-6">
-                        {/* Phần chọn loại câu hỏi và chủ đề */}
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <Select
-                                value={selectedType.id}
-                                onValueChange={(value) => {
-                                    setSelectedType(questionTypes.find(t => t.id === value) || questionTypes[0]);
-                                }}
+                    {mode === 'quiz' ? (
+                        <div className="space-y-6">
+                            {/* Phần chọn loại câu hỏi và chủ đề */}
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Select
+                                    value={selectedType.id}
+                                    onValueChange={(value) => {
+                                        setSelectedType(questionTypes.find(t => t.id === value) || questionTypes[0]);
+                                    }}
+                                >
+                                    <SelectTrigger className="w-full sm:w-[200px] bg-[#1E293B] border-[#2A3284]">
+                                        <SelectValue placeholder="Chọn loại câu hỏi" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {questionTypes.map((type) => (
+                                            <SelectItem key={type.id} value={type.id}>
+                                                {type.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select
+                                    value={selectedTopic.id}
+                                    onValueChange={(value) => {
+                                        setSelectedTopic(topics.find(t => t.id === value) || topics[0]);
+                                    }}
+                                >
+                                    <SelectTrigger className="w-full sm:w-[200px] bg-[#1E293B] border-[#2A3284]">
+                                        <SelectValue placeholder="Chọn chủ đề" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {topics.map((topic) => (
+                                            <SelectItem key={topic.id} value={topic.id}>
+                                                {topic.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Phần nhập mô tả */}
+                            <div className="space-y-2">
+                                <label className="text-sm text-gray-400">Mô tả chi tiết về câu hỏi cần tạo:</label>
+                                <TextareaAutosize
+                                    className="w-full bg-[#1E293B] rounded-lg p-3 min-h-[100px] resize-none border border-[#2A3284] focus:outline-none focus:ring-2 focus:ring-[#3E52E8]"
+                                    placeholder="VD: Tạo câu hỏi về vòng lặp for trong JavaScript, độ khó trung bình..."
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                />
+                            </div>
+
+                            {/* Nút tạo câu hỏi */}
+                            <Button
+                                onClick={handleGenerate}
+                                disabled={isGenerating || !description.trim()}
+                                className="w-full bg-[#3E52E8] hover:bg-[#2A3284] transition-colors"
                             >
-                                <SelectTrigger className="w-full sm:w-[200px] bg-[#1E293B] border-[#2A3284]">
-                                    <SelectValue placeholder="Chọn loại câu hỏi" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {questionTypes.map((type) => (
-                                        <SelectItem key={type.id} value={type.id}>
-                                            {type.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                <Wand2 className="w-5 h-5 mr-2" />
+                                {isGenerating ? 'Đang tạo...' : 'Tạo câu hỏi'}
+                            </Button>
 
-                            <Select
-                                value={selectedTopic.id}
-                                onValueChange={(value) => {
-                                    setSelectedTopic(topics.find(t => t.id === value) || topics[0]);
-                                }}
-                            >
-                                <SelectTrigger className="w-full sm:w-[200px] bg-[#1E293B] border-[#2A3284]">
-                                    <SelectValue placeholder="Chọn chủ đề" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {topics.map((topic) => (
-                                        <SelectItem key={topic.id} value={topic.id}>
-                                            {topic.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            {/* Chỉ hiển thị phần làm bài */}
+                            {currentQuestion && renderQuestionUI()}
                         </div>
-
-                        {/* Phần nhập mô tả */}
-                        <div className="space-y-2">
-                            <label className="text-sm text-gray-400">Mô tả chi tiết về câu hỏi cần tạo:</label>
-                            <TextareaAutosize
-                                className="w-full bg-[#1E293B] rounded-lg p-3 min-h-[100px] resize-none border border-[#2A3284] focus:outline-none focus:ring-2 focus:ring-[#3E52E8]"
-                                placeholder="VD: Tạo câu hỏi về vòng lặp for trong JavaScript, độ khó trung bình..."
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Nút tạo câu hỏi */}
-                        <Button
-                            onClick={handleGenerate}
-                            disabled={isGenerating || !description.trim()}
-                            className="w-full bg-[#3E52E8] hover:bg-[#2A3284] transition-colors"
-                        >
-                            <Wand2 className="w-5 h-5 mr-2" />
-                            {isGenerating ? 'Đang tạo...' : 'Tạo câu hỏi'}
-                        </Button>
-
-                        {/* Chỉ hiển thị phần làm bài */}
-                        {currentQuestion && renderQuestionUI()}
-                    </div>
+                    ) : (
+                        <CodeChallenge />
+                    )}
                 </div>
             </main>
         </>
