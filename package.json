@@ -16,6 +16,7 @@
     "@ai-sdk/openai": "^0.0.72",
     "@ai-sdk/ui-utils": "^0.0.50",
     "@e2b/code-interpreter": "^0.0.9-beta.3",
+    "@e2b/sdk": "^0.12.5",
     "@google/generative-ai": "^0.21.0",
     "@heroicons/react": "^2.1.5",
     "@mediapipe/tasks-text": "^0.10.16",

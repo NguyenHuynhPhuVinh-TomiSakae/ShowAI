@@ -28,6 +28,8 @@ export default function CodeChallenge() {
         explanation?: string;
     } | null>(null);
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+    const [isRunning, setIsRunning] = useState(false);
+    const [runResult, setRunResult] = useState<string>('');
 
     const handleGenerate = async () => {
         setResult('');
@@ -136,6 +138,39 @@ export default function CodeChallenge() {
         }
     };
 
+    const handleRunCode = async () => {
+        setIsRunning(true);
+        setRunResult('');
+
+        try {
+            const response = await fetch('/api/e2b-run', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: code,
+                    language: language,
+                    testCases: currentChallenge?.testCases || []
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Có lỗi xảy ra khi chạy code');
+            }
+
+            setRunResult(data.output);
+            toast.success('Đã chạy code thành công!');
+        } catch (error) {
+            console.error('Lỗi khi chạy code:', error);
+            toast.error('Có lỗi xảy ra khi chạy code');
+        } finally {
+            setIsRunning(false);
+        }
+    };
+
     const copyToClipboard = (text: string, index: number) => {
         navigator.clipboard.writeText(text).then(() => {
             setCopiedIndex(index);
@@ -170,8 +205,6 @@ export default function CodeChallenge() {
                         <SelectContent>
                             <SelectItem value="python">Python</SelectItem>
                             <SelectItem value="javascript">JavaScript</SelectItem>
-                            <SelectItem value="java">Java</SelectItem>
-                            <SelectItem value="c">C</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -215,13 +248,23 @@ export default function CodeChallenge() {
                         />
                     </div>
 
-                    <Button
-                        onClick={handleEvaluate}
-                        disabled={isEvaluating}
-                        className="w-full bg-[#3E52E8] hover:bg-[#2A3284]"
-                    >
-                        {isEvaluating ? 'Đang đánh giá...' : 'Đánh giá code'}
-                    </Button>
+                    <div className="flex gap-4">
+                        <Button
+                            onClick={handleRunCode}
+                            disabled={isRunning || !code.trim()}
+                            className="w-1/2 bg-[#3E52E8] hover:bg-[#2A3284]"
+                        >
+                            {isRunning ? 'Đang chạy...' : 'Chạy Code'}
+                        </Button>
+
+                        <Button
+                            onClick={handleEvaluate}
+                            disabled={isEvaluating}
+                            className="w-1/2 bg-[#3E52E8] hover:bg-[#2A3284]"
+                        >
+                            {isEvaluating ? 'Đang đánh giá...' : 'Đánh giá code'}
+                        </Button>
+                    </div>
 
                     {result && (
                         <div className="bg-[#1E293B] rounded-lg p-4">
@@ -270,6 +313,15 @@ export default function CodeChallenge() {
                             >
                                 {result}
                             </ReactMarkdown>
+                        </div>
+                    )}
+
+                    {runResult && (
+                        <div className="bg-[#1E293B] rounded-lg p-4">
+                            <h4 className="font-semibold mb-2">Kết quả chạy code:</h4>
+                            <pre className="whitespace-pre-wrap text-sm text-gray-300 bg-[#0F172A] p-4 rounded-lg">
+                                {runResult}
+                            </pre>
                         </div>
                     )}
                 </div>
