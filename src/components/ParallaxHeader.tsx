@@ -9,22 +9,22 @@ interface ParallaxHeaderProps {
 const ParallaxHeader: React.FC<ParallaxHeaderProps> = ({ onTagClick, allTags }) => {
     return (
         <div className="relative">
-            <div className="relative bg-[#2A3284]">
-                <div className="absolute inset-0 bg-gradient-to-b from-blue-900 to-[#2A3284]" />
+            <div className="relative bg-[#0F172A]">
+                <div className="absolute inset-0" />
 
                 <div className="relative z-[5] text-center py-8 px-4">
                     <div className='py-4 sm:py-8'>
                         <motion.h1
-                            className="text-2xl sm:text-3xl font-bold mb-4"
+                            className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 mb-4"
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ duration: 0.6 }}
                         >
-                            Tìm các công cụ và ứng dụng AI tốt nhất
+                            Khám Phá Thế Giới AI
                         </motion.h1>
 
                         <motion.p
-                            className="text-base sm:text-lg max-w-3xl mx-auto mb-6"
+                            className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto mb-10"
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ duration: 0.6, delay: 0.2 }}

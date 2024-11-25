@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import ParallaxHeader from '@/components/ParallaxHeader'
+import Features from '@/components/landing/Features';
+import AIIntegration from '@/components/landing/AIIntegration';
+import AIPowered from '@/components/landing/AIPowered';
 
 interface AIWebsite {
   _id: string;
@@ -166,6 +169,9 @@ export default function Home() {
               </div>
             )}
           </div>
+          <Features />
+          <AIIntegration />
+          <AIPowered />
         </>
       )}
     </div>
