@@ -11,7 +11,7 @@ import AIPowered from '@/components/landing/AIPowered';
 import CombinedFeatures from '@/components/landing/CombinedFeatures';
 import AIPages from '@/components/landing/AIPages';
 import AIUpdates from '@/components/landing/AIUpdates';
-
+import FlutterAIApp from '@/components/landing/FlutterAIApp';
 interface AIWebsite {
   _id: string;
   id: string;
@@ -174,6 +174,7 @@ export default function Home() {
           <AIPowered />
           <AIPages />
           <AIUpdates />
+          <FlutterAIApp />
         </>
       )}
     </div>

@@ -68,7 +68,8 @@ export default function AIPages() {
                     className="text-center mb-16"
                 >
                     <h2 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent 
-                        bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
+                        bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400
+                        leading-relaxed pb-4">
                         Khám Phá Các Tính Năng AI
                     </h2>
                     <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto">
