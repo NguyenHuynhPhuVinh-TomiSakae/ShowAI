@@ -93,7 +93,7 @@ const AICompare: React.FC<AICompareProps> = ({
             const genAI = new GoogleGenerativeAI(apiKey);
 
             const model = genAI.getGenerativeModel({
-                model: "gemini-exp-1121",
+                model: "gemini-exp-1114",
             });
 
             const generationConfig = {

@@ -47,7 +47,7 @@ const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({
         }
         const genAI = new GoogleGenerativeAI(apiKey);
 
-        const model = genAI.getGenerativeModel({ model: "gemini-exp-1121" });
+        const model = genAI.getGenerativeModel({ model: "learnlm-1.5-pro-experimental" });
 
         const generationConfig = {
             temperature: 1,

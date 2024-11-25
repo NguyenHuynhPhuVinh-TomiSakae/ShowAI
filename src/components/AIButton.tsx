@@ -75,7 +75,7 @@ const AIButton: React.FC<AIButtonProps> = ({ websiteName, description, keyFeatur
             if (!apiKeyData.success) throw new Error('Failed to get API key');
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-exp-1121" });
+            const model = genAI.getGenerativeModel({ model: "learnlm-1.5-pro-experimental" });
 
             const result = await model.generateContent(prompt);
             const text = result.response.text();
