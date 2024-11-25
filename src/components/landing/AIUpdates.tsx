@@ -192,10 +192,10 @@ export default function AIUpdates() {
                                     className="relative mb-12 last:mb-0"
                                 >
                                     <div className={`
-                                        flex items-center gap-4
-                                        ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}
+                                        flex flex-col md:flex-row items-center gap-4
+                                        ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}
                                     `}>
-                                        <div className="w-1/2 flex justify-center">
+                                        <div className="w-full md:w-1/2 flex justify-center">
                                             <div className={`
                                                 bg-gradient-to-br ${feature.color}
                                                 p-[1px] rounded-2xl w-full max-w-sm
@@ -218,7 +218,7 @@ export default function AIUpdates() {
                                             </div>
                                         </div>
 
-                                        <div className="w-1/2 relative">
+                                        <div className="w-full md:w-1/2 relative hidden md:block">
                                             <div className="absolute top-1/2 left-0 right-0 flex items-center justify-center">
                                                 <div className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
                                                 <div className={`h-[2px] flex-1 bg-gradient-to-r from-blue-500 to-purple-500
@@ -232,7 +232,7 @@ export default function AIUpdates() {
                     </motion.div>
 
                     <div className="max-w-5xl mx-auto px-4 mt-20">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                             {sections.map((section, index) => (
                                 <motion.div
                                     key={section.title}
@@ -263,8 +263,8 @@ export default function AIUpdates() {
                                         group-hover:shadow-2xl
                                         group-hover:shadow-${section.color.split('-')[1]}-500/20
                                     `}>
-                                        <div className="p-8">
-                                            <div className="flex items-center gap-6">
+                                        <div className="p-4 sm:p-8">
+                                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
                                                 <div className={`
                                                     p-4 rounded-xl
                                                     bg-gradient-to-br ${section.color}
@@ -272,8 +272,8 @@ export default function AIUpdates() {
                                                 `}>
                                                     {section.icon}
                                                 </div>
-                                                <div>
-                                                    <h3 className="text-2xl font-bold text-white mb-2">
+                                                <div className="text-center sm:text-left">
+                                                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
                                                         {section.title}
                                                     </h3>
                                                     <p className="text-gray-400">

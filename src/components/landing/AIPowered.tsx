@@ -1,9 +1,27 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const useIsDesktop = () => {
+    const [isDesktop, setIsDesktop] = useState(false);
+
+    useEffect(() => {
+        const checkIsDesktop = () => {
+            setIsDesktop(window.innerWidth >= 1024);
+        };
+
+        checkIsDesktop();
+        window.addEventListener('resize', checkIsDesktop);
+
+        return () => window.removeEventListener('resize', checkIsDesktop);
+    }, []);
+
+    return isDesktop;
+};
 
 const AIPowered = () => {
     const [activeImage, setActiveImage] = useState<number | null>(null);
+    const isDesktop = useIsDesktop();
 
     return (
         <div className="relative bg-gradient-to-b from-[#0F172A] via-[#1E293B] to-[#0F172A] py-20 overflow-hidden">
@@ -83,8 +101,16 @@ const AIPowered = () => {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.2 }}
                                     className="group relative"
-                                    onMouseEnter={() => setActiveImage(index)}
-                                    onMouseLeave={() => setActiveImage(null)}
+                                    onMouseEnter={() => {
+                                        if (isDesktop) {
+                                            setActiveImage(index);
+                                        }
+                                    }}
+                                    onMouseLeave={() => {
+                                        if (isDesktop) {
+                                            setActiveImage(null);
+                                        }
+                                    }}
                                 >
                                     {/* Đường kẻ dẫn */}
                                     {activeImage === index && (
@@ -121,7 +147,7 @@ const AIPowered = () => {
 
                                     {/* Khung hình ảnh preview */}
                                     {activeImage === index && (
-                                        <div className="absolute left-[calc(100%+6rem)] top-1/2 -translate-y-1/2 z-50">
+                                        <div className="absolute left-[calc(100%+6rem)] top-1/2 -translate-y-1/2 z-50 hidden lg:block">
                                             <motion.div
                                                 initial={{ opacity: 0, scale: 0.9 }}
                                                 animate={{ opacity: 1, scale: 1 }}
