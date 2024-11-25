@@ -9,6 +9,8 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import ParallaxHeader from '@/components/ParallaxHeader'
 import AIPowered from '@/components/landing/AIPowered';
 import CombinedFeatures from '@/components/landing/CombinedFeatures';
+import AIPages from '@/components/landing/AIPages';
+import AIUpdates from '@/components/landing/AIUpdates';
 
 interface AIWebsite {
   _id: string;
@@ -170,6 +172,8 @@ export default function Home() {
           </div>
           <CombinedFeatures />
           <AIPowered />
+          <AIPages />
+          <AIUpdates />
         </>
       )}
     </div>
