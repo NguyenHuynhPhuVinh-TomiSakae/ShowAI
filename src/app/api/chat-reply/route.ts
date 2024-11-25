@@ -44,7 +44,7 @@ export const dynamic = 'force-dynamic';
 async function generateReplyWithGemini(apiKey: string, prompt: string, chatHistory: Array<any>) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash-002",
+        model: "gemini-exp-1121",
     });
 
     try {

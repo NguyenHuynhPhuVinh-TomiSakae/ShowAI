@@ -46,7 +46,7 @@ export default function DrawingArena() {
             }
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-exp-1121" });
 
             const prompt = `Tạo một chủ đề thú vị để vẽ tranh. CHỈ trả về ch đề, không kèm theo giải thích hay định dạng.`;
             const result = await model.generateContent(prompt);

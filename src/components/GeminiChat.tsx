@@ -165,7 +165,7 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose, initialInput =
         const genAI = new GoogleGenerativeAI(apiKey);
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-exp-1121",
         });
 
         const generationConfig = {
@@ -255,7 +255,7 @@ const GeminiChat: React.FC<GeminiChatProps> = ({ isOpen, onClose, initialInput =
         const genAI = new GoogleGenerativeAI(apiKey);
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-exp-1121",
         });
 
         const generationConfig = {

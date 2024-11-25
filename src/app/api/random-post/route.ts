@@ -55,7 +55,7 @@ async function getRandomCharacter() {
 
 async function generatePostWithGemini(apiKey: string, prompt: string) {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-exp-1121" });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return response.text();

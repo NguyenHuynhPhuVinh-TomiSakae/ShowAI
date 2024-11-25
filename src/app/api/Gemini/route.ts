@@ -11,7 +11,7 @@ export async function GET() {
         try {
             // Thử kết nối với KEY hiện tại
             const genAI = new GoogleGenerativeAI(apiKey);
-            await genAI.getGenerativeModel({ model: "gemini-1.5-flash" }).generateContent("test");
+            await genAI.getGenerativeModel({ model: "gemini-exp-1121" }).generateContent("test");
             return NextResponse.json({ success: true, apiKey });
         } catch (error) {
             console.log(`KEY ${i} không hoạt động, thử KEY tiếp theo`);

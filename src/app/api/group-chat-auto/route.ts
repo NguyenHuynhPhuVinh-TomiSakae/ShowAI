@@ -72,7 +72,7 @@ try {
 
 async function generateMessage(apiKey: string, character: Character, previousMessages: Message[]): Promise<string> {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
+    const model = genAI.getGenerativeModel({ model: "gemini-exp-1121" });
 
     // Chuyển đổi tin nhắn trước đó thành format phù hợp
     const chatHistory: ChatMessage[] = previousMessages.map(msg => ({

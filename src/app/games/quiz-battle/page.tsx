@@ -59,7 +59,7 @@ export default function QuizBattle() {
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash-002",
+                model: "gemini-exp-1121",
             });
 
             const generationConfig = {

@@ -88,7 +88,7 @@ export default function RockPaperScissorsGame() {
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
+                model: "gemini-exp-1121",
                 generationConfig: {
                     temperature: 1,
                     topP: 0.95,

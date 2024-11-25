@@ -79,7 +79,7 @@ export default function StudyPage() {
             // Khởi tạo Gemini với cấu hình mới
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
+                model: "gemini-exp-1121",
             });
 
             const generationConfig = {

@@ -47,7 +47,7 @@ export default function CodeChallenge() {
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash-002",
+                model: "gemini-exp-1121",
             });
 
             const generationConfig = {
@@ -108,7 +108,7 @@ export default function CodeChallenge() {
             const apiKeyData = await apiKeyResponse.json();
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-exp-1121" });
 
             const prompt = `Đánh giá code sau với các test case đã cho:
             

@@ -133,7 +133,7 @@ const AIChart: React.FC<AIChartProps> = ({ websiteName, description, keyFeatures
             }
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-exp-1121" });
 
             const selectedType = analysisTypes.find(type => type.id === selectedAnalysis);
             let prompt = `Dựa trên thông tin về công cụ AI "${websiteName}":

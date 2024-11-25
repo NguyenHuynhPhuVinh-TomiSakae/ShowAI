@@ -35,7 +35,7 @@ const AIRating: React.FC<AIRatingProps> = ({ websiteName, description, keyFeatur
             }
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-exp-1121" });
 
             const prompt = `Đánh giá chi tiết công cụ AI "${websiteName}" dựa trên:
 

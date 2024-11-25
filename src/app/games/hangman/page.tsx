@@ -146,7 +146,7 @@ export default function HangmanGame() {
             const genAI = new GoogleGenerativeAI(apiKey);
 
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
+                model: "gemini-exp-1121",
                 safetySettings: [
                     {
                         category: HarmCategory.HARM_CATEGORY_HARASSMENT,

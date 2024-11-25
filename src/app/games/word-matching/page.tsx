@@ -89,7 +89,7 @@ export default function WordMatchingGame() {
 
             // Thêm cấu hình safety settings
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
+                model: "gemini-exp-1121",
                 safetySettings: [
                     {
                         category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -282,10 +282,10 @@ export default function WordMatchingGame() {
                                 transition: { delay: index * 0.1 },
                                 onClick: () => !isLoading && handleWordClick(word),
                                 className: `p-4 rounded-lg transition-all ${selectedWords.includes(word)
-                                        ? 'bg-blue-600'
-                                        : word.isBase
-                                            ? 'bg-purple-600 hover:bg-purple-700'
-                                            : 'bg-gray-800 hover:bg-gray-700'
+                                    ? 'bg-blue-600'
+                                    : word.isBase
+                                        ? 'bg-purple-600 hover:bg-purple-700'
+                                        : 'bg-gray-800 hover:bg-gray-700'
                                     } cursor-pointer`
                             } as ModalBackdropProps}
                         >

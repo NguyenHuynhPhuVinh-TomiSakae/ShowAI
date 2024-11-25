@@ -248,7 +248,7 @@ TUYỆT ĐỐI KHÔNG sử dụng bất kỳ ngôn ngữ nào ngoài tiếng Vi�
             }
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
+            const model = genAI.getGenerativeModel({ model: "gemini-exp-1121" });
 
             const prompt = `Hãy tối ưu và chỉnh sửa đoạn văn sau để rõ nghĩa và tự nhiên hơn, đảm bảo giữ nguyên format và phong cách roleplay. Chỉ trả về văn bản đã được chỉnh sửa, không thêm giải thích:
 
@@ -302,7 +302,7 @@ ${rawResponse}`;
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash-002",
+                model: "gemini-exp-1121",
             });
 
             const generationConfig = {
