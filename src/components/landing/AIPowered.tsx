@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useState } from 'react';
 
 const AIPowered = () => {
+    const [activeImage, setActiveImage] = useState<number | null>(null);
+
     return (
         <div className="relative bg-gradient-to-b from-[#0F172A] via-[#1E293B] to-[#0F172A] py-20 overflow-hidden">
             {/* Background decoration nâng cao */}
@@ -56,19 +59,22 @@ const AIPowered = () => {
                                     icon: "🤖",
                                     title: "98% Code Được Tạo bởi AI",
                                     description: "Tận dụng sức mạnh của AI để tự động hóa quá trình viết code, tối ưu hóa hiệu suất và giảm thiểu lỗi.",
-                                    codeSnippet: "Ctrl + L để mở thanh bên"
+                                    codeSnippet: "Ctrl + L để mở thanh bên",
+                                    video: "/cursor1.mp4"
                                 },
                                 {
                                     icon: "⚡",
                                     title: "Phát Triển Nhanh Chóng",
                                     description: "Rút ngắn thời gian phát triển đáng kể nhờ khả năng tự động hoàn thiện và gợi ý code thông minh của Cursor.",
-                                    codeSnippet: "Ctrl + K để chỉnh sửa 1 phần code"
+                                    codeSnippet: "Ctrl + K để chỉnh sửa 1 phần code",
+                                    video: "/cursor2.mp4"
                                 },
                                 {
                                     icon: "✨",
                                     title: "Chất Lượng Đảm Bảo",
                                     description: "AI giúp đảm bảo code tuân thủ các tiêu chuẩn chất lượng cao và best practices trong phát triển web.",
-                                    codeSnippet: "Ctrl + I để mở hộp thoại làm việc trên dự án"
+                                    codeSnippet: "Ctrl + I để mở hộp thoại làm việc trên dự án",
+                                    video: "/cursor3.mp4"
                                 }
                             ].map((item, index) => (
                                 <motion.div
@@ -76,33 +82,62 @@ const AIPowered = () => {
                                     initial={{ opacity: 0, x: -20 }}
                                     whileInView={{ opacity: 1, x: 0 }}
                                     transition={{ delay: index * 0.2 }}
-                                    className="group relative bg-gradient-to-r from-[#1E293B]/90 to-[#0F172A]/90 
+                                    className="group relative"
+                                    onMouseEnter={() => setActiveImage(index)}
+                                    onMouseLeave={() => setActiveImage(null)}
+                                >
+                                    {/* Đường kẻ dẫn */}
+                                    {activeImage === index && (
+                                        <div className="absolute right-0 top-1/2 w-24 h-px bg-gradient-to-r from-[#3E52E8] to-purple-500" />
+                                    )}
+
+                                    <div className="bg-gradient-to-r from-[#1E293B]/90 to-[#0F172A]/90 
                                              rounded-lg p-4 border border-[#3E52E8]/30 hover:border-[#3E52E8]/70
                                              transition-all duration-300 hover:bg-[#1E293B]
-                                             shadow-lg shadow-[#0F172A]/50"
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-12 h-12 rounded-lg bg-[#3E52E8]/20 flex items-center justify-center flex-shrink-0
-                                                      group-hover:bg-[#3E52E8]/30 transition-colors duration-300
-                                                      border border-[#3E52E8]/30 group-hover:border-[#3E52E8]/50">
-                                            <span className="text-2xl">{item.icon}</span>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <h3 className="text-white font-semibold text-lg">{item.title}</h3>
-                                            <p className="text-gray-300">{item.description}</p>
-                                            <div className="font-mono text-sm bg-[#0F172A] p-2 rounded
-                                                          border border-[#3E52E8]/30 group-hover:border-[#3E52E8]/70
-                                                          transition-all duration-300 shadow-inner">
-                                                <kbd className="px-2 py-1 bg-[#3E52E8]/20 rounded text-white mr-2
-                                                              border border-[#3E52E8]/30">
-                                                    {item.codeSnippet.split(' ')[0]}
-                                                </kbd>
-                                                <span className="text-gray-300">
-                                                    {item.codeSnippet.split(' ').slice(1).join(' ')}
-                                                </span>
+                                             shadow-lg shadow-[#0F172A]/50">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-12 h-12 rounded-lg bg-[#3E52E8]/20 flex items-center justify-center flex-shrink-0
+                                                          group-hover:bg-[#3E52E8]/30 transition-colors duration-300
+                                                          border border-[#3E52E8]/30 group-hover:border-[#3E52E8]/50">
+                                                <span className="text-2xl">{item.icon}</span>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <h3 className="text-white font-semibold text-lg">{item.title}</h3>
+                                                <p className="text-gray-300">{item.description}</p>
+                                                <div className="font-mono text-sm bg-[#0F172A] p-2 rounded
+                                                              border border-[#3E52E8]/30 group-hover:border-[#3E52E8]/70
+                                                              transition-all duration-300 shadow-inner">
+                                                    <kbd className="px-2 py-1 bg-[#3E52E8]/20 rounded text-white mr-2
+                                                                  border border-[#3E52E8]/30">
+                                                        {item.codeSnippet.split(' ')[0]}
+                                                    </kbd>
+                                                    <span className="text-gray-300">
+                                                        {item.codeSnippet.split(' ').slice(1).join(' ')}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Khung hình ảnh preview */}
+                                    {activeImage === index && (
+                                        <div className="absolute left-[calc(100%+6rem)] top-1/2 -translate-y-1/2 z-50">
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                className="w-[400px] h-[250px] rounded-lg overflow-hidden border border-[#3E52E8]/50 shadow-lg"
+                                            >
+                                                <video
+                                                    src={item.video}
+                                                    autoPlay
+                                                    loop
+                                                    muted
+                                                    playsInline
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </motion.div>
+                                        </div>
+                                    )}
                                 </motion.div>
                             ))}
                         </div>
@@ -116,7 +151,7 @@ const AIPowered = () => {
                         transition={{ duration: 0.5 }}
                         className="lg:w-1/2"
                     >
-                        <div className="relative group">
+                        <div className={`relative group transition-opacity duration-300 ${activeImage !== null ? 'opacity-0' : 'opacity-100'}`}>
                             {/* Code editor header */}
                             <div className="absolute top-0 left-0 right-0 h-8 bg-[#1E293B] rounded-t-lg
                                           flex items-center px-4 gap-2 border-b border-[#2A3284]">
