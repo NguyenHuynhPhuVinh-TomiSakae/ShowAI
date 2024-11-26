@@ -57,8 +57,35 @@ const aiServices = [
     }
 ];
 
+const aiModels = [
+    {
+        icon: <FaBrain className="w-8 h-8" />,
+        name: 'Gemini Exp 1121',
+        description: 'Mô hình ngôn ngữ tiên tiến nhất từ Google với khả năng xử lý đa nhiệm vụ',
+        features: ['Đa phương thức', 'Tốc độ xử lý nhanh', 'Độ chính xác cao']
+    },
+    {
+        icon: <FaRobot className="w-8 h-8" />,
+        name: 'Llama 3.2 90B Text',
+        description: 'Mô hình ngôn ngữ lớn với 90 tỷ tham số từ Meta AI',
+        features: ['Hiểu ngữ cảnh sâu', 'Đa ngôn ngữ', 'Tối ưu cho văn bản']
+    },
+    {
+        icon: <FaCode className="w-8 h-8" />,
+        name: 'Marco-o1',
+        description: 'Mô hình chuyên biệt cho lập trình và phân tích mã nguồn',
+        features: ['Phân tích mã nguồn', 'Gợi ý code', 'Debug thông minh']
+    },
+    {
+        icon: <FaBrain className="w-8 h-8" />,
+        name: 'Groq Llama 3 70B',
+        description: 'Phiên bản tối ưu của Llama 3 với tốc độ xử lý cực nhanh',
+        features: ['Tốc độ ánh sáng', 'Tiết kiệm tài nguyên', 'API đơn giản']
+    }
+];
+
 export default function CombinedFeatures() {
-    const [activeSection, setActiveSection] = useState<'features' | 'integration'>('features');
+    const [activeSection, setActiveSection] = useState<'features' | 'integration' | 'models'>('features');
     const isDesktop = useMediaQuery({ minWidth: 1024 });
 
     const getAnimationConfig = (index: number) => {
@@ -155,6 +182,41 @@ export default function CombinedFeatures() {
         </div>
     );
 
+    const ModelsContent = () => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {aiModels.map((model, index) => (
+                <motion.div
+                    key={model.name}
+                    {...getAnimationConfig(index)}
+                    className="group relative bg-gradient-to-br from-[#1E293B]/95 to-[#0F172A]/95 
+                           backdrop-blur-sm rounded-xl p-6 border border-[#2A3284]/50
+                           hover:border-[#3E52E8]/50 transition-all duration-300
+                           hover:shadow-lg hover:shadow-[#3E52E8]/20"
+                >
+                    {isDesktop && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#3E52E8]/5 to-transparent 
+                                  opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+                    )}
+                    <div className="relative">
+                        <div className={`text-[#3E52E8] mb-4 ${isDesktop ? 'transform group-hover:scale-110 transition-transform duration-300' : ''}`}>
+                            {model.icon}
+                        </div>
+                        <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-blue-400">{model.name}</h3>
+                        <p className="text-gray-300 mb-4">{model.description}</p>
+                        <ul className="space-y-2">
+                            {model.features.map((feature) => (
+                                <li key={feature} className="text-gray-200 flex items-center">
+                                    <FaRobot className="w-4 h-4 mr-2 text-[#3E52E8]" />
+                                    {feature}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </motion.div>
+            ))}
+        </div>
+    );
+
     return (
         <div className="relative bg-transparent py-12 overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -176,12 +238,18 @@ export default function CombinedFeatures() {
                         >
                             <h2 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent 
                                 bg-gradient-to-r from-blue-300 to-purple-400 leading-relaxed py-1">
-                                {activeSection === 'features' ? 'Tính Năng Nổi Bật' : 'Tích Hợp Đa Dạng API AI'}
+                                {activeSection === 'features'
+                                    ? 'Tính Năng Nổi Bật'
+                                    : activeSection === 'integration'
+                                        ? 'Tích Hợp Đa Dạng API AI'
+                                        : 'Mô Hình AI Hàng Đầu'}
                             </h2>
                             <p className="mt-4 text-lg text-gray-300">
                                 {activeSection === 'features'
                                     ? 'Khám phá những tính năng giúp bạn tối ưu trải nghiệm với AI'
-                                    : 'ShowAI tận dụng sức mạnh của nhiều API AI hàng đầu để mang đến trải nghiệm toàn diện'}
+                                    : activeSection === 'integration'
+                                        ? 'ShowAI tận dụng sức mạnh của nhiều API AI hàng đầu để mang đến trải nghiệm toàn diện'
+                                        : 'Khám phá các mô hình AI tiên tiến nhất hiện nay'}
                             </p>
                         </motion.div>
 
@@ -212,21 +280,42 @@ export default function CombinedFeatures() {
                                         <IntegrationContent />
                                     </motion.div>
                                 )}
+
+                                {activeSection === 'models' && (
+                                    <motion.div
+                                        key="models"
+                                        initial={{ x: isDesktop ? 100 : 50, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        exit={{ x: isDesktop ? 100 : 50, opacity: 0 }}
+                                        transition={{ duration: isDesktop ? 0.3 : 0.2 }}
+                                        className="w-full"
+                                    >
+                                        <ModelsContent />
+                                    </motion.div>
+                                )}
                             </AnimatePresence>
                         </div>
 
                         <div className="flex justify-center gap-4 mt-8">
                             <button
-                                onClick={() => setActiveSection('features')}
-                                className={`p-3 rounded-full bg-[#1E293B]/50 text-white ${activeSection === 'integration' ? 'opacity-100' : 'opacity-0'
-                                    } transition-opacity hover:bg-[#3E52E8]/50`}
+                                onClick={() => {
+                                    if (activeSection === 'integration') setActiveSection('features');
+                                    if (activeSection === 'models') setActiveSection('integration');
+                                }}
+                                className={`p-3 rounded-full bg-[#1E293B]/50 text-white 
+                                    ${activeSection !== 'features' ? 'opacity-100' : 'opacity-0'}
+                                    transition-opacity hover:bg-[#3E52E8]/50`}
                             >
                                 <FaChevronLeft className="w-4 h-4" />
                             </button>
                             <button
-                                onClick={() => setActiveSection('integration')}
-                                className={`p-3 rounded-full bg-[#1E293B]/50 text-white ${activeSection === 'features' ? 'opacity-100' : 'opacity-0'
-                                    } transition-opacity hover:bg-[#3E52E8]/50`}
+                                onClick={() => {
+                                    if (activeSection === 'features') setActiveSection('integration');
+                                    if (activeSection === 'integration') setActiveSection('models');
+                                }}
+                                className={`p-3 rounded-full bg-[#1E293B]/50 text-white 
+                                    ${activeSection !== 'models' ? 'opacity-100' : 'opacity-0'}
+                                    transition-opacity hover:bg-[#3E52E8]/50`}
                             >
                                 <FaChevronRight className="w-4 h-4" />
                             </button>
