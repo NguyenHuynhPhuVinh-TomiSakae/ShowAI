@@ -5,6 +5,7 @@ import DataAnalysis from '@/components/DataAnalysis'
 import Modal from './Modal'; // Giả sử bạn đã có component Modal
 import WebsiteDetails from '@/components/WebsiteDetails'
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { motion } from 'framer-motion';
 
 interface DataItem {
     _id: string;
@@ -54,6 +55,7 @@ export default function AdminUI({
     const [confirmMessage, setConfirmMessage] = useState('');
     const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const resetForm = () => {
         setFormData({
@@ -64,6 +66,7 @@ export default function AdminUI({
             keyFeatures: [],
             image: ''
         });
+        setIsPreviewMode(false);
     }
 
     useEffect(() => {
@@ -75,8 +78,15 @@ export default function AdminUI({
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await handleSubmit(e);
-        window.location.reload();
+        setIsSubmitting(true);
+        try {
+            await handleSubmit(e);
+            window.location.reload();
+        } catch (error) {
+            console.error('Lỗi khi submit form:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleDeleteItem = async (id: string, name: string) => {
@@ -241,11 +251,13 @@ export default function AdminUI({
                         isPinned={false}
                         onPinClick={() => { }}
                         onTagClick={() => { }}
+                        isPreviewMode={true}
                     />
                     <div className="mt-4 flex justify-end space-x-4">
                         <button
                             onClick={() => setIsPreviewMode(false)}
-                            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
+                            className="px-6 py-3 text-gray-300 hover:text-white transition-colors"
+                            disabled={isSubmitting}
                         >
                             Quay lại chỉnh sửa
                         </button>
@@ -254,136 +266,252 @@ export default function AdminUI({
                                 'Bạn có chắc chắn muốn lưu những thay đổi này không?',
                                 () => handleFormSubmit(new Event('submit') as unknown as React.FormEvent)
                             )}
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
+                            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-8 py-3 rounded-lg text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                         >
                             Lưu
                         </button>
                     </div>
                 </div>
             ) : (
-                <form onSubmit={(e) => {
-                    e.preventDefault();
-                    setIsPreviewMode(true);
-                }} className="space-y-4 sm:space-y-6">
-                    <div>
-                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="name">
-                            Tên
+                <motion.form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        setIsPreviewMode(true);
+                    }}
+                    className="space-y-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <div className="space-y-2">
+                        <label className="block text-blue-300 text-sm font-semibold">
+                            Tên trang web/công cụ AI <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="text"
-                            id="name"
                             value={formData.name || ''}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all text-white"
+                            placeholder="Ví dụ: ChatGPT, Midjourney..."
                             required
                         />
                     </div>
-                    <div>
-                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="description">
-                            Mô tả (mỗi dòng một mô tả)
+
+                    <div className="space-y-2">
+                        <label className="block text-blue-300 text-sm font-semibold">
+                            Mô tả <span className="text-red-400">*</span>
                         </label>
-                        <textarea
-                            id="description"
-                            value={formData.description ? formData.description.join('\n') : ''}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value.split('\n').filter(desc => desc.trim() !== '') })}
-                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
-                            rows={5}
-                            required
-                        />
+                        {formData.description?.map((desc, index) => (
+                            <div key={index} className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={desc}
+                                    onChange={(e) => {
+                                        const newDesc = [...(formData.description || [])];
+                                        newDesc[index] = e.target.value;
+                                        setFormData({ ...formData, description: newDesc });
+                                    }}
+                                    className="flex-1 px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all text-white"
+                                    placeholder="Nhập mô tả..."
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const newDesc = formData.description?.filter((_, i) => i !== index);
+                                        setFormData({ ...formData, description: newDesc });
+                                    }}
+                                    className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg"
+                                >
+                                    <i className="fas fa-times"></i>
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => setFormData({
+                                ...formData,
+                                description: [...(formData.description || []), '']
+                            })}
+                            className="mt-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg flex items-center gap-2"
+                        >
+                            <i className="fas fa-plus"></i>
+                            Thêm mô tả
+                        </button>
                     </div>
-                    <div>
-                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="tags">
-                            Tags (phân cách bằng dấu phẩy)
+
+                    <div className="space-y-2">
+                        <label className="block text-blue-300 text-sm font-semibold">
+                            Tags <span className="text-red-400">*</span>
                         </label>
-                        <input
-                            type="text"
-                            id="tags"
-                            value={formData.tags ? formData.tags.join(', ') : ''}
-                            onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(tag => tag.trim()) })}
-                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
-                        />
+                        <div className="flex flex-wrap gap-2">
+                            {Array.from(new Set(filteredData.flatMap(item => item.tags))).map((tag) => (
+                                <button
+                                    key={tag}
+                                    type="button"
+                                    onClick={() => {
+                                        const newTags = formData.tags?.includes(tag)
+                                            ? formData.tags.filter(t => t !== tag)
+                                            : [...(formData.tags || []), tag];
+                                        setFormData({ ...formData, tags: newTags });
+                                    }}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${formData.tags?.includes(tag)
+                                        ? 'bg-blue-500 text-white'
+                                        : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
+                                        }`}
+                                >
+                                    {formData.tags?.includes(tag) ? (
+                                        <span className="flex items-center gap-1">
+                                            <i className="fas fa-check text-xs"></i>
+                                            {tag}
+                                        </span>
+                                    ) : (
+                                        tag
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                        {(!formData.tags || formData.tags.length === 0) && (
+                            <p className="text-red-400 text-sm mt-2">Vui lòng chọn ít nhất một tag</p>
+                        )}
                     </div>
-                    <div>
-                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="link">
-                            Liên kết
+
+                    <div className="space-y-2">
+                        <label className="block text-blue-300 text-sm font-semibold">
+                            Liên kết <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="url"
-                            id="link"
                             value={formData.link || ''}
-                            onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                            onChange={(e) => {
+                                let value = e.target.value;
+                                if (!value.startsWith('http://') && !value.startsWith('https://')) {
+                                    value = 'https://' + value;
+                                }
+                                setFormData({ ...formData, link: value });
+                            }}
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all text-white"
+                            placeholder="https://..."
+                            defaultValue="https://"
                             required
                         />
                     </div>
-                    <div>
-                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="keyFeatures">
-                            Tính năng chính (mỗi dòng một tính năng, để trống nếu không có)
+
+                    <div className="space-y-2">
+                        <label className="block text-blue-300 text-sm font-semibold">
+                            Tính năng chính <span className="text-red-400">*</span>
                         </label>
-                        <textarea
-                            id="keyFeatures"
-                            value={formData.keyFeatures ? formData.keyFeatures.join('\n') : ''}
-                            onChange={(e) => {
-                                const features = e.target.value.split('\n').filter(feature => feature.trim() !== '');
-                                setFormData({ ...formData, keyFeatures: features });
-                            }}
-                            className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
-                            rows={5}
-                        />
+                        {formData.keyFeatures?.map((feature, index) => (
+                            <div key={index} className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={feature}
+                                    onChange={(e) => {
+                                        const newFeatures = [...(formData.keyFeatures || [])];
+                                        newFeatures[index] = e.target.value;
+                                        setFormData({ ...formData, keyFeatures: newFeatures });
+                                    }}
+                                    className="flex-1 px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all text-white"
+                                    placeholder="Nhập tính năng..."
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const newFeatures = formData.keyFeatures?.filter((_, i) => i !== index);
+                                        setFormData({ ...formData, keyFeatures: newFeatures });
+                                    }}
+                                    className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg"
+                                >
+                                    <i className="fas fa-times"></i>
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => setFormData({
+                                ...formData,
+                                keyFeatures: [...(formData.keyFeatures || []), '']
+                            })}
+                            className="mt-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg flex items-center gap-2"
+                        >
+                            <i className="fas fa-plus"></i>
+                            Thêm tính năng
+                        </button>
                     </div>
-                    <div>
-                        <label className="block text-[#93C5FD] text-sm font-bold mb-2" htmlFor="image">
-                            Hình ảnh
+
+                    <div className="space-y-2">
+                        <label className="block text-blue-300 text-sm font-semibold">
+                            Hình ảnh <span className="text-red-400">*</span>
                         </label>
-                        <div className="flex items-center space-x-4">
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                             <input
                                 type="file"
-                                id="image"
                                 accept="image/*"
                                 onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) {
                                         const reader = new FileReader();
                                         reader.onloadend = () => {
-                                            setFormData({ ...formData, image: reader.result as string });
+                                            setFormData({
+                                                ...formData,
+                                                image: reader.result as string
+                                            });
                                         };
                                         reader.readAsDataURL(file);
                                     }
                                 }}
-                                className="w-full px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white transition duration-300 ease-in-out"
+                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all text-white"
                             />
                             {formData.image && (
-                                <div className="relative w-24 h-24">
+                                <div className="relative w-32 h-32 rounded-lg overflow-hidden">
                                     <Image
                                         src={formData.image}
-                                        alt="Xem trước"
+                                        alt="Preview"
                                         layout="fill"
                                         objectFit="cover"
-                                        className="rounded-md"
+                                        className="rounded-lg"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, image: '' })}
+                                        className="absolute top-2 right-2 bg-red-500 rounded-full p-1 hover:bg-red-600 transition-colors"
+                                    >
+                                        <i className="fas fa-times text-white"></i>
+                                    </button>
                                 </div>
                             )}
                         </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
-                        <button
-                            type="submit"
-                            className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105"
-                        >
-                            Xem trước
-                        </button>
+
+                    <div className="flex justify-end space-x-4 pt-6">
                         <button
                             type="button"
                             onClick={() => {
                                 setActiveTab('list');
                                 resetForm();
                             }}
-                            className="w-full sm:w-auto bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105"
+                            className="px-6 py-3 text-gray-300 hover:text-white transition-colors"
+                            disabled={isSubmitting}
                         >
                             {isEditing ? 'Hủy chỉnh sửa' : 'Hủy'}
                         </button>
+                        <button
+                            type="submit"
+                            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-8 py-3 rounded-lg text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <i className="fas fa-spinner fa-spin mr-2"></i>
+                                    Đang xử lý...
+                                </>
+                            ) : (
+                                'Xem trước'
+                            )}
+                        </button>
                     </div>
-                </form>
+                </motion.form>
             )}
         </>
     )

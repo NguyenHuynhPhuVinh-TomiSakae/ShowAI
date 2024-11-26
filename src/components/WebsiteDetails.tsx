@@ -245,11 +245,13 @@ const WebsiteDetails: React.FC<WebsiteDetailsProps> = ({ website, isPinned, onPi
                         <FaThumbtack />
                     </button>
 
-                    <AIButton
-                        websiteName={website.name}
-                        description={website.description}
-                        keyFeatures={website.keyFeatures}
-                    />
+                    {!isPreviewMode && (
+                        <AIButton
+                            websiteName={website.name}
+                            description={website.description}
+                            keyFeatures={website.keyFeatures}
+                        />
+                    )}
                 </div>
                 <Link
                     href={website.link}
