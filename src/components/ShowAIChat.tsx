@@ -80,7 +80,7 @@ const ShowAIChat: React.FC<ShowAIChatProps> = ({ isOpen, onClose, initialInput =
         setMessages(prevMessages => prevMessages.filter(msg => !msg.isSampleQuestion).concat(newMessage));
         setInput('');
 
-        const url = "http://3.106.53.200:8283/v1/agents/agent-20668ec2-ef80-4f5f-9405-e6cacaf1c92c/messages";
+        const url = "/api/chattomi";
         const payload = {
             messages: [
                 {
@@ -183,7 +183,7 @@ const ShowAIChat: React.FC<ShowAIChatProps> = ({ isOpen, onClose, initialInput =
 
         setIsLoading(true);
 
-        const url = "http://3.106.53.200:8283/v1/agents/agent-20668ec2-ef80-4f5f-9405-e6cacaf1c92c/messages";
+        const url = "/api/chattomi";
         const payload = {
             messages: [
                 {
