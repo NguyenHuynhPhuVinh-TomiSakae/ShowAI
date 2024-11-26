@@ -96,6 +96,15 @@ const AIPowered = () => {
                                         }
                                     }}
                                 >
+                                    {/* Thêm đường kẻ gradient cho desktop */}
+                                    {isDesktop && (
+                                        <>
+                                            <div className="absolute -left-4 h-full w-px bg-gradient-to-b from-transparent via-[#3E52E8] to-transparent" />
+                                            <div className="absolute -right-4 h-full w-px bg-gradient-to-b from-transparent via-purple-500 to-transparent" />
+                                            <div className="absolute -top-4 w-full h-px bg-gradient-to-r from-transparent via-[#3E52E8] to-transparent" />
+                                        </>
+                                    )}
+
                                     {/* Đường kẻ dẫn - chỉ hiển thị trên desktop */}
                                     {isDesktop && activeImage === index && (
                                         <div className="absolute right-0 top-1/2 w-24 h-px bg-gradient-to-r from-[#3E52E8] to-purple-500" />
