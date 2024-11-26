@@ -4,13 +4,14 @@ import GeminiChat from './GeminiChat';
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import BotSelectionModal from './BotSelectionModal';
 import ShowAIChat from './ShowAIChat';
+import MarcoChat from './MarcoChat';
 
 const GeminiChatIcon: React.FC = () => {
     const [isGeminiChatOpen, setIsGeminiChatOpen] = useState(false);
     const [isBotSelectionOpen, setIsBotSelectionOpen] = useState(false);
-    const [selectedBot, setSelectedBot] = useState<'gemini' | 'showai' | null>(null);
+    const [selectedBot, setSelectedBot] = useState<'gemini' | 'showai' | 'marco' | null>(null);
 
-    const handleBotSelection = (bot: 'gemini' | 'showai') => {
+    const handleBotSelection = (bot: 'gemini' | 'showai' | 'marco') => {
         setSelectedBot(bot);
         setIsBotSelectionOpen(false);
         setIsGeminiChatOpen(true);
@@ -48,6 +49,12 @@ const GeminiChatIcon: React.FC = () => {
             )}
             {selectedBot === 'showai' && (
                 <ShowAIChat
+                    isOpen={isGeminiChatOpen}
+                    onClose={() => setIsGeminiChatOpen(false)}
+                />
+            )}
+            {selectedBot === 'marco' && (
+                <MarcoChat
                     isOpen={isGeminiChatOpen}
                     onClose={() => setIsGeminiChatOpen(false)}
                 />
