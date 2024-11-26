@@ -122,62 +122,165 @@ const DataAnalysis: React.FC<DataAnalysisProps> = ({ data }) => {
     };
 
     return (
-        <div className="bg-[#1E293B] p-6 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold mb-4 text-[#93C5FD]">Phân tích dữ liệu</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Tổng lượt xem</h3>
-                    <p className="text-3xl font-bold text-white">{totalViews}</p>
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Tổng lượt tim</h3>
-                    <p className="text-3xl font-bold text-white">{totalHearts}</p>
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Tổng lượt ghim</h3>
-                    <p className="text-3xl font-bold text-white">{totalStars}</p>
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Tổng số bình luận</h3>
-                    <p className="text-3xl font-bold text-white">{totalComments}</p>
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Tổng số bình luận ngắn</h3>
-                    <p className="text-3xl font-bold text-white">{totalShortComments}</p>
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Tổng số đánh giá</h3>
-                    <p className="text-3xl font-bold text-white">{totalRatings}</p>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ cột</h3>
-                    <Bar data={barChartData} />
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ tròn</h3>
-                    <Pie data={pieChartData} />
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ tròn bình luận</h3>
-                    <Pie data={commentsPieChartData} />
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ cột đánh giá</h3>
-                    <Bar data={ratingsBarChartData} />
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg col-span-2">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ đường</h3>
-                    <Line data={lineChartData} />
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ radar</h3>
-                    <Radar data={radarChartData} />
-                </div>
-                <div className="bg-[#2D3748] p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ doughnut</h3>
-                    <Doughnut data={doughnutChartData} />
+        <div className="space-y-4">
+            <div className="w-full">
+                <div className="bg-[#1E293B] p-3 md:p-6 rounded-lg shadow-lg">
+                    <h2 className="text-xl md:text-2xl font-bold mb-4 text-[#93C5FD]">Phân tích dữ liệu</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-8">
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg">
+                            <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 text-[#93C5FD]">Tổng lượt xem</h3>
+                            <p className="text-xl md:text-3xl font-bold text-white">{totalViews}</p>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg">
+                            <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 text-[#93C5FD]">Tổng lượt tim</h3>
+                            <p className="text-xl md:text-3xl font-bold text-white">{totalHearts}</p>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg">
+                            <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 text-[#93C5FD]">Tổng lượt ghim</h3>
+                            <p className="text-xl md:text-3xl font-bold text-white">{totalStars}</p>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg">
+                            <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 text-[#93C5FD]">Tổng số bình luận</h3>
+                            <p className="text-xl md:text-3xl font-bold text-white">{totalComments}</p>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg">
+                            <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 text-[#93C5FD]">Tổng số bình luận ngắn</h3>
+                            <p className="text-xl md:text-3xl font-bold text-white">{totalShortComments}</p>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg">
+                            <h3 className="text-sm md:text-lg font-semibold mb-1 md:mb-2 text-[#93C5FD]">Tổng số đánh giá</h3>
+                            <p className="text-xl md:text-3xl font-bold text-white">{totalRatings}</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg md:col-span-1">
+                            <h3 className="text-sm md:text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ cột</h3>
+                            <div className="h-[250px] md:h-[400px]">
+                                <Bar
+                                    data={barChartData}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: window.innerWidth >= 768,
+                                                position: 'bottom' as const,
+                                                labels: {
+                                                    boxWidth: window.innerWidth < 768 ? 10 : 40,
+                                                    font: { size: window.innerWidth < 768 ? 8 : 12 }
+                                                }
+                                            }
+                                        },
+                                        scales: {
+                                            x: {
+                                                ticks: {
+                                                    font: { size: window.innerWidth < 768 ? 8 : 12 }
+                                                }
+                                            },
+                                            y: {
+                                                ticks: {
+                                                    font: { size: window.innerWidth < 768 ? 8 : 12 }
+                                                }
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg md:col-span-1">
+                            <h3 className="text-sm md:text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ tròn</h3>
+                            <div className="h-[250px] md:h-[400px]">
+                                <Pie
+                                    data={pieChartData}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                position: 'bottom' as const,
+                                                labels: {
+                                                    boxWidth: window.innerWidth < 768 ? 10 : 40,
+                                                    font: { size: window.innerWidth < 768 ? 8 : 12 }
+                                                }
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg md:col-span-1">
+                            <h3 className="text-sm md:text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ tròn bình luận</h3>
+                            <div className="h-[250px] md:h-[400px]">
+                                <Pie
+                                    data={commentsPieChartData}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                position: 'bottom' as const,
+                                                labels: {
+                                                    boxWidth: window.innerWidth < 768 ? 10 : 40,
+                                                    font: { size: window.innerWidth < 768 ? 8 : 12 }
+                                                }
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg md:col-span-1">
+                            <h3 className="text-sm md:text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ cột đánh giá</h3>
+                            <div className="h-[250px] md:h-[400px]">
+                                <Bar
+                                    data={ratingsBarChartData}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: window.innerWidth >= 768,
+                                                position: 'bottom' as const,
+                                                labels: {
+                                                    boxWidth: window.innerWidth < 768 ? 10 : 40,
+                                                    font: { size: window.innerWidth < 768 ? 8 : 12 }
+                                                }
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg md:col-span-2">
+                            <h3 className="text-sm md:text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ đường</h3>
+                            <div className="h-[250px] md:h-[400px]">
+                                <Line
+                                    data={lineChartData}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                position: 'bottom' as const,
+                                                labels: {
+                                                    boxWidth: window.innerWidth < 768 ? 10 : 40,
+                                                    font: { size: window.innerWidth < 768 ? 8 : 12 }
+                                                }
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg">
+                            <h3 className="text-sm md:text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ radar</h3>
+                            <Radar data={radarChartData} />
+                        </div>
+                        <div className="bg-[#2D3748] p-2 md:p-4 rounded-lg">
+                            <h3 className="text-sm md:text-lg font-semibold mb-2 text-[#93C5FD]">Biểu đồ doughnut</h3>
+                            <Doughnut data={doughnutChartData} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

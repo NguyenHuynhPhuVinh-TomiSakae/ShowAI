@@ -4,6 +4,7 @@ import Image from 'next/image'
 import DataAnalysis from '@/components/DataAnalysis'
 import Modal from './Modal'; // Giả sử bạn đã có component Modal
 import WebsiteDetails from '@/components/WebsiteDetails'
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 interface DataItem {
     _id: string;
@@ -52,6 +53,7 @@ export default function AdminUI({
     const [confirmAction, setConfirmAction] = useState<() => void>(() => { });
     const [confirmMessage, setConfirmMessage] = useState('');
     const [isPreviewMode, setIsPreviewMode] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
     const resetForm = () => {
         setFormData({
@@ -198,7 +200,13 @@ export default function AdminUI({
                     </div>
                 )
             case 'analysis':
-                return <DataAnalysis data={filteredData} />
+                return (
+                    <div className="w-full overflow-x-auto">
+                        <div className="min-w-full lg:w-auto">
+                            <DataAnalysis data={filteredData} />
+                        </div>
+                    </div>
+                )
             default:
                 return null
         }
@@ -372,45 +380,110 @@ export default function AdminUI({
     };
 
     return (
-        <div className="container mx-auto p-4 bg-gradient-to-b from-[#0F172A] to-[#1E293B] flex py-6">
-            <div className="w-1/4 pr-4">
-                <h1 className="text-3xl font-bold mb-6 text-[#93C5FD]">Quản lý dữ liệu</h1>
-                <div className="flex flex-col gap-2">
+        <div className="flex min-h-screen bg-gradient-to-b from-[#0F172A] to-[#1E293B]">
+            <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-[#1A2234] text-gray-400 hover:text-white"
+            >
+                <i className={`fas ${isSidebarOpen ? 'fa-times' : 'fa-bars'}`}></i>
+            </button>
+
+            <div className={`
+                fixed lg:static
+                w-64 bg-[#1A2234] h-screen
+                transition-transform duration-300 ease-in-out
+                lg:translate-x-0
+                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                z-40
+            `}>
+                <div className="p-4 pt-16 lg:pt-4">
+                    <span className="text-gray-400 text-sm font-medium">Trang Quản Trị ShowAI</span>
+                </div>
+
+                <div className="flex flex-col">
                     <button
-                        onClick={() => setActiveTab('list')}
-                        className={`px-4 py-2 text-left ${activeTab === 'list' ? 'bg-[#3B82F6] text-white' : 'bg-[#1E293B] text-[#93C5FD]'}`}
+                        onClick={() => {
+                            setActiveTab('list');
+                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                        }}
+                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'list'
+                            ? 'text-white bg-[#3B82F6]'
+                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
+                            }`}
                     >
+                        <i className="fas fa-list mr-3"></i>
                         Danh sách
                     </button>
+
                     <button
-                        onClick={() => setActiveTab('create')}
-                        className={`px-4 py-2 text-left ${activeTab === 'create' ? 'bg-[#3B82F6] text-white' : 'bg-[#1E293B] text-[#93C5FD]'}`}
+                        onClick={() => {
+                            setActiveTab('create');
+                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                        }}
+                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'create'
+                            ? 'text-white bg-[#3B82F6]'
+                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
+                            }`}
                     >
+                        <i className="fas fa-plus mr-3"></i>
                         Tạo mới
                     </button>
+
                     <button
-                        onClick={() => setActiveTab('edit')}
-                        className={`px-4 py-2 text-left ${activeTab === 'edit' || activeTab === 'editForm' ? 'bg-[#3B82F6] text-white' : 'bg-[#1E293B] text-[#93C5FD]'}`}
+                        onClick={() => {
+                            setActiveTab('edit');
+                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                        }}
+                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'edit' || activeTab === 'editForm'
+                            ? 'text-white bg-[#3B82F6]'
+                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
+                            }`}
                     >
+                        <i className="fas fa-edit mr-3"></i>
                         Chỉnh sửa
                     </button>
+
                     <button
-                        onClick={() => setActiveTab('delete')}
-                        className={`px-4 py-2 text-left ${activeTab === 'delete' ? 'bg-[#3B82F6] text-white' : 'bg-[#1E293B] text-[#93C5FD]'}`}
+                        onClick={() => {
+                            setActiveTab('delete');
+                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                        }}
+                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'delete'
+                            ? 'text-white bg-[#3B82F6]'
+                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
+                            }`}
                     >
+                        <i className="fas fa-trash mr-3"></i>
                         Xóa
                     </button>
+
                     <button
-                        onClick={() => setActiveTab('analysis')}
-                        className={`px-4 py-2 text-left ${activeTab === 'analysis' ? 'bg-[#3B82F6] text-white' : 'bg-[#1E293B] text-[#93C5FD]'}`}
+                        onClick={() => {
+                            setActiveTab('analysis');
+                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                        }}
+                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'analysis'
+                            ? 'text-white bg-[#3B82F6]'
+                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
+                            }`}
                     >
+                        <i className="fas fa-chart-bar mr-3"></i>
                         Phân tích
                     </button>
                 </div>
             </div>
-            <div className="w-3/4">
+
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-30"
+                    onClick={() => setIsSidebarOpen(false)}
+                ></div>
+            )}
+
+            <div className="flex-1 p-4 lg:p-6 ml-0 lg:ml-0 mt-16 lg:mt-0">
                 {renderTabContent()}
             </div>
+
             <Modal
                 isOpen={showConfirmModal}
                 onClose={() => setShowConfirmModal(false)}
