@@ -25,6 +25,7 @@ const ShowAIChat: React.FC<ShowAIChatProps> = ({ isOpen, onClose, initialInput =
     const typewriterRef = useRef<NodeJS.Timeout | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [, setTranscript] = useState('');
+    const [editedMessage, setEditedMessage] = useState<Message | null>(null);
 
     const sampleQuestions = [
         "Chào bạn, mình có thể trò chuyện được không?",
@@ -175,13 +176,93 @@ const ShowAIChat: React.FC<ShowAIChatProps> = ({ isOpen, onClose, initialInput =
     };
 
     const regenerateResponse = async () => {
-        if (messages.length < 2) return;
-        const lastUserMessage = [...messages].reverse().find(m => m.isUser);
-        if (!lastUserMessage) return;
+        await new Promise(resolve => setTimeout(resolve, 0));
 
-        setMessages(prevMessages => prevMessages.slice(0, -1));
-        setInput(lastUserMessage.text);
-        handleSubmit({ preventDefault: () => { } } as React.FormEvent);
+        const messageToUse = editedMessage;
+        if (!messageToUse?.isUser) return;
+
+        setIsLoading(true);
+
+        const url = "http://3.106.53.200:8283/v1/agents/agent-e8e67594-5545-4d4e-bcda-c26f91ec43b8/messages";
+        const payload = {
+            messages: [
+                {
+                    role: "user",
+                    text: messageToUse.text
+                }
+            ],
+            stream_steps: true,
+            stream_tokens: false
+        };
+
+        setEditedMessage(null);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const reader = response.body?.getReader();
+            if (!reader) {
+                throw new Error('Reader not available');
+            }
+
+            let fullMessage = '';
+            setIsTyping(true);
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = new TextDecoder().decode(value);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (!line.trim() || line.includes('[DONE_GEN]') ||
+                        line.includes('[DONE_STEP]') || line.includes('[DONE]')) {
+                        continue;
+                    }
+
+                    try {
+                        const cleanData = line.replace('data: ', '');
+                        const messageData = JSON.parse(cleanData);
+
+                        if (messageData.message_type === 'function_call') {
+                            const functionArgs = JSON.parse(messageData.function_call.arguments);
+                            if (functionArgs.message) {
+                                fullMessage = functionArgs.message;
+                                setTypingText(fullMessage);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error parsing message:', error);
+                    }
+                }
+            }
+
+            setMessages(prevMessages => [...prevMessages, { text: fullMessage, isUser: false }]);
+            setTypingText('');
+            setIsTyping(false);
+
+        } catch (error) {
+            console.error('Error:', error);
+            setMessages(prevMessages => [...prevMessages, {
+                text: 'Đã xảy ra lỗi khi xử lý yêu cầu của bạn.',
+                isUser: false,
+                isError: true
+            }]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleTranscript = (newTranscript: string) => {
@@ -191,6 +272,21 @@ const ShowAIChat: React.FC<ShowAIChatProps> = ({ isOpen, onClose, initialInput =
 
     const handleClearInput = () => {
         setInput('');
+    };
+
+    const editMessage = (index: number, newText: string) => {
+        console.log('Editing message:', { index, newText });
+        const updatedMessage = { text: newText, isUser: true };
+        setEditedMessage(updatedMessage);
+
+        setMessages(prevMessages => {
+            const newMessages = [...prevMessages];
+            newMessages[index] = updatedMessage;
+            if (newMessages[index].isUser && newMessages[index + 1] && !newMessages[index + 1].isUser) {
+                newMessages.splice(index + 1, 1);
+            }
+            return newMessages;
+        });
     };
 
     return (
@@ -212,13 +308,7 @@ const ShowAIChat: React.FC<ShowAIChatProps> = ({ isOpen, onClose, initialInput =
             handleSampleQuestionClick={handleSampleQuestionClick}
             messagesEndRef={messagesEndRef}
             regenerateResponse={regenerateResponse}
-            editMessage={(index: number, newText: string) => {
-                setMessages(prevMessages => {
-                    const newMessages = [...prevMessages];
-                    newMessages[index] = { ...newMessages[index], text: newText };
-                    return newMessages;
-                });
-            }}
+            editMessage={editMessage}
             setMessages={setMessages}
         >
             <VoiceSearch
