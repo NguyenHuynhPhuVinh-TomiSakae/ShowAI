@@ -101,18 +101,29 @@ export default function AdminUI({
     );
 
     const renderSearchAndFilter = () => (
-        <div className="mb-4 flex flex-wrap gap-4">
-            <input
-                type="text"
-                placeholder="Tìm kiếm..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white"
-            />
+        <div className="mb-6 flex flex-wrap gap-4">
+            <div className="relative flex-1 min-w-[200px]">
+                <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input
+                    type="text"
+                    placeholder="Tìm kiếm..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-[#1E293B]/50 
+                              border border-gray-700/50 rounded-xl
+                              focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                              text-white placeholder-gray-400
+                              transition-all duration-200"
+                />
+            </div>
             <select
                 value={filterTag}
                 onChange={(e) => setFilterTag(e.target.value)}
-                className="px-3 py-2 bg-[#2D3748] border border-[#4B5563] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3B82F6] text-white"
+                className="px-4 py-3 bg-[#1E293B]/50 
+                          border border-gray-700/50 rounded-xl
+                          focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                          text-white min-w-[150px]
+                          transition-all duration-200"
             >
                 <option value="">Tất cả tags</option>
                 {Array.from(new Set(filteredData.flatMap(item => item.tags))).map(tag => (
@@ -123,16 +134,25 @@ export default function AdminUI({
     );
 
     const renderPagination = () => (
-        <div className="mt-4 flex justify-center">
-            {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
-                <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`mx-1 px-3 py-1 rounded ${currentPage === page ? 'bg-[#3B82F6] text-white' : 'bg-[#2D3748] text-[#93C5FD]'}`}
-                >
-                    {page}
-                </button>
-            ))}
+        <div className="mt-6 flex justify-center">
+            <div className="inline-flex rounded-xl overflow-hidden shadow-lg bg-[#1E293B]/50 p-1">
+                {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                    <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`
+                            mx-1 px-4 py-2 rounded-lg
+                            transition-all duration-200
+                            ${currentPage === page
+                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                                : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+                            }
+                        `}
+                    >
+                        {page}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 
@@ -389,87 +409,51 @@ export default function AdminUI({
             </button>
 
             <div className={`
-                fixed lg:static
-                w-64 bg-[#1A2234] h-screen
+                fixed lg:static 
+                w-64 h-screen
+                bg-gradient-to-b from-[#1A2234]/95 to-[#2D3748]/95
+                backdrop-blur-lg
+                border-r border-gray-800/50
                 transition-transform duration-300 ease-in-out
                 lg:translate-x-0
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 z-40
             `}>
                 <div className="p-4 pt-16 lg:pt-4">
-                    <span className="text-gray-400 text-sm font-medium">Trang Quản Trị ShowAI</span>
+                    <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                        <span className="text-gray-200 font-semibold">ShowAI Admin</span>
+                    </div>
                 </div>
 
-                <div className="flex flex-col">
-                    <button
-                        onClick={() => {
-                            setActiveTab('list');
-                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
-                        }}
-                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'list'
-                            ? 'text-white bg-[#3B82F6]'
-                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
-                            }`}
-                    >
-                        <i className="fas fa-list mr-3"></i>
-                        Danh sách
-                    </button>
-
-                    <button
-                        onClick={() => {
-                            setActiveTab('create');
-                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
-                        }}
-                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'create'
-                            ? 'text-white bg-[#3B82F6]'
-                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
-                            }`}
-                    >
-                        <i className="fas fa-plus mr-3"></i>
-                        Tạo mới
-                    </button>
-
-                    <button
-                        onClick={() => {
-                            setActiveTab('edit');
-                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
-                        }}
-                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'edit' || activeTab === 'editForm'
-                            ? 'text-white bg-[#3B82F6]'
-                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
-                            }`}
-                    >
-                        <i className="fas fa-edit mr-3"></i>
-                        Chỉnh sửa
-                    </button>
-
-                    <button
-                        onClick={() => {
-                            setActiveTab('delete');
-                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
-                        }}
-                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'delete'
-                            ? 'text-white bg-[#3B82F6]'
-                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
-                            }`}
-                    >
-                        <i className="fas fa-trash mr-3"></i>
-                        Xóa
-                    </button>
-
-                    <button
-                        onClick={() => {
-                            setActiveTab('analysis');
-                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
-                        }}
-                        className={`w-full flex items-center px-4 py-2 text-sm ${activeTab === 'analysis'
-                            ? 'text-white bg-[#3B82F6]'
-                            : 'text-gray-400 hover:bg-[#242B3D] hover:text-gray-200'
-                            }`}
-                    >
-                        <i className="fas fa-chart-bar mr-3"></i>
-                        Phân tích
-                    </button>
+                <div className="flex flex-col mt-6 space-y-2">
+                    {[
+                        { id: 'list', icon: 'fa-list', label: 'Danh sách' },
+                        { id: 'create', icon: 'fa-plus', label: 'Tạo mới' },
+                        { id: 'edit', icon: 'fa-edit', label: 'Chỉnh sửa' },
+                        { id: 'delete', icon: 'fa-trash', label: 'Xóa' },
+                        { id: 'analysis', icon: 'fa-chart-bar', label: 'Phân tích' }
+                    ].map(item => (
+                        <button
+                            key={item.id}
+                            onClick={() => {
+                                setActiveTab(item.id);
+                                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                            }}
+                            className={`
+                                w-full flex items-center px-4 py-3 
+                                rounded-lg mx-2
+                                transition-all duration-200
+                                ${activeTab === item.id
+                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                                    : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+                                }
+                            `}
+                        >
+                            <i className={`fas ${item.icon} mr-3`}></i>
+                            {item.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 
