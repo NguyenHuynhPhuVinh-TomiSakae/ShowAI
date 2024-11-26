@@ -4,7 +4,7 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        const response = await fetch("http://3.106.53.200:8283/v1/agents/agent-20668ec2-ef80-4f5f-9405-e6cacaf1c92c/messages", {
+        const response = await fetch(`${process.env.CHATTOMI_API_URL}/v1/agents/agent-20668ec2-ef80-4f5f-9405-e6cacaf1c92c/messages`, {
             method: 'POST',
             headers: {
                 'accept': 'application/json',
