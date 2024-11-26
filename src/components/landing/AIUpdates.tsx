@@ -57,10 +57,10 @@ export default function AIUpdates() {
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.1)_0.1em,transparent_0.1em),linear-gradient(90deg,rgba(15,23,42,0.1)_0.1em,transparent_0.1em)] bg-[size:4em_4em] opacity-20" />
 
                 <motion.div
-                    className="absolute top-20 -left-20 w-72 h-72 bg-blue-500/30 rounded-full blur-[120px]"
+                    className="absolute top-20 -left-20 w-72 h-72 bg-blue-500/30 rounded-full blur-[120px] hidden md:block"
                 />
                 <motion.div
-                    className="absolute top-40 -right-20 w-72 h-72 bg-purple-500/30 rounded-full blur-[120px]"
+                    className="absolute top-40 -right-20 w-72 h-72 bg-purple-500/30 rounded-full blur-[120px] hidden md:block"
                 />
 
                 <div className="absolute inset-0">
@@ -249,19 +249,19 @@ export default function AIUpdates() {
                                 >
                                     <div className={`
                                         absolute inset-0 bg-gradient-to-br ${section.color}
-                                        opacity-20 group-hover:opacity-30 rounded-2xl
-                                        transition-all duration-500 blur-xl group-hover:blur-2xl
+                                        opacity-10 md:opacity-20 group-hover:opacity-20 md:group-hover:opacity-30 rounded-2xl
+                                        transition-all duration-500 blur-md md:blur-xl group-hover:blur-lg md:group-hover:blur-2xl
                                     `} />
 
                                     <div className={`
                                         relative overflow-hidden rounded-2xl
                                         bg-[#1E293B]/80 backdrop-blur-sm
-                                        border border-white/10
-                                        hover:border-white/20
+                                        border border-white/5 md:border-white/10
+                                        hover:border-white/10 md:hover:border-white/20
                                         transition-all duration-500
-                                        group-hover:translate-y-[-2px]
-                                        group-hover:shadow-2xl
-                                        group-hover:shadow-${section.color.split('-')[1]}-500/20
+                                        group-hover:translate-y-[-1px] md:group-hover:translate-y-[-2px]
+                                        group-hover:shadow-lg md:group-hover:shadow-2xl
+                                        group-hover:shadow-${section.color.split('-')[1]}-500/10 md:group-hover:shadow-${section.color.split('-')[1]}-500/20
                                     `}>
                                         <div className="p-4 sm:p-8">
                                             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
