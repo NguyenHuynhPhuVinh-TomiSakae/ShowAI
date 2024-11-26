@@ -5,6 +5,7 @@ import { FaRobot, FaCode, FaComments, FaTheaterMasks } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+import { useMediaQuery } from 'react-responsive';
 
 const pages = [
     {
@@ -48,6 +49,7 @@ const pages = [
 export default function AIPages() {
     const router = useRouter();
     const pathname = usePathname();
+    const isDesktop = useMediaQuery({ minWidth: 1024 });
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -57,14 +59,34 @@ export default function AIPages() {
         router.push(path);
     };
 
+    const getAnimationConfig = (index: number) => {
+        if (!isDesktop) {
+            return {
+                initial: { opacity: 0 },
+                whileInView: { opacity: 1 },
+                transition: { duration: 0.3 }
+            };
+        }
+
+        return {
+            initial: { opacity: 0, y: 50 },
+            whileInView: { opacity: 1, y: 0 },
+            viewport: { once: false, amount: 0.3 },
+            transition: {
+                duration: 0.5,
+                delay: index * 0.1
+            }
+        };
+    };
+
     return (
         <div className="relative bg-[#0F172A] py-24 min-h-screen">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: isDesktop ? 20 : 0 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: false, amount: 0.3 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: isDesktop ? 0.5 : 0.3 }}
                     className="text-center mb-16"
                 >
                     <h2 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent 
@@ -81,29 +103,27 @@ export default function AIPages() {
                     {pages.map((page, index) => (
                         <motion.div
                             key={page.title}
-                            initial={{ opacity: 0, y: 50 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: false, amount: 0.3 }}
-                            transition={{
-                                duration: 0.5,
-                                delay: index * 0.1
-                            }}
+                            {...getAnimationConfig(index)}
                         >
                             <div
                                 onClick={() => handleNavigate(page.path)}
                                 className={`group relative overflow-hidden rounded-2xl 
-                                    before:absolute before:inset-0 
-                                    before:transition-all before:duration-500
-                                    before:blur-3xl before:opacity-0 before:-z-10
-                                    hover:before:opacity-100 ${page.bgGlow}
+                                    ${isDesktop ? `
+                                        before:absolute before:inset-0 
+                                        before:transition-all before:duration-500
+                                        before:blur-3xl before:opacity-0 before:-z-10
+                                        hover:before:opacity-100 ${page.bgGlow}
+                                    ` : ''}
                                     bg-gradient-to-br from-gray-900 to-gray-800
-                                    border border-gray-800 hover:border-gray-700
-                                    transition-all duration-300 p-12
+                                    border border-gray-800 
+                                    ${isDesktop ? 'hover:border-gray-700' : ''}
+                                    transition-all duration-300 p-8 sm:p-12
                                     cursor-pointer`}
                             >
                                 <div className="flex flex-col h-full">
-                                    <div className={`${page.color} mb-8 transform group-hover:scale-110 
-                                        transition-transform duration-300 p-4`}>
+                                    <div className={`${page.color} mb-8 
+                                        ${isDesktop ? 'transform group-hover:scale-110 transition-transform duration-300' : ''} 
+                                        p-4`}>
                                         {page.icon}
                                     </div>
 
@@ -118,8 +138,8 @@ export default function AIPages() {
                                     <div className="space-y-3">
                                         {page.features.map((feature) => (
                                             <div key={feature}
-                                                className="flex items-center space-x-3 text-gray-400
-                                                group-hover:text-gray-300 transition-colors duration-300"
+                                                className={`flex items-center space-x-3 text-gray-400
+                                                ${isDesktop ? 'group-hover:text-gray-300 transition-colors duration-300' : ''}`}
                                             >
                                                 <div className={`w-1.5 h-1.5 rounded-full ${page.color.replace('text', 'bg')}`} />
                                                 <span>{feature}</span>
@@ -128,7 +148,7 @@ export default function AIPages() {
                                     </div>
 
                                     <div className={`mt-8 inline-flex items-center ${page.color} 
-                                        group-hover:translate-x-2 transition-transform duration-300`}
+                                        ${isDesktop ? 'group-hover:translate-x-2 transition-transform duration-300' : ''}`}
                                     >
                                         <span className="font-semibold">Khám phá ngay</span>
                                         <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

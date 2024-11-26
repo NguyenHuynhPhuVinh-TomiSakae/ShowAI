@@ -1,80 +1,85 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { FaMobileAlt, FaRocket, FaBrain, FaCode, FaGithub, FaAndroid } from 'react-icons/fa';
+import { useMediaQuery } from 'react-responsive';
 
 const FlutterAIApp = () => {
+    const isDesktop = useMediaQuery({ minWidth: 1024 });
+
     return (
         <div className="relative bg-gradient-to-b from-[#0B1120] via-[#131B2E] to-[#0B1120] py-20 overflow-hidden">
-            {/* Background effects */}
-            <div className="absolute inset-0">
-                {/* Lưới nền */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]" />
+            {/* Background effects - chỉ hiển thị trên desktop */}
+            {isDesktop && (
+                <div className="absolute inset-0">
+                    {/* Lưới nền */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]" />
 
-                {/* Các vòng tròn gradient */}
-                <div className="absolute top-0 -left-1/4 w-1/2 h-1/2">
-                    <div className="absolute inset-0 bg-gradient-radial from-blue-500/10 via-transparent to-transparent blur-2xl" />
-                </div>
-                <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2">
-                    <div className="absolute inset-0 bg-gradient-radial from-purple-500/10 via-transparent to-transparent blur-2xl" />
-                </div>
+                    {/* Các vòng tròn gradient */}
+                    <div className="absolute top-0 -left-1/4 w-1/2 h-1/2">
+                        <div className="absolute inset-0 bg-gradient-radial from-blue-500/10 via-transparent to-transparent blur-2xl" />
+                    </div>
+                    <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2">
+                        <div className="absolute inset-0 bg-gradient-radial from-purple-500/10 via-transparent to-transparent blur-2xl" />
+                    </div>
 
-                {/* Các đường kẻ ngang */}
-                {[...Array(5)].map((_, i) => (
+                    {/* Các đường kẻ ngang */}
+                    {[...Array(5)].map((_, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -100 }}
+                            animate={{
+                                opacity: [0.1, 0.3, 0.1],
+                                x: ['-100%', '100%']
+                            }}
+                            transition={{
+                                duration: 15,
+                                delay: i * 2,
+                                repeat: Infinity,
+                                ease: "linear"
+                            }}
+                            className="absolute h-[1px] w-[200px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"
+                            style={{ top: `${20 + i * 15}%` }}
+                        />
+                    ))}
+
+                    {/* Các điểm sáng */}
+                    {[...Array(30)].map((_, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{
+                                opacity: 0,
+                                scale: 0,
+                                x: Math.random() * window.innerWidth,
+                                y: Math.random() * window.innerHeight
+                            }}
+                            animate={{
+                                opacity: [0, 1, 0],
+                                scale: [0, 1, 0],
+                            }}
+                            transition={{
+                                duration: 2 + Math.random() * 2,
+                                repeat: Infinity,
+                                delay: Math.random() * 2
+                            }}
+                            className="absolute w-1 h-1 bg-white/30 rounded-full"
+                        />
+                    ))}
+
+                    {/* Hiệu ứng quét */}
                     <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -100 }}
                         animate={{
-                            opacity: [0.1, 0.3, 0.1],
-                            x: ['-100%', '100%']
+                            opacity: [0, 0.5, 0],
+                            height: ['0%', '100%'],
                         }}
                         transition={{
-                            duration: 15,
-                            delay: i * 2,
+                            duration: 5,
                             repeat: Infinity,
                             ease: "linear"
                         }}
-                        className="absolute h-[1px] w-[200px] bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"
-                        style={{ top: `${20 + i * 15}%` }}
+                        className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/10 to-transparent"
                     />
-                ))}
-
-                {/* Các điểm sáng */}
-                {[...Array(30)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        initial={{
-                            opacity: 0,
-                            scale: 0,
-                            x: Math.random() * window.innerWidth,
-                            y: Math.random() * window.innerHeight
-                        }}
-                        animate={{
-                            opacity: [0, 1, 0],
-                            scale: [0, 1, 0],
-                        }}
-                        transition={{
-                            duration: 2 + Math.random() * 2,
-                            repeat: Infinity,
-                            delay: Math.random() * 2
-                        }}
-                        className="absolute w-1 h-1 bg-white/30 rounded-full"
-                    />
-                ))}
-
-                {/* Hiệu ứng quét */}
-                <motion.div
-                    animate={{
-                        opacity: [0, 0.5, 0],
-                        height: ['0%', '100%'],
-                    }}
-                    transition={{
-                        duration: 5,
-                        repeat: Infinity,
-                        ease: "linear"
-                    }}
-                    className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/10 to-transparent"
-                />
-            </div>
+                </div>
+            )}
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <motion.div

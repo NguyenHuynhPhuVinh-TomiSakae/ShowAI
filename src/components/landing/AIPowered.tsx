@@ -1,50 +1,36 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
-
-const useIsDesktop = () => {
-    const [isDesktop, setIsDesktop] = useState(false);
-
-    useEffect(() => {
-        const checkIsDesktop = () => {
-            setIsDesktop(window.innerWidth >= 1024);
-        };
-
-        checkIsDesktop();
-        window.addEventListener('resize', checkIsDesktop);
-
-        return () => window.removeEventListener('resize', checkIsDesktop);
-    }, []);
-
-    return isDesktop;
-};
+import { useState } from 'react';
+import { useMediaQuery } from 'react-responsive';
 
 const AIPowered = () => {
     const [activeImage, setActiveImage] = useState<number | null>(null);
-    const isDesktop = useIsDesktop();
+    const isDesktop = useMediaQuery({ minWidth: 1024 });
 
     return (
         <div className="relative bg-gradient-to-b from-[#0F172A] via-[#1E293B] to-[#0F172A] py-20 overflow-hidden">
-            {/* Background decoration nâng cao */}
-            <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute left-0 top-0 w-full h-full bg-[url('/grid.svg')] opacity-5" />
-                <div className="absolute left-0 top-0 w-full h-full">
-                    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#3E52E8]/20 to-transparent" />
-                    <div className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
-                    <div className="absolute top-2/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#3E52E8]/20 to-transparent" />
+            {/* Background decoration - chỉ hiển thị trên desktop */}
+            {isDesktop && (
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute left-0 top-0 w-full h-full bg-[url('/grid.svg')] opacity-5" />
+                    <div className="absolute left-0 top-0 w-full h-full">
+                        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#3E52E8]/20 to-transparent" />
+                        <div className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
+                        <div className="absolute top-2/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#3E52E8]/20 to-transparent" />
+                    </div>
+                    <div className="absolute -left-1/4 top-1/4 w-1/2 h-1/2 bg-blue-500/5 rounded-full blur-3xl animate-pulse" />
+                    <div className="absolute -right-1/4 -bottom-1/4 w-1/2 h-1/2 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
                 </div>
-                <div className="absolute -left-1/4 top-1/4 w-1/2 h-1/2 bg-blue-500/5 rounded-full blur-3xl animate-pulse" />
-                <div className="absolute -right-1/4 -bottom-1/4 w-1/2 h-1/2 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
-            </div>
+            )}
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="flex flex-col lg:flex-row items-center gap-12">
-                    {/* Nội dung bên trái - thêm hiệu ứng code */}
+                    {/* Nội dung bên trái */}
                     <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
+                        initial={isDesktop ? { opacity: 0, x: -50 } : { opacity: 0 }}
+                        whileInView={isDesktop ? { opacity: 1, x: 0 } : { opacity: 1 }}
                         viewport={{ once: false, amount: 0.3 }}
-                        transition={{ duration: 0.5 }}
+                        transition={{ duration: isDesktop ? 0.5 : 0.3 }}
                         className="lg:w-1/2 space-y-6"
                     >
                         <div className="relative">
@@ -70,8 +56,6 @@ const AIPowered = () => {
                         </div>
 
                         <div className="space-y-4 relative">
-                            {/* Code-like features */}
-                            <div className="absolute -left-4 h-full w-px bg-gradient-to-b from-[#3E52E8] to-transparent" />
                             {[
                                 {
                                     icon: "🤖",
@@ -97,9 +81,9 @@ const AIPowered = () => {
                             ].map((item, index) => (
                                 <motion.div
                                     key={index}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.2 }}
+                                    initial={isDesktop ? { opacity: 0, x: -20 } : { opacity: 0 }}
+                                    whileInView={isDesktop ? { opacity: 1, x: 0 } : { opacity: 1 }}
+                                    transition={{ delay: isDesktop ? index * 0.2 : 0.1 }}
                                     className="group relative"
                                     onMouseEnter={() => {
                                         if (isDesktop) {
@@ -112,19 +96,19 @@ const AIPowered = () => {
                                         }
                                     }}
                                 >
-                                    {/* Đường kẻ dẫn */}
-                                    {activeImage === index && (
+                                    {/* Đường kẻ dẫn - chỉ hiển thị trên desktop */}
+                                    {isDesktop && activeImage === index && (
                                         <div className="absolute right-0 top-1/2 w-24 h-px bg-gradient-to-r from-[#3E52E8] to-purple-500" />
                                     )}
 
-                                    <div className="bg-gradient-to-r from-[#1E293B]/90 to-[#0F172A]/90 
-                                             rounded-lg p-4 border border-[#3E52E8]/30 hover:border-[#3E52E8]/70
-                                             transition-all duration-300 hover:bg-[#1E293B]
-                                             shadow-lg shadow-[#0F172A]/50">
+                                    <div className={`bg-gradient-to-r from-[#1E293B]/90 to-[#0F172A]/90 
+                                             rounded-lg p-4 border border-[#3E52E8]/30 
+                                             ${isDesktop ? 'hover:border-[#3E52E8]/70 hover:bg-[#1E293B] transition-all duration-300' : ''}
+                                             shadow-lg shadow-[#0F172A]/50`}>
                                         <div className="flex items-start gap-3">
-                                            <div className="w-12 h-12 rounded-lg bg-[#3E52E8]/20 flex items-center justify-center flex-shrink-0
-                                                          group-hover:bg-[#3E52E8]/30 transition-colors duration-300
-                                                          border border-[#3E52E8]/30 group-hover:border-[#3E52E8]/50">
+                                            <div className={`w-12 h-12 rounded-lg bg-[#3E52E8]/20 flex items-center justify-center flex-shrink-0
+                                                          border border-[#3E52E8]/30 
+                                                          ${isDesktop ? 'group-hover:bg-[#3E52E8]/30 group-hover:border-[#3E52E8]/50 transition-colors duration-300' : ''}`}>
                                                 <span className="text-2xl">{item.icon}</span>
                                             </div>
                                             <div className="space-y-2">
@@ -145,8 +129,8 @@ const AIPowered = () => {
                                         </div>
                                     </div>
 
-                                    {/* Khung hình ảnh preview */}
-                                    {activeImage === index && (
+                                    {/* Video preview - chỉ hiển thị trên desktop */}
+                                    {isDesktop && activeImage === index && (
                                         <div className="absolute left-[calc(100%+6rem)] top-1/2 -translate-y-1/2 z-50 hidden lg:block">
                                             <motion.div
                                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -169,12 +153,12 @@ const AIPowered = () => {
                         </div>
                     </motion.div>
 
-                    {/* Phần hình ảnh bên phải - thêm hiệu ứng code editor */}
+                    {/* Phần hình ảnh bên phải */}
                     <motion.div
-                        initial={{ opacity: 0, x: 50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
+                        initial={isDesktop ? { opacity: 0, x: 50 } : { opacity: 0 }}
+                        whileInView={isDesktop ? { opacity: 1, x: 0 } : { opacity: 1 }}
                         viewport={{ once: false, amount: 0.3 }}
-                        transition={{ duration: 0.5 }}
+                        transition={{ duration: isDesktop ? 0.5 : 0.3 }}
                         className="lg:w-1/2"
                     >
                         <div className={`relative group transition-opacity duration-300 ${activeImage !== null ? 'opacity-0' : 'opacity-100'}`}>
@@ -189,20 +173,22 @@ const AIPowered = () => {
                                 <span className="text-xs text-gray-400 ml-2">cursor.ai</span>
                             </div>
 
-                            {/* Hiệu ứng glow */}
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 
+                            {/* Hiệu ứng glow - chỉ hiển thị trên desktop */}
+                            {isDesktop && (
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 
                                           rounded-lg blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
+                            )}
 
                             {/* Khung chứa ảnh */}
-                            <div className="relative bg-[#1E293B] rounded-lg shadow-xl mt-8 
-                                            border border-[#3E52E8]/30 group-hover:border-[#3E52E8]/70
-                                            transition-all duration-300">
+                            <div className={`relative bg-[#1E293B] rounded-lg shadow-xl mt-8 
+                                            border border-[#3E52E8]/30 
+                                            ${isDesktop ? 'group-hover:border-[#3E52E8]/70 transition-all duration-300' : ''}`}>
                                 <Image
                                     src="/cursor.png"
                                     alt="Cursor IDE Demo"
                                     width={800}
                                     height={500}
-                                    className="rounded-lg opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+                                    className={`rounded-lg ${isDesktop ? 'opacity-90 group-hover:opacity-100 transition-opacity duration-300' : ''}`}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-tr from-[#0F172A]/60 via-transparent to-transparent rounded-lg"></div>
                             </div>

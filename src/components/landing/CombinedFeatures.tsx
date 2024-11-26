@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { FaSearch, FaStar, FaUsers, FaRobot, FaBrain, FaCode, FaImage, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { useMediaQuery } from 'react-responsive';
 
 const features = [
     {
@@ -58,30 +59,47 @@ const aiServices = [
 
 export default function CombinedFeatures() {
     const [activeSection, setActiveSection] = useState<'features' | 'integration'>('features');
+    const isDesktop = useMediaQuery({ minWidth: 1024 });
+
+    const getAnimationConfig = (index: number) => {
+        if (!isDesktop) {
+            return {
+                initial: { opacity: 0 },
+                whileInView: { opacity: 1 },
+                transition: { duration: 0.3 }
+            };
+        }
+
+        return {
+            initial: { opacity: 0, y: 50 },
+            whileInView: { opacity: 1, y: 0 },
+            viewport: { once: false, amount: 0.3 },
+            transition: {
+                duration: 0.5,
+                delay: index * 0.1,
+                type: "spring",
+                stiffness: 50
+            }
+        };
+    };
 
     const FeaturesContent = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
                 <motion.div
                     key={index}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
-                    transition={{
-                        duration: 0.5,
-                        delay: index * 0.1,
-                        type: "spring",
-                        stiffness: 50
-                    }}
+                    {...getAnimationConfig(index)}
                     className="group relative bg-gradient-to-br from-[#1E293B]/80 to-[#0F172A]/80 
                              backdrop-blur-sm rounded-xl p-6 border border-[#2A3284]/50
                              hover:border-[#3E52E8]/50 transition-all duration-300
                              hover:shadow-lg hover:shadow-[#3E52E8]/20"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#3E52E8]/5 to-transparent 
-                                opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+                    {isDesktop && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#3E52E8]/5 to-transparent 
+                                    opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+                    )}
                     <div className="relative">
-                        <div className="text-[#3E52E8] mb-4 transform group-hover:scale-110 transition-transform duration-300">
+                        <div className={`text-[#3E52E8] mb-4 ${isDesktop ? 'transform group-hover:scale-110 transition-transform duration-300' : ''}`}>
                             {feature.icon}
                         </div>
                         <h3 className="text-xl font-semibold text-gray-100 mb-2">
@@ -107,24 +125,18 @@ export default function CombinedFeatures() {
             {aiServices.map((service, index) => (
                 <motion.div
                     key={service.name}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
-                    transition={{
-                        duration: 0.5,
-                        delay: index * 0.1,
-                        type: "spring",
-                        stiffness: 50
-                    }}
+                    {...getAnimationConfig(index)}
                     className="group relative bg-gradient-to-br from-[#1E293B]/95 to-[#0F172A]/95 
                            backdrop-blur-sm rounded-xl p-6 border border-[#2A3284]/50
                            hover:border-[#3E52E8]/50 transition-all duration-300
                            hover:shadow-lg hover:shadow-[#3E52E8]/20"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#3E52E8]/5 to-transparent 
-                              opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+                    {isDesktop && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#3E52E8]/5 to-transparent 
+                                  opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+                    )}
                     <div className="relative">
-                        <div className="text-[#3E52E8] mb-4 transform group-hover:scale-110 transition-transform duration-300">
+                        <div className={`text-[#3E52E8] mb-4 ${isDesktop ? 'transform group-hover:scale-110 transition-transform duration-300' : ''}`}>
                             {service.icon}
                         </div>
                         <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-blue-400">{service.name}</h3>
@@ -147,14 +159,16 @@ export default function CombinedFeatures() {
         <div className="relative bg-transparent py-12 overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="relative bg-gradient-to-br from-[#1E293B]/90 to-[#0F172A]/90 rounded-2xl p-8 backdrop-blur-sm border border-[#2A3284]/30 overflow-hidden">
-                    <div className="absolute inset-0 overflow-hidden">
-                        <div className="absolute left-1/4 top-0 w-1/2 h-1/2 bg-[#3E52E8]/5 rounded-full blur-3xl" />
-                        <div className="absolute -right-1/4 bottom-0 w-1/2 h-1/2 bg-[#2A3284]/5 rounded-full blur-3xl" />
-                    </div>
+                    {isDesktop && (
+                        <div className="absolute inset-0 overflow-hidden">
+                            <div className="absolute left-1/4 top-0 w-1/2 h-1/2 bg-[#3E52E8]/5 rounded-full blur-3xl" />
+                            <div className="absolute -right-1/4 bottom-0 w-1/2 h-1/2 bg-[#2A3284]/5 rounded-full blur-3xl" />
+                        </div>
+                    )}
 
                     <div className="relative z-10">
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: isDesktop ? 20 : 0 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: false, amount: 0.3 }}
                             transition={{ duration: 0.5 }}
@@ -176,10 +190,10 @@ export default function CombinedFeatures() {
                                 {activeSection === 'features' && (
                                     <motion.div
                                         key="features"
-                                        initial={{ x: -100, opacity: 0 }}
+                                        initial={{ x: isDesktop ? -100 : -50, opacity: 0 }}
                                         animate={{ x: 0, opacity: 1 }}
-                                        exit={{ x: -100, opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
+                                        exit={{ x: isDesktop ? -100 : -50, opacity: 0 }}
+                                        transition={{ duration: isDesktop ? 0.3 : 0.2 }}
                                         className="w-full"
                                     >
                                         <FeaturesContent />
@@ -189,10 +203,10 @@ export default function CombinedFeatures() {
                                 {activeSection === 'integration' && (
                                     <motion.div
                                         key="integration"
-                                        initial={{ x: 100, opacity: 0 }}
+                                        initial={{ x: isDesktop ? 100 : 50, opacity: 0 }}
                                         animate={{ x: 0, opacity: 1 }}
-                                        exit={{ x: 100, opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
+                                        exit={{ x: isDesktop ? 100 : 50, opacity: 0 }}
+                                        transition={{ duration: isDesktop ? 0.3 : 0.2 }}
                                         className="w-full"
                                     >
                                         <IntegrationContent />
