@@ -33,6 +33,14 @@ export const AI_MODELS: AIModel[] = [
         systemPrompt: "Bạn là một trợ lý AI được xây dựng trên nền tảng Qwen 2.5. Hãy trả lời bằng tiếng Việt và hỗ trợ người dùng một cách hiệu quả."
     },
     {
+        id: 'qwen-72b-v2',
+        name: 'Qwen 2 72B',
+        description: 'Mô hình lớn nhất từ Alibaba, ngang tầm với Meta Llama 3 và tốt nhất cho tiếng Trung. Hỗ trợ 128k token.',
+        icon: '🌐',
+        apiModel: 'hf:Qwen/Qwen2-72B-Instruct',
+        systemPrompt: "Bạn là một trợ lý AI được xây dựng trên Qwen 2. Hãy trả lời bằng tiếng Việt và hỗ trợ người dùng hiệu quả."
+    },
+    {
         id: 'gemma-27b',
         name: 'Google Gemma 27B',
         description: 'Mô hình lớn nhất từ Google, đứng đầu bảng xếp hạng Chatbot Arena. Hỗ trợ 8k token.',
@@ -161,19 +169,27 @@ export const AI_MODELS: AIModel[] = [
         systemPrompt: "Bạn là một trợ lý AI được xây dựng trên Nous Hermes 2. Hãy trả lời bằng tiếng Việt và cung cấp thông tin chính xác."
     },
     {
-        id: 'qwen-72b-v2',
-        name: 'Qwen 2 72B',
-        description: 'Mô hình lớn nhất từ Alibaba, ngang tầm với Meta Llama 3 và tốt nhất cho tiếng Trung. Hỗ trợ 128k token.',
-        icon: '🌐',
-        apiModel: 'hf:Qwen/Qwen2-72B-Instruct',
-        systemPrompt: "Bạn là một trợ lý AI được xây dựng trên Qwen 2. Hãy trả lời bằng tiếng Việt và hỗ trợ người dùng hiệu quả."
-    },
-    {
         id: 'solar',
         name: 'SOLAR 10.7B',
         description: 'Mô hình AI mạnh mẽ từ Upstage, vượt trội so với các mô hình 30B. Hỗ trợ 4k token.',
         icon: '☀️',
         apiModel: 'hf:upstage/SOLAR-10.7B-Instruct-v1.0',
         systemPrompt: "Bạn là một trợ lý AI được xây dựng trên SOLAR 10.7B. Hãy trả lời bằng tiếng Việt và hỗ trợ người dùng hiệu quả."
+    },
+    {
+        id: 'deepseek-v2',
+        name: 'DeepSeek V2.5',
+        description: 'Mô hình AI tiên tiến từ DeepSeek, được huấn luyện với dữ liệu chất lượng cao. Hỗ trợ 32k token.',
+        icon: '🔍',
+        apiModel: 'hf:deepseek-ai/DeepSeek-V2.5',
+        systemPrompt: "Bạn là một trợ lý AI được xây dựng trên DeepSeek V2.5. Hãy trả lời bằng tiếng Việt và hỗ trợ người dùng một cách hiệu quả."
+    },
+    {
+        id: 'pantheon-rp',
+        name: 'Pantheon RP 22B',
+        description: 'Mô hình roleplay 22B từ Gryphe, được tối ưu hóa cho việc tương tác và sáng tạo nội dung. Hỗ trợ 4k token.',
+        icon: '🎭',
+        apiModel: 'hf:Gryphe/Pantheon-RP-Pure-1.6.2-22b-Small',
+        systemPrompt: "Bạn là một trợ lý AI sáng tạo được xây dựng trên Pantheon RP. Hãy trả lời bằng tiếng Việt và tạo nội dung phong phú."
     }
 ];
