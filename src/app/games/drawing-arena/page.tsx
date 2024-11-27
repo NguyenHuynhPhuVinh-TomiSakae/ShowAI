@@ -39,7 +39,7 @@ export default function DrawingArena() {
     // Hàm tạo chủ đề từ Gemini
     const generateTopic = async () => {
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini3');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success) {
                 throw new Error('Không lấy được API key');

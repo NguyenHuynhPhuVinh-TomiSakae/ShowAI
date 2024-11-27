@@ -36,7 +36,7 @@ const AdditionalInfoButton: React.FC<AdditionalInfoButtonProps> = ({
         setIsPaused(false); // Thêm dòng này để reset trạng thái tạm dừng
         let apiKey;
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini9');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success) {
                 throw new Error('Failed to get API key');

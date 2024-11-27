@@ -240,7 +240,7 @@ TUYỆT ĐỐI KHÔNG sử dụng bất kỳ ngôn ngữ nào ngoài tiếng Vi�
     // Thêm hàm mới để tối ưu phản hồi bằng Gemini
     const optimizeWithGemini = async (rawResponse: string) => {
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini7');
             const apiKeyData = await apiKeyResponse.json();
 
             if (!apiKeyData.success) {
@@ -294,7 +294,7 @@ ${rawResponse}`;
     const generateWithAI = async (retryCount = 0) => {
         setIsGenerating(true);
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini7');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success) {
                 throw new Error('Không lấy được khóa API');

@@ -126,7 +126,7 @@ const AIChart: React.FC<AIChartProps> = ({ websiteName, description, keyFeatures
         setIsPaused(false);
 
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini11');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success) {
                 throw new Error('Không lấy được khóa API');

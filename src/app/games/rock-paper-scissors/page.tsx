@@ -80,7 +80,7 @@ export default function RockPaperScissorsGame() {
     const getAIChoice = async (): Promise<Choice> => {
         setIsLoading(true);
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini4');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success) {
                 throw new Error('Không lấy được khóa API');

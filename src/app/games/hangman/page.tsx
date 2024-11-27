@@ -137,7 +137,7 @@ export default function HangmanGame() {
 
     const generateHintAndExplanation = async (word: string) => {
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini3');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success) {
                 throw new Error('Không lấy được khóa API');

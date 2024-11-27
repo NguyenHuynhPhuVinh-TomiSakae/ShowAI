@@ -69,7 +69,7 @@ export default function StudyPage() {
         setMatchingAnswers({});
 
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini8');
             const apiKeyData = await apiKeyResponse.json();
 
             if (!apiKeyData.success) {

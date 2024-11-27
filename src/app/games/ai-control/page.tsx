@@ -184,7 +184,7 @@ export default function AIControlGame() {
         const initializeGame = async () => {
             setIsLoading(true);
             try {
-                const apiKeyResponse = await fetch('/api/Gemini');
+                const apiKeyResponse = await fetch('/api/Gemini2');
                 const apiKeyData = await apiKeyResponse.json();
                 if (!apiKeyData.success) throw new Error('Không lấy được khóa API');
 
@@ -311,7 +311,7 @@ export default function AIControlGame() {
     // Cập nhật hàm checkResponseMatchesGoal
     const checkResponseMatchesGoal = async (response: string, goal: string): Promise<boolean> => {
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini2');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success || !apiKeyData.apiKey) {
                 throw new Error('Không lấy được API key');

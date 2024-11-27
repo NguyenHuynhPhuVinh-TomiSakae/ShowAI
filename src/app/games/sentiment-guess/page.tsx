@@ -57,7 +57,7 @@ export default function SentimentGuessGame() {
         setResult('');
 
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini6');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success) {
                 throw new Error('Không lấy được khóa API');

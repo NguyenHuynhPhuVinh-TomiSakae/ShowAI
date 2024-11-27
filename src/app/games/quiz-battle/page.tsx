@@ -51,7 +51,7 @@ export default function QuizBattle() {
 
     const generateQuestions = async (retryCount = 0) => {
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini4');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success || !apiKeyData.apiKey) {
                 throw new Error('API key không hợp lệ');

@@ -70,7 +70,7 @@ const AIButton: React.FC<AIButtonProps> = ({ websiteName, description, keyFeatur
         setAIModalTitle(title);
 
         try {
-            const response = await fetch('/api/Gemini');
+            const response = await fetch('/api/Gemini10');
             const apiKeyData = await response.json();
             if (!apiKeyData.success) throw new Error('Failed to get API key');
 

@@ -81,7 +81,7 @@ const AICompare: React.FC<AICompareProps> = ({
         try {
             let apiKey;
             try {
-                const apiKeyResponse = await fetch('/api/Gemini');
+                const apiKeyResponse = await fetch('/api/Gemini12');
                 const apiKeyData = await apiKeyResponse.json();
                 if (!apiKeyData.success) {
                     throw new Error('Không lấy được khóa API');

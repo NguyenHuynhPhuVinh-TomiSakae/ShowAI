@@ -8,7 +8,7 @@ const useInputValidation = () => {
     useEffect(() => {
         const fetchApiKey = async () => {
             try {
-                const response = await fetch('/api/Gemini');
+                const response = await fetch('/api/Gemini11');
                 const data = await response.json();
                 if (data.success && data.apiKey) {
                     setGenAI(new GoogleGenerativeAI(data.apiKey));

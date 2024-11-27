@@ -79,7 +79,7 @@ export default function WordMatchingGame() {
     // Thêm component màn hình bắt đầu
     const generateCombination = async (word1: string, word2: string) => {
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini6');
             const apiKeyData = await apiKeyResponse.json();
             if (!apiKeyData.success) {
                 throw new Error('Không lấy được khóa API');

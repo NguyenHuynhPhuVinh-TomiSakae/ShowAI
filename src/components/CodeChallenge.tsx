@@ -38,7 +38,7 @@ export default function CodeChallenge() {
         setIsGenerating(true);
 
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini9');
             const apiKeyData = await apiKeyResponse.json();
 
             if (!apiKeyData.success) {
@@ -104,7 +104,7 @@ export default function CodeChallenge() {
     const handleEvaluate = async () => {
         setIsEvaluating(true);
         try {
-            const apiKeyResponse = await fetch('/api/Gemini');
+            const apiKeyResponse = await fetch('/api/Gemini10');
             const apiKeyData = await apiKeyResponse.json();
 
             const genAI = new GoogleGenerativeAI(apiKeyData.apiKey);
