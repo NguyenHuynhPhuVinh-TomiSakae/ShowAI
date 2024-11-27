@@ -31,6 +31,7 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
     const [toggleListening, setToggleListening] = useState(() => () => { });
     const [isLoli, setIsLoli] = useState(false);
     const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+    const [currentAudioSource, setCurrentAudioSource] = useState<AudioBufferSourceNode | null>(null);
 
     useEffect(() => {
         // Khởi tạo Web Speech API
@@ -107,21 +108,44 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
 
                             if (audioContext) {
                                 try {
-                                    // Log để debug
-                                    console.log('Audio data length:', arrayBuffer.byteLength);
-                                    console.log('Content-Type:', voicevoxResponse.headers.get('content-type'));
+                                    // Dừng audio source hiện tại nếu có
+                                    if (currentAudioSource) {
+                                        currentAudioSource.stop();
+                                        setCurrentAudioSource(null);
+                                    }
 
-                                    await audioContext.resume();
-                                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer).catch(e => {
-                                        console.error('Decode error:', e);
-                                        throw new Error('Không thể decode audio data');
-                                    });
+                                    // Đảm bảo audioContext được resume trước khi xử lý
+                                    if (audioContext.state === 'suspended') {
+                                        await audioContext.resume();
+                                    }
 
+                                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
                                     const source = audioContext.createBufferSource();
                                     source.buffer = audioBuffer;
-                                    source.connect(audioContext.destination);
+
+                                    // Thêm compressor để tối ưu âm thanh
+                                    const compressor = audioContext.createDynamicsCompressor();
+                                    compressor.threshold.value = -50;
+                                    compressor.knee.value = 40;
+                                    compressor.ratio.value = 12;
+                                    compressor.attack.value = 0;
+                                    compressor.release.value = 0.25;
+
+                                    // Kết nối các node audio
+                                    source.connect(compressor);
+                                    compressor.connect(audioContext.destination);
+
+                                    // Lưu source hiện tại
+                                    setCurrentAudioSource(source);
+
                                     source.start(0);
                                     setIsPlaying(true);
+
+                                    // Cleanup khi audio kết thúc
+                                    source.onended = () => {
+                                        setIsPlaying(false);
+                                        setCurrentAudioSource(null);
+                                    };
                                 } catch (decodeError) {
                                     console.error('Lỗi decode:', decodeError);
                                     throw new Error('Lỗi xử lý audio');
