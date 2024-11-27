@@ -87,11 +87,12 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
 
                     if (isLoli) {
                         // Tách phản hồi thành tiếng Nhật và tiếng Việt
-                        const [japaneseText, vietnameseText] = aiText.split('\n');
+                        const [japaneseText, vietnameseText] = aiText.split('\n')
+                            .map(text => text.replace(/\[.*?\]\s*/g, '')); // Loại bỏ [...] và khoảng trắng sau nó
                         setResponse(`${japaneseText}\n${vietnameseText}`);
 
                         try {
-                            // Sử dụng text tiếng Nhật cho VOICEVOX
+                            // Sử dụng text tiếng Nhật đã được làm sạch cho VOICEVOX
                             const voicevoxResponse = await fetch('/api/voicevox', {
                                 method: 'POST',
                                 headers: {
@@ -312,8 +313,8 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
                                     <div className="w-full bg-[#4ECCA3]/10 p-6 rounded-xl border border-[#4ECCA3]/20">
                                         {isLoli ? (
                                             response.split('\n').map((text, index) => (
-                                                <p key={index} className={`text-lg ${index === 0 ? 'text-yellow-400 mb-2' : 'text-[#4ECCA3]'}`}>
-                                                    {text}
+                                                <p key={index} className="text-[#4ECCA3] text-lg">
+                                                    {index === 1 ? text : ''}
                                                 </p>
                                             ))
                                         ) : (
