@@ -1,20 +1,27 @@
 import OpenAI from "openai";
 import { NextResponse } from 'next/server';
+import { AI_MODELS } from '@/components/ModelList';
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
+        const selectedModel = AI_MODELS.find(model => model.id === body.modelId);
+
+        if (!selectedModel) {
+            throw new Error('Không tìm thấy mô hình');
+        }
+
         const client = new OpenAI({
             apiKey: process.env.GLHF_API_KEY,
             baseURL: "https://glhf.chat/api/openai/v1",
         });
 
         const completion = await client.chat.completions.create({
-            model: "hf:AIDC-AI/Marco-o1",
+            model: selectedModel.apiModel,
             messages: [
                 {
                     role: "system",
-                    content: "Bạn là Marco-o1, một trợ lý AI thông minh và thân thiện. Hãy luôn trả lời bằng tiếng Việt và giúp đỡ người dùng một cách tốt nhất."
+                    content: selectedModel.systemPrompt
                 },
                 {
                     role: "user",

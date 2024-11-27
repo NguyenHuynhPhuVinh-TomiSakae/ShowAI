@@ -41,6 +41,7 @@ interface ChatInterfaceProps {
     editMessage: (index: number, newText: string) => void;
     setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
     children?: React.ReactNode;
+    extraButton?: React.ReactNode;
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
@@ -64,6 +65,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     editMessage,
     setMessages,
     children,
+    extraButton,
 }) => {
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -200,10 +202,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                                         {/* Message content */}
                                                         <div
                                                             className={`p-3 rounded-xl shadow-md ${message.isUser
-                                                                    ? 'bg-blue-600 text-white'
-                                                                    : message.isSampleQuestion
-                                                                        ? 'bg-[#1E293B] text-gray-100 hover:bg-[#2E3B52] cursor-pointer transition-colors duration-200'
-                                                                        : 'bg-[#1E293B] text-gray-100'
+                                                                ? 'bg-blue-600 text-white'
+                                                                : message.isSampleQuestion
+                                                                    ? 'bg-[#1E293B] text-gray-100 hover:bg-[#2E3B52] cursor-pointer transition-colors duration-200'
+                                                                    : 'bg-[#1E293B] text-gray-100'
                                                                 } break-words`}
                                                             onClick={() => message.isSampleQuestion ? handleSampleQuestionClick(message.text) : null}
                                                         >
@@ -429,46 +431,51 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                     <div ref={messagesEndRef} />
                                 </div>
                                 <form onSubmit={handleSubmit} className="p-4 border-t border-white/10">
-                                    <div className="flex space-x-2">
-                                        <input
-                                            type="text"
-                                            value={input}
-                                            onChange={(e) => setInput(e.target.value)}
-                                            onKeyDown={handleKeyDown}
-                                            className="flex-grow p-3 rounded-xl bg-[#1E293B] text-white placeholder-gray-400 
-                                             border border-white/10 focus:border-[#3E52E8] focus:ring-1 focus:ring-[#3E52E8] 
-                                             transition-all duration-200 outline-none"
-                                            placeholder={isLoadingAIWebsites ? "Đang tải dữ liệu..." : "Nhập tin nhắn của bạn..."}
-                                            disabled={isLoading || isTyping || isLoadingAIWebsites}
-                                        />
-                                        {children}
-                                        {isLoadingAIWebsites ? (
-                                            <button
-                                                type="button"
-                                                className="bg-gray-500 text-white px-2 sm:px-3 py-2 rounded"
-                                                disabled
-                                            >
-                                                <FaSpinner className="animate-spin h-4 w-4 sm:h-5 sm:w-5" />
-                                            </button>
-                                        ) : isTyping ? (
-                                            <button
-                                                type="button"
-                                                className="bg-red-500 text-white px-2 sm:px-3 py-2 rounded"
-                                                onClick={stopTyping}
-                                            >
-                                                <IoStop className="h-4 w-4 sm:h-5 sm:w-5" />
-                                            </button>
-                                        ) : (
-                                            <button
-                                                type="submit"
-                                                className="p-3 rounded-xl bg-[#3E52E8] text-white hover:bg-[#2E42D8] 
-                                                 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed
-                                                 disabled:hover:bg-[#3E52E8]"
+                                    <div className="flex flex-wrap gap-2">
+                                        {extraButton}
+                                        <div className="flex-1 min-w-[200px]">
+                                            <input
+                                                type="text"
+                                                value={input}
+                                                onChange={(e) => setInput(e.target.value)}
+                                                onKeyDown={handleKeyDown}
+                                                className="w-full p-3 rounded-xl bg-[#1E293B] text-white placeholder-gray-400 
+                                                 border border-white/10 focus:border-[#3E52E8] focus:ring-1 focus:ring-[#3E52E8] 
+                                                 transition-all duration-200 outline-none"
+                                                placeholder={isLoadingAIWebsites ? "Đang tải dữ liệu..." : "Nhập tin nhắn của bạn..."}
                                                 disabled={isLoading || isTyping || isLoadingAIWebsites}
-                                            >
-                                                <IoSend className="h-5 w-5" />
-                                            </button>
-                                        )}
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {children}
+                                            {isLoadingAIWebsites ? (
+                                                <button
+                                                    type="button"
+                                                    className="bg-gray-500 text-white px-2 sm:px-3 py-2 rounded"
+                                                    disabled
+                                                >
+                                                    <FaSpinner className="animate-spin h-4 w-4 sm:h-5 sm:w-5" />
+                                                </button>
+                                            ) : isTyping ? (
+                                                <button
+                                                    type="button"
+                                                    className="bg-red-500 text-white px-2 sm:px-3 py-2 rounded"
+                                                    onClick={stopTyping}
+                                                >
+                                                    <IoStop className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="submit"
+                                                    className="p-3 rounded-xl bg-[#3E52E8] text-white hover:bg-[#2E42D8] 
+                                                     transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+                                                     disabled:hover:bg-[#3E52E8]"
+                                                    disabled={isLoading || isTyping || isLoadingAIWebsites}
+                                                >
+                                                    <IoSend className="h-5 w-5" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </form>
                             </div>

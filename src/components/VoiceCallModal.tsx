@@ -247,6 +247,22 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
         setIsLoli(!isLoli);
     };
 
+    // Thêm useEffect để xử lý việc khóa cuộn
+    useEffect(() => {
+        if (isOpen) {
+            // Khóa cuộn khi modal mở
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Cho phép cuộn khi modal đóng
+            document.body.style.overflow = 'unset';
+        }
+
+        // Cleanup function
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     return (
         <AnimatePresence>
             {isOpen && (

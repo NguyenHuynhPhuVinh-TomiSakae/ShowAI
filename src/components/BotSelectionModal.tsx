@@ -111,9 +111,9 @@ const BotSelectionModal: React.FC<BotSelectionModalProps> = ({ isOpen, onClose, 
                                           bg-gradient-to-br from-purple-500 to-pink-500 rounded-full">
                                 <FaRobot className="h-8 w-8 text-white" />
                             </div>
-                            <span className="font-medium text-white">Marco-o1</span>
+                            <span className="font-medium text-white">GLHF</span>
                             <span className="text-sm text-gray-400 mt-2 text-center">
-                                AI trợ lý thông minh
+                                Tổng hợp nhiều mô hình AI
                             </span>
                         </motion.button>
                     </div>

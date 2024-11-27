@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ChatInterface from './ChatInterface';
 import VoiceSearch from './VoiceSearch';
+import ModelSelectionModal from './ModelSelectionModal';
+import { AI_MODELS } from './ModelList';
 
 interface Message {
     text: string;
@@ -24,6 +26,8 @@ const MarcoChat: React.FC<MarcoChatProps> = ({ isOpen, onClose, initialInput = '
     const [isExpanded, setIsExpanded] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const typewriterRef = useRef<NodeJS.Timeout | null>(null);
+    const [isModelSelectionOpen, setIsModelSelectionOpen] = useState(false);
+    const [selectedModel, setSelectedModel] = useState<string>('marco');
 
     const sampleQuestions = [
         "Bạn có thể giúp tôi viết code không?",
@@ -54,6 +58,18 @@ const MarcoChat: React.FC<MarcoChatProps> = ({ isOpen, onClose, initialInput = '
         }
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -97,7 +113,7 @@ const MarcoChat: React.FC<MarcoChatProps> = ({ isOpen, onClose, initialInput = '
     const handleSubmit = async (e: React.FormEvent, overrideInput?: string) => {
         e.preventDefault();
         const messageText = overrideInput || input;
-        if (!messageText.trim() || isTyping) return;
+        if (!messageText.trim() || isTyping || !selectedModel) return;
 
         setIsLoading(true);
         const newMessage = { text: messageText, isUser: true };
@@ -110,7 +126,10 @@ const MarcoChat: React.FC<MarcoChatProps> = ({ isOpen, onClose, initialInput = '
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: messageText }),
+                body: JSON.stringify({
+                    message: messageText,
+                    modelId: selectedModel
+                }),
             });
 
             if (!response.ok) {
@@ -163,35 +182,62 @@ const MarcoChat: React.FC<MarcoChatProps> = ({ isOpen, onClose, initialInput = '
         setInput('');
     };
 
-    return (
-        <ChatInterface
-            isOpen={isOpen}
-            onClose={onClose}
-            messages={messages}
-            typingText={typingText}
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            isTyping={isTyping}
-            isExpanded={isExpanded}
-            toggleExpand={toggleExpand}
-            handleClearMessages={handleClearMessages}
-            stopTyping={stopTyping}
-            handleSampleQuestionClick={handleSampleQuestionClick}
-            messagesEndRef={messagesEndRef}
-            regenerateResponse={regenerateResponse}
-            editMessage={editMessage}
-            setMessages={setMessages}
-            isLoadingAIWebsites={false}
+    const handleModelSelection = (modelId: string) => {
+        setSelectedModel(modelId);
+        setIsModelSelectionOpen(false);
+    };
+
+    const ModelSwitchButton = () => (
+        <button
+            onClick={() => setIsModelSelectionOpen(true)}
+            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg 
+                     bg-[#1E293B] hover:bg-[#2D3B4E] transition-colors text-sm text-white/90"
         >
-            <VoiceSearch
-                onTranscript={handleVoiceInput}
-                onClearInput={handleClearInput}
-                className="ml-2"
-                isGemini={false}
+            <span>{AI_MODELS.find(m => m.id === selectedModel)?.name || 'Chọn mô hình'}</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+    );
+
+    return (
+        <>
+            <ModelSelectionModal
+                isOpen={isModelSelectionOpen}
+                onClose={() => setIsModelSelectionOpen(false)}
+                onSelectModel={handleModelSelection}
             />
-        </ChatInterface>
+
+            <ChatInterface
+                isOpen={isOpen}
+                onClose={onClose}
+                messages={messages}
+                typingText={typingText}
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+                isTyping={isTyping}
+                isExpanded={isExpanded}
+                toggleExpand={toggleExpand}
+                handleClearMessages={handleClearMessages}
+                stopTyping={stopTyping}
+                handleSampleQuestionClick={handleSampleQuestionClick}
+                messagesEndRef={messagesEndRef}
+                regenerateResponse={regenerateResponse}
+                editMessage={editMessage}
+                setMessages={setMessages}
+                isLoadingAIWebsites={false}
+                extraButton={<ModelSwitchButton />}
+            >
+                <VoiceSearch
+                    onTranscript={handleVoiceInput}
+                    onClearInput={handleClearInput}
+                    className="ml-2"
+                    isGemini={false}
+                />
+            </ChatInterface>
+        </>
     );
 };
 

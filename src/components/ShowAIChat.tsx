@@ -62,6 +62,18 @@ const ShowAIChat: React.FC<ShowAIChatProps> = ({ isOpen, onClose, initialInput =
         scrollToBottom();
     }, [messages]);
 
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     const stopTyping = () => {
         if (typewriterRef.current) {
             clearTimeout(typewriterRef.current);
