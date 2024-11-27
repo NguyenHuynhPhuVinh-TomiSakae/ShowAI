@@ -45,9 +45,9 @@ const aiServices = [
     },
     {
         icon: <FaImage className="w-8 h-8" />,
-        name: 'Flux',
-        description: 'Công nghệ tạo ảnh AI thông minh và dễ sử dụng',
-        features: ['Tạo ảnh từ văn bản', 'Chỉnh sửa ảnh AI', 'Tạo biến thể ảnh']
+        name: 'Novita',
+        description: 'Nền tảng tạo ảnh AI tiên tiến với đa dạng mô hình từ Stable Diffusion, hỗ trợ nhiều phong cách và tính năng độc đáo',
+        features: ['Đa dạng mô hình AI', 'Tối ưu cho anime/manga', 'Tạo ảnh chất lượng cao']
     },
     {
         icon: <FaRobot className="w-8 h-8" />,
@@ -78,9 +78,9 @@ const aiModels = [
     },
     {
         icon: <FaBrain className="w-8 h-8" />,
-        name: 'Groq Llama 3 70B',
-        description: 'Phiên bản tối ưu của Llama 3 với tốc độ xử lý cực nhanh',
-        features: ['Tốc độ ánh sáng', 'Tiết kiệm tài nguyên', 'API đơn giản']
+        name: 'Qwen 2 72B',
+        description: 'Mô hình lớn nhất từ Alibaba, ngang tầm với Meta Llama 3 và tốt nhất cho tiếng Trung. Hỗ trợ 128k token.',
+        features: ['Xử lý ngôn ngữ tự nhiên', 'Hỗ trợ đa ngôn ngữ', 'Ngữ cảnh dài 128k']
     }
 ];
 
