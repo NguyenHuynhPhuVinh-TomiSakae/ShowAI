@@ -1,101 +1,58 @@
 'use client'
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ReactNode, useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
-import { ReactNode } from 'react';
 
 interface ClientPageTransitionProps {
     children: ReactNode;
 }
 
 const animations = [
-    // Slide Up
-    (element: HTMLElement) => {
-        gsap.set(element, {
-            y: 50,
-            opacity: 0
-        });
-        return gsap.to(element, {
-            y: 0,
-            opacity: 1,
-            duration: 1,
-            ease: "power2.out"
-        });
+    {
+        initial: { opacity: 0, y: 50 },
+        animate: { opacity: 1, y: 0 }
     },
-    // Scale
-    (element: HTMLElement) => {
-        gsap.set(element, {
-            scale: 0.9,
-            opacity: 0
-        });
-        return gsap.to(element, {
-            scale: 1,
-            opacity: 1,
-            duration: 1,
-            ease: "power2.out"
-        });
+    {
+        initial: { opacity: 0, scale: 0.9 },
+        animate: { opacity: 1, scale: 1 }
     },
-    // Fade
-    (element: HTMLElement) => {
-        gsap.set(element, {
-            opacity: 0
-        });
-        return gsap.to(element, {
-            opacity: 1,
-            duration: 1,
-            ease: "power2.out"
-        });
+    {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 }
     },
-    // Rotate Y
-    (element: HTMLElement) => {
-        gsap.set(element, {
-            rotationY: -90,
-            opacity: 0
-        });
-        return gsap.to(element, {
-            rotationY: 0,
-            opacity: 1,
-            duration: 1,
-            ease: "power2.out"
-        });
+    {
+        initial: { opacity: 0, rotateY: -90 },
+        animate: { opacity: 1, rotateY: 0 }
     }
 ];
 
 const ClientPageTransition = ({ children }: ClientPageTransitionProps) => {
-    const containerRef = useRef<HTMLDivElement>(null);
+    const [animationIndex, setAnimationIndex] = useState(0);
     const isMobile = useMediaQuery({ maxWidth: 768 });
-    const currentAnimation = useRef<gsap.core.Tween | null>(null);
 
     useEffect(() => {
-        if (!containerRef.current) return;
-
-        // Kill previous animation if exists
-        if (currentAnimation.current) {
-            currentAnimation.current.kill();
-        }
-
-        // Reset styles
-        gsap.set(containerRef.current, { clearProps: "all" });
-
-        // Chọn animation và thực thi
-        const animationIndex = isMobile ? 2 : Math.floor(Math.random() * animations.length);
-        currentAnimation.current = animations[animationIndex](containerRef.current);
-
-        return () => {
-            if (currentAnimation.current) {
-                currentAnimation.current.kill();
-            }
-        };
-    }, [isMobile, children]);
+        // Chọn animation fade (index 2) cho mobile, random cho desktop
+        setAnimationIndex(isMobile ? 2 : Math.floor(Math.random() * animations.length));
+    }, [isMobile]);
 
     return (
-        <div
-            ref={containerRef}
-            style={{ transformStyle: 'preserve-3d' }}
-        >
-            {children}
-        </div>
+        <AnimatePresence mode="wait">
+            <motion.div
+                key={Math.random()} // Force re-render on route change
+                initial={animations[animationIndex].initial}
+                animate={animations[animationIndex].animate}
+                transition={{
+                    type: "spring",
+                    stiffness: 100,
+                    damping: 20,
+                    duration: 0.7
+                }}
+                style={{ transformStyle: 'preserve-3d' }}
+            >
+                {children}
+            </motion.div>
+        </AnimatePresence>
     );
 };
 
