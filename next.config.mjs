@@ -9,7 +9,7 @@ const nextConfig = {
         ];
     },
     images: {
-        domains: ['firebasestorage.googleapis.com'], // Thay 'example.com' bằng tên miền thực tế của bạn
+        domains: ['firebasestorage.googleapis.com', 'faas-output-image.s3.ap-southeast-1.amazonaws.com'], // Thay 'example.com' bằng tên miền thực tế của bạn
     },
     webpack: (config) => {
         config.output.webassemblyModuleFilename = 'static/wasm/[modulehash].wasm'

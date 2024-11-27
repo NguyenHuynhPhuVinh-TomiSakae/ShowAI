@@ -21,6 +21,7 @@ interface MobileNavBarProps {
     handleLogout: () => void;
     setIsAIImageGenModalOpen: (isOpen: boolean) => void;
     setIsFileConversionModalOpen: (isOpen: boolean) => void;
+    setIsAnimeGenModalOpen: (isOpen: boolean) => void;
 }
 
 const MobileNavBar: React.FC<MobileNavBarProps> = ({
@@ -33,7 +34,8 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     toggleUserDropdown,
     handleLogout,
     setIsAIImageGenModalOpen,
-    setIsFileConversionModalOpen
+    setIsFileConversionModalOpen,
+    setIsAnimeGenModalOpen
 }) => {
     const router = useRouter();
     const sidebarRef = useRef<HTMLDivElement>(null);
@@ -137,6 +139,16 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                 >
                                                     <FaImage className="mr-3" />
                                                     Tạo Hình Ảnh
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setIsAnimeGenModalOpen(true);
+                                                        toggleSidebar();
+                                                    }}
+                                                    className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
+                                                >
+                                                    <FaImage className="mr-3" />
+                                                    Tạo Ảnh Anime
                                                 </button>
                                                 <button
                                                     onClick={() => {

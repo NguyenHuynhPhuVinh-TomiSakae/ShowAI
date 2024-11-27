@@ -11,6 +11,7 @@ import MobileNavBar from './MobileNavBar';
 import DesktopNavBar from './DesktopNavBar';
 import AIImageGenModal from './AIImageGenModal';
 import FileConversionModal from './FileConversionModal';
+import AnimeGenModal from './AnimeGenModal';
 
 const NavBar = () => {
     const router = useRouter();
@@ -20,6 +21,7 @@ const NavBar = () => {
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
     const [isAIImageGenModalOpen, setIsAIImageGenModalOpen] = useState(false);
     const [isFileConversionModalOpen, setIsFileConversionModalOpen] = useState(false);
+    const [isAnimeGenModalOpen, setIsAnimeGenModalOpen] = useState(false);
     const { auth } = useFirebase();
     const { getUserFromFirestore } = useFirestoreOperations();
 
@@ -98,6 +100,7 @@ const NavBar = () => {
                     handleLogout={handleLogout}
                     setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
                     setIsFileConversionModalOpen={setIsFileConversionModalOpen}
+                    setIsAnimeGenModalOpen={setIsAnimeGenModalOpen}
                 />
                 <DesktopNavBar
                     isAIToolsDropdownOpen={isAIToolsDropdownOpen}
@@ -109,6 +112,7 @@ const NavBar = () => {
                     handleLogout={handleLogout}
                     setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
                     setIsFileConversionModalOpen={setIsFileConversionModalOpen}
+                    setIsAnimeGenModalOpen={setIsAnimeGenModalOpen}
                 />
             </div>
             {isAIImageGenModalOpen && (
@@ -116,6 +120,12 @@ const NavBar = () => {
             )}
             {isFileConversionModalOpen && (
                 <FileConversionModal isOpen={isFileConversionModalOpen} onClose={() => setIsFileConversionModalOpen(false)} />
+            )}
+            {isAnimeGenModalOpen && (
+                <AnimeGenModal
+                    isOpen={isAnimeGenModalOpen}
+                    onClose={() => setIsAnimeGenModalOpen(false)}
+                />
             )}
         </nav>
     );

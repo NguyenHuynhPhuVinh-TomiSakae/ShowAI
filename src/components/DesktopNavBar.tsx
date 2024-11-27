@@ -18,6 +18,7 @@ interface DesktopNavBarProps {
     handleLogout: () => void;
     setIsAIImageGenModalOpen: (isOpen: boolean) => void;
     setIsFileConversionModalOpen: (isOpen: boolean) => void;
+    setIsAnimeGenModalOpen: (isOpen: boolean) => void;
 }
 
 const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
@@ -28,7 +29,8 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
     setIsUserDropdownOpen,
     handleLogout,
     setIsAIImageGenModalOpen,
-    setIsFileConversionModalOpen
+    setIsFileConversionModalOpen,
+    setIsAnimeGenModalOpen
 }) => {
     const router = useRouter();
     const aiToolsRef = useRef<HTMLDivElement>(null);
@@ -76,6 +78,10 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                         <button onClick={() => { setIsAIImageGenModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-blue-400 hover:text-gray-800">
                                             <FaImage className="mr-3" />
                                             Tạo Hình Ảnh
+                                        </button>
+                                        <button onClick={() => { setIsAnimeGenModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-blue-400 hover:text-gray-800">
+                                            <FaImage className="mr-3" />
+                                            Tạo Ảnh Anime
                                         </button>
                                         <button onClick={() => { setIsFileConversionModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-blue-400 hover:text-gray-800">
                                             <FaExchangeAlt className="mr-3" />
