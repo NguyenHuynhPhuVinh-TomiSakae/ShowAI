@@ -278,7 +278,7 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
                                 className="absolute top-4 left-4 text-gray-400 hover:text-white transition-colors"
                             >
                                 <IoSwapHorizontalOutline className="h-6 w-6" />
-                                <span className="text-xs">{isLoli ? 'Loli' : 'Normal'}</span>
+                                <span className="text-xs">{isLoli ? 'Anime' : 'Normal'}</span>
                             </button>
 
                             <h2 className="text-2xl font-bold text-[#93C5FD] mb-6 text-center">Gọi điện với AI</h2>
