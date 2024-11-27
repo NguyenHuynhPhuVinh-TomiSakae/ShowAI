@@ -46,7 +46,7 @@ const aiServices = [
     {
         icon: <FaImage className="w-8 h-8" />,
         name: 'Novita',
-        description: 'Nền tảng tạo ảnh AI tiên tiến với đa dạng mô hình từ Stable Diffusion, hỗ trợ nhiều phong cách và tính năng độc đáo',
+        description: 'Nền tảng tạo ảnh AI tiên tiến với đa dạng mô hình từ Stable Diffusion, hỗ trợ nhiều phong cách và tính năng độc đo',
         features: ['Đa dạng mô hình AI', 'Tối ưu cho anime/manga', 'Tạo ảnh chất lượng cao']
     },
     {
@@ -84,51 +84,75 @@ const aiModels = [
     }
 ];
 
+const LightningEffect = ({ direction, style }: {
+    direction: 'horizontal' | 'vertical';
+    style?: React.CSSProperties;
+}) => (
+    <div style={style} className="relative">
+        {/* Đường kẻ cố định */}
+        <div className={`absolute ${direction === 'horizontal' ? 'h-[1px] w-full' : 'w-[1px] h-full'} bg-[#3E52E8]/10`} />
+
+        {/* Hiệu ứng chớp */}
+        <motion.div
+            className={`absolute ${direction === 'horizontal' ? 'h-[1px] w-[20%]' : 'w-[1px] h-[20%]'} bg-[#3E52E8]/40`}
+            animate={{
+                [direction === 'horizontal' ? 'x' : 'y']: ['0%', '400%'],
+            }}
+            transition={{
+                duration: 2,
+                repeat: Infinity,
+                repeatDelay: Math.random() * 5
+            }}
+        />
+    </div>
+);
+
 export default function CombinedFeatures() {
     const [activeSection, setActiveSection] = useState<'features' | 'integration' | 'models'>('features');
     const isDesktop = useMediaQuery({ minWidth: 1024 });
 
-    const getAnimationConfig = (index: number) => {
-        if (!isDesktop) {
-            return {
-                initial: { opacity: 0 },
-                whileInView: { opacity: 1 },
-                transition: { duration: 0.3 }
-            };
+    const getAnimationConfig = (index: number) => ({
+        initial: { opacity: 0, y: 20 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: false, amount: 0.3 },
+        transition: {
+            duration: 0.5,
+            delay: index * 0.1,
+            type: "spring",
+            stiffness: 100
         }
+    });
 
-        return {
-            initial: { opacity: 0, y: 50 },
-            whileInView: { opacity: 1, y: 0 },
-            viewport: { once: false, amount: 0.3 },
-            transition: {
-                duration: 0.5,
-                delay: index * 0.1,
-                type: "spring",
-                stiffness: 50
-            }
-        };
-    };
+    const CardWrapper = ({ children, index }: { children: React.ReactNode, index: number }) => (
+        <motion.div
+            {...getAnimationConfig(index)}
+            className="group relative bg-gradient-to-br from-[#2A3284]/10 to-[#3E52E8]/10 
+                       backdrop-blur-md rounded-2xl p-6 border border-[#3E52E8]/20
+                       hover:border-[#3E52E8]/50 transition-all duration-300
+                       hover:shadow-lg hover:shadow-[#3E52E8]/20
+                       before:content-[''] before:absolute before:inset-0 before:rounded-2xl
+                       before:bg-gradient-to-br before:from-[#3E52E8]/5 before:to-transparent
+                       before:opacity-0 before:transition-opacity before:duration-300
+                       group-hover:before:opacity-100"
+        >
+            <div className="relative z-10">
+                {children}
+            </div>
+        </motion.div>
+    );
+
+    const IconWrapper = ({ icon }: { icon: React.ReactNode }) => (
+        <div className="text-[#3E52E8] mb-4 transform group-hover:scale-110 transition-transform duration-300">
+            {icon}
+        </div>
+    );
 
     const FeaturesContent = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-                <motion.div
-                    key={index}
-                    {...getAnimationConfig(index)}
-                    className="group relative bg-gradient-to-br from-[#1E293B]/80 to-[#0F172A]/80 
-                             backdrop-blur-sm rounded-xl p-6 border border-[#2A3284]/50
-                             hover:border-[#3E52E8]/50 transition-all duration-300
-                             hover:shadow-lg hover:shadow-[#3E52E8]/20"
-                >
-                    {isDesktop && (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#3E52E8]/5 to-transparent 
-                                    opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
-                    )}
+                <CardWrapper key={index} index={index}>
                     <div className="relative">
-                        <div className={`text-[#3E52E8] mb-4 ${isDesktop ? 'transform group-hover:scale-110 transition-transform duration-300' : ''}`}>
-                            {feature.icon}
-                        </div>
+                        <IconWrapper icon={feature.icon} />
                         <h3 className="text-xl font-semibold text-gray-100 mb-2">
                             {feature.title}
                         </h3>
@@ -142,7 +166,7 @@ export default function CombinedFeatures() {
                             ))}
                         </ul>
                     </div>
-                </motion.div>
+                </CardWrapper>
             ))}
         </div>
     );
@@ -150,22 +174,9 @@ export default function CombinedFeatures() {
     const IntegrationContent = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {aiServices.map((service, index) => (
-                <motion.div
-                    key={service.name}
-                    {...getAnimationConfig(index)}
-                    className="group relative bg-gradient-to-br from-[#1E293B]/95 to-[#0F172A]/95 
-                           backdrop-blur-sm rounded-xl p-6 border border-[#2A3284]/50
-                           hover:border-[#3E52E8]/50 transition-all duration-300
-                           hover:shadow-lg hover:shadow-[#3E52E8]/20"
-                >
-                    {isDesktop && (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#3E52E8]/5 to-transparent 
-                                  opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
-                    )}
+                <CardWrapper key={service.name} index={index}>
                     <div className="relative">
-                        <div className={`text-[#3E52E8] mb-4 ${isDesktop ? 'transform group-hover:scale-110 transition-transform duration-300' : ''}`}>
-                            {service.icon}
-                        </div>
+                        <IconWrapper icon={service.icon} />
                         <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-blue-400">{service.name}</h3>
                         <p className="text-gray-300 mb-4">{service.description}</p>
                         <ul className="space-y-2">
@@ -177,7 +188,7 @@ export default function CombinedFeatures() {
                             ))}
                         </ul>
                     </div>
-                </motion.div>
+                </CardWrapper>
             ))}
         </div>
     );
@@ -185,22 +196,9 @@ export default function CombinedFeatures() {
     const ModelsContent = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {aiModels.map((model, index) => (
-                <motion.div
-                    key={model.name}
-                    {...getAnimationConfig(index)}
-                    className="group relative bg-gradient-to-br from-[#1E293B]/95 to-[#0F172A]/95 
-                           backdrop-blur-sm rounded-xl p-6 border border-[#2A3284]/50
-                           hover:border-[#3E52E8]/50 transition-all duration-300
-                           hover:shadow-lg hover:shadow-[#3E52E8]/20"
-                >
-                    {isDesktop && (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#3E52E8]/5 to-transparent 
-                                  opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
-                    )}
+                <CardWrapper key={model.name} index={index}>
                     <div className="relative">
-                        <div className={`text-[#3E52E8] mb-4 ${isDesktop ? 'transform group-hover:scale-110 transition-transform duration-300' : ''}`}>
-                            {model.icon}
-                        </div>
+                        <IconWrapper icon={model.icon} />
                         <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-blue-400">{model.name}</h3>
                         <p className="text-gray-300 mb-4">{model.description}</p>
                         <ul className="space-y-2">
@@ -212,39 +210,173 @@ export default function CombinedFeatures() {
                             ))}
                         </ul>
                     </div>
-                </motion.div>
+                </CardWrapper>
             ))}
         </div>
     );
 
     return (
-        <div className="relative bg-transparent py-12 overflow-hidden">
+        <div className="relative bg-[#0F172A] py-16 overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="relative bg-gradient-to-br from-[#1E293B]/90 to-[#0F172A]/90 rounded-2xl p-8 backdrop-blur-sm border border-[#2A3284]/30 overflow-hidden">
-                    {isDesktop && (
-                        <div className="absolute inset-0 overflow-hidden">
-                            <div className="absolute left-1/4 top-0 w-1/2 h-1/2 bg-[#3E52E8]/5 rounded-full blur-3xl" />
-                            <div className="absolute -right-1/4 bottom-0 w-1/2 h-1/2 bg-[#2A3284]/5 rounded-full blur-3xl" />
+                <div className="relative bg-gradient-to-br from-[#1E293B]/50 to-[#0F172A]/50 rounded-3xl p-8 
+                                backdrop-blur-lg border border-[#3E52E8]/20 overflow-hidden
+                                shadow-lg hover:shadow-xl transition-all duration-500">
+                    <div className="absolute inset-0">
+                        {/* Grid Lines - Horizontal */}
+                        {[...Array(20)].map((_, i) => (
+                            <LightningEffect
+                                key={`h-${i}`}
+                                direction="horizontal"
+                                style={{ top: `${(i + 1) * 5}%` }}
+                            />
+                        ))}
+
+                        {/* Grid Lines - Vertical */}
+                        {[...Array(20)].map((_, i) => (
+                            <LightningEffect
+                                key={`v-${i}`}
+                                direction="vertical"
+                                style={{ left: `${(i + 1) * 5}%` }}
+                            />
+                        ))}
+
+                        {/* Corner Spotlights */}
+                        <div className="absolute -top-[40px] -left-[40px] w-[20rem] h-[20rem]">
+                            <motion.div
+                                className="absolute top-0 left-0 w-12 h-full bg-gradient-to-b from-white/70 via-white/30 to-transparent transform origin-top-left blur-[2px]"
+                                animate={{ rotate: [25, 35, 25] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            />
+                            <motion.div
+                                className="absolute top-0 left-0 w-full h-12 bg-gradient-to-r from-white/70 via-white/30 to-transparent transform origin-top-left blur-[2px]"
+                                animate={{ rotate: [25, 35, 25] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            />
                         </div>
-                    )}
+                        <div className="absolute -top-[40px] -right-[40px] w-[20rem] h-[20rem]">
+                            <motion.div
+                                className="absolute top-0 right-0 w-12 h-full bg-gradient-to-b from-white/70 via-white/30 to-transparent transform origin-top-right blur-[2px]"
+                                animate={{ rotate: [-25, -35, -25] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            />
+                            <motion.div
+                                className="absolute top-0 right-0 w-full h-12 bg-gradient-to-l from-white/70 via-white/30 to-transparent transform origin-top-right blur-[2px]"
+                                animate={{ rotate: [-25, -35, -25] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            />
+                        </div>
+
+                        {/* Static Moving Points around title */}
+                        <div className="absolute inset-0">
+                            <motion.div
+                                className="absolute h-2 w-2 rounded-full bg-blue-400/50"
+                                style={{
+                                    boxShadow: '0 0 10px 2px rgba(96, 165, 250, 0.3)',
+                                    top: '15%',
+                                    left: '20%'
+                                }}
+                                animate={{
+                                    x: [-10, 10, -10],
+                                    y: [-10, 10, -10],
+                                }}
+                                transition={{
+                                    duration: 4,
+                                    ease: "easeInOut",
+                                    repeat: Infinity,
+                                }}
+                            />
+                            <motion.div
+                                className="absolute h-2 w-2 rounded-full bg-purple-400/50"
+                                style={{
+                                    boxShadow: '0 0 10px 2px rgba(168, 85, 247, 0.3)',
+                                    top: '10%',
+                                    right: '25%'
+                                }}
+                                animate={{
+                                    x: [10, -10, 10],
+                                    y: [-10, 10, -10],
+                                }}
+                                transition={{
+                                    duration: 5,
+                                    ease: "easeInOut",
+                                    repeat: Infinity,
+                                    delay: 1
+                                }}
+                            />
+                            <motion.div
+                                className="absolute h-2 w-2 rounded-full bg-cyan-400/50"
+                                style={{
+                                    boxShadow: '0 0 10px 2px rgba(34, 211, 238, 0.3)',
+                                    top: '25%',
+                                    left: '40%'
+                                }}
+                                animate={{
+                                    x: [-15, 15, -15],
+                                    y: [0, -15, 0],
+                                }}
+                                transition={{
+                                    duration: 6,
+                                    ease: "easeInOut",
+                                    repeat: Infinity,
+                                    delay: 2
+                                }}
+                            />
+                            <motion.div
+                                className="absolute h-2 w-2 rounded-full bg-indigo-400/50"
+                                style={{
+                                    boxShadow: '0 0 10px 2px rgba(129, 140, 248, 0.3)',
+                                    top: '20%',
+                                    right: '35%'
+                                }}
+                                animate={{
+                                    x: [0, -10, 0],
+                                    y: [-10, 10, -10],
+                                }}
+                                transition={{
+                                    duration: 7,
+                                    ease: "easeInOut",
+                                    repeat: Infinity,
+                                    delay: 1.5
+                                }}
+                            />
+                            <motion.div
+                                className="absolute h-2 w-2 rounded-full bg-pink-400/50"
+                                style={{
+                                    boxShadow: '0 0 10px 2px rgba(244, 114, 182, 0.3)',
+                                    top: '15%',
+                                    left: '65%'
+                                }}
+                                animate={{
+                                    x: [10, -10, 10],
+                                    y: [5, -5, 5],
+                                }}
+                                transition={{
+                                    duration: 5.5,
+                                    ease: "easeInOut",
+                                    repeat: Infinity,
+                                    delay: 0.5
+                                }}
+                            />
+                        </div>
+                    </div>
 
                     <div className="relative z-10">
                         <motion.div
-                            initial={{ opacity: 0, y: isDesktop ? 20 : 0 }}
+                            initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: false, amount: 0.3 }}
                             transition={{ duration: 0.5 }}
-                            className="text-center mb-8"
+                            className="text-center mb-12"
                         >
-                            <h2 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent 
-                                bg-gradient-to-r from-blue-300 to-purple-400 leading-relaxed py-1">
+                            <h2 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent 
+                                bg-gradient-to-r from-blue-400 to-purple-500 leading-tight py-2">
                                 {activeSection === 'features'
                                     ? 'Tính Năng Nổi Bật'
                                     : activeSection === 'integration'
                                         ? 'Tích Hợp Đa Dạng API AI'
                                         : 'Mô Hình AI Hàng Đầu'}
                             </h2>
-                            <p className="mt-4 text-lg text-gray-300">
+                            <p className="mt-4 text-xl text-gray-300 max-w-3xl mx-auto">
                                 {activeSection === 'features'
                                     ? 'Khám phá những tính năng giúp bạn tối ưu trải nghiệm với AI'
                                     : activeSection === 'integration'
@@ -296,28 +428,28 @@ export default function CombinedFeatures() {
                             </AnimatePresence>
                         </div>
 
-                        <div className="flex justify-center gap-4 mt-8">
+                        <div className="flex justify-center gap-6 mt-12">
                             <button
                                 onClick={() => {
                                     if (activeSection === 'integration') setActiveSection('features');
                                     if (activeSection === 'models') setActiveSection('integration');
                                 }}
-                                className={`p-3 rounded-full bg-[#1E293B]/50 text-white 
+                                className={`p-4 rounded-full bg-[#3E52E8]/20 text-white 
                                     ${activeSection !== 'features' ? 'opacity-100' : 'opacity-0'}
-                                    transition-opacity hover:bg-[#3E52E8]/50`}
+                                    transition-all hover:bg-[#3E52E8]/50`}
                             >
-                                <FaChevronLeft className="w-4 h-4" />
+                                <FaChevronLeft className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => {
                                     if (activeSection === 'features') setActiveSection('integration');
                                     if (activeSection === 'integration') setActiveSection('models');
                                 }}
-                                className={`p-3 rounded-full bg-[#1E293B]/50 text-white 
+                                className={`p-4 rounded-full bg-[#3E52E8]/20 text-white 
                                     ${activeSection !== 'models' ? 'opacity-100' : 'opacity-0'}
-                                    transition-opacity hover:bg-[#3E52E8]/50`}
+                                    transition-all hover:bg-[#3E52E8]/50`}
                             >
-                                <FaChevronRight className="w-4 h-4" />
+                                <FaChevronRight className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
