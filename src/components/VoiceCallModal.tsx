@@ -1,9 +1,10 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
-import { IoClose, IoMicOutline, IoStopOutline } from "react-icons/io5";
+import { IoClose, IoMicOutline, IoStopOutline, IoSwapHorizontalOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from 'framer-motion';
 import { ElevenLabsClient } from "elevenlabs";
 import type { MotionProps } from 'framer-motion';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface VoiceCallModalProps {
     isOpen: boolean;
@@ -14,6 +15,12 @@ type ModalBackdropProps = MotionProps & {
     className?: string;
 };
 
+declare global {
+    interface Window {
+        webkitAudioContext: typeof AudioContext;
+    }
+}
+
 const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
     const [isListening, setIsListening] = useState(false);
     const [transcript, setTranscript] = useState('');
@@ -22,6 +29,8 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
     const [, setIsPlaying] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [toggleListening, setToggleListening] = useState(() => () => { });
+    const [isLoli, setIsLoli] = useState(false);
+    const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
     useEffect(() => {
         // Khởi tạo Web Speech API
@@ -41,45 +50,125 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
                 // Gửi văn bản đến AI để xử lý
                 try {
                     setIsLoading(true);
-                    const aiResponse = await fetch('/api/ai', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            messages: [{ role: 'user', content: "Trả lời bằng tiếng việt và chỉ trả lời theo kiểu đối thoại giữa 2 người với 1 dòng và ít từ. Hãy trả lời câu này: " + text }]
-                        }),
-                    });
-                    const aiText = await aiResponse.text();
-                    setResponse(aiText);
 
-                    // Chuyển phản hồi thành giọng nói
-                    const keyResponse = await fetch('/api/elevenlabs-key');
-                    const { key } = await keyResponse.json();
+                    // Lấy API key từ endpoint
+                    const keyResponse = await fetch('/api/Gemini5');
+                    const { apiKey } = await keyResponse.json();
 
-                    const elevenlabs = new ElevenLabsClient({
-                        apiKey: key,
+                    const genAI = new GoogleGenerativeAI(apiKey);
+                    const model = genAI.getGenerativeModel({
+                        model: "gemini-exp-1121",
                     });
 
-                    const audio = await elevenlabs.generate({
-                        voice: "Ly Hai",
-                        text: aiText.slice(0, 500),
-                        model_id: "eleven_turbo_v2_5",
+                    const generationConfig = {
+                        temperature: 1,
+                        topP: 0.95,
+                        topK: 64,
+                        maxOutputTokens: 8192,
+                    };
+
+                    const promptText = isLoli
+                        ? "Trả lời bằng cả tiếng Nhật và tiếng Việt, mỗi ngôn ngữ một dòng. Hãy trả lời theo format: [Tiếng Nhật]\n[Tiếng Việt]. Hãy trả lời câu này: "
+                        : "Trả lời bằng tiếng việt và chỉ trả lời theo kiểu đối thoại giữa 2 người với 1 dòng và ít từ. Hãy trả lời câu này: ";
+
+                    const chatSession = model.startChat({
+                        generationConfig,
+                        history: [
+                            {
+                                role: "user",
+                                parts: [{ text: promptText + text }],
+                            },
+                        ],
                     });
 
-                    const chunks = [];
-                    for await (const chunk of audio) {
-                        chunks.push(chunk);
-                    }
-                    const audioBuffer = Buffer.concat(chunks);
-                    const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-                    const url = URL.createObjectURL(blob);
+                    const result = await chatSession.sendMessage(text);
+                    const aiText = result.response.text();
 
-                    if (audioRef.current) {
-                        audioRef.current.src = url;
-                        audioRef.current.play();
-                        setIsPlaying(true);
+                    if (isLoli) {
+                        // Tách phản hồi thành tiếng Nhật và tiếng Việt
+                        const [japaneseText, vietnameseText] = aiText.split('\n');
+                        setResponse(`${japaneseText}\n${vietnameseText}`);
+
+                        try {
+                            // Sử dụng text tiếng Nhật cho VOICEVOX
+                            const voicevoxResponse = await fetch('/api/voicevox', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ text: japaneseText }),
+                            });
+
+                            if (!voicevoxResponse.ok) {
+                                throw new Error('VOICEVOX API failed');
+                            }
+
+                            const arrayBuffer = await voicevoxResponse.arrayBuffer();
+
+                            if (audioContext) {
+                                try {
+                                    // Log để debug
+                                    console.log('Audio data length:', arrayBuffer.byteLength);
+                                    console.log('Content-Type:', voicevoxResponse.headers.get('content-type'));
+
+                                    await audioContext.resume();
+                                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer).catch(e => {
+                                        console.error('Decode error:', e);
+                                        throw new Error('Không thể decode audio data');
+                                    });
+
+                                    const source = audioContext.createBufferSource();
+                                    source.buffer = audioBuffer;
+                                    source.connect(audioContext.destination);
+                                    source.start(0);
+                                    setIsPlaying(true);
+                                } catch (decodeError) {
+                                    console.error('Lỗi decode:', decodeError);
+                                    throw new Error('Lỗi xử lý audio');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Lỗi VOICEVOX:', error);
+                            setResponse(prevResponse => prevResponse + '\n[Lỗi phát âm thanh]');
+                        }
+                    } else {
+                        setResponse(aiText);
+                        try {
+                            // Chuyển phản hồi thành giọng nói qua ElevenLabs
+                            const keyResponse = await fetch('/api/elevenlabs-key');
+                            const { key } = await keyResponse.json();
+
+                            const elevenlabs = new ElevenLabsClient({
+                                apiKey: key,
+                            });
+
+                            const audio = await elevenlabs.generate({
+                                voice: "Ly Hai",
+                                text: aiText.slice(0, 500),
+                                model_id: "eleven_turbo_v2_5",
+                            });
+
+                            const chunks = [];
+                            for await (const chunk of audio) {
+                                chunks.push(chunk);
+                            }
+                            const audioBuffer = Buffer.concat(chunks);
+                            const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+                            const url = URL.createObjectURL(blob);
+
+                            if (audioRef.current) {
+                                audioRef.current.src = url;
+                                await audioRef.current.play();
+                                setIsPlaying(true);
+                            }
+                        } catch (error) {
+                            console.error('Lỗi khi xử lý ElevenLabs:', error);
+                            setResponse(prevResponse => prevResponse + '\n[Lỗi chuyển đổi giọng nói]');
+                        }
                     }
                 } catch (error) {
-                    console.error('Lỗi:', error);
-                    setResponse('Đã xảy ra lỗi khi xử lý yêu cầu.');
+                    console.error('Lỗi chi tiết:', error);
+                    setResponse('Đã xảy ra lỗi khi xử lý yêu cầu. Vui lòng thử lại.');
                 } finally {
                     setIsLoading(false);
                 }
@@ -119,19 +208,19 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
     }, [isListening]);
 
     useEffect(() => {
-        audioRef.current = new Audio();
+        const context = new (window.AudioContext || window.webkitAudioContext)({
+            sampleRate: 24000  // Chỉ định sample rate
+        });
+        setAudioContext(context);
 
-        const handleEnded = () => {
-            setIsPlaying(false);
-        };
-
-        audioRef.current.addEventListener('ended', handleEnded);
         return () => {
-            if (audioRef.current) {
-                audioRef.current.removeEventListener('ended', handleEnded);
-            }
+            context.close();
         };
     }, []);
+
+    const handleVoiceToggle = () => {
+        setIsLoli(!isLoli);
+    };
 
     return (
         <AnimatePresence>
@@ -158,6 +247,14 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
                                 className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
                             >
                                 <IoClose className="h-6 w-6" />
+                            </button>
+
+                            <button
+                                onClick={handleVoiceToggle}
+                                className="absolute top-4 left-4 text-gray-400 hover:text-white transition-colors"
+                            >
+                                <IoSwapHorizontalOutline className="h-6 w-6" />
+                                <span className="text-xs">{isLoli ? 'Loli' : 'Normal'}</span>
                             </button>
 
                             <h2 className="text-2xl font-bold text-[#93C5FD] mb-6 text-center">Gọi điện với AI</h2>
@@ -189,7 +286,15 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
 
                                 {response && (
                                     <div className="w-full bg-[#4ECCA3]/10 p-6 rounded-xl border border-[#4ECCA3]/20">
-                                        <p className="text-[#4ECCA3] text-lg">{response}</p>
+                                        {isLoli ? (
+                                            response.split('\n').map((text, index) => (
+                                                <p key={index} className={`text-lg ${index === 0 ? 'text-yellow-400 mb-2' : 'text-[#4ECCA3]'}`}>
+                                                    {text}
+                                                </p>
+                                            ))
+                                        ) : (
+                                            <p className="text-[#4ECCA3] text-lg">{response}</p>
+                                        )}
                                     </div>
                                 )}
 
