@@ -5,7 +5,7 @@ export async function POST(req: Request) {
         const { text } = await req.json();
 
         // Gọi API audio_query với params thay vì body
-        const queryUrl = new URL('http://54.251.229.43:50021/audio_query');
+        const queryUrl = new URL(`${process.env.SHOWAI_VOICEVOX_API_URL}/audio_query`);
         queryUrl.searchParams.append('text', text);
         queryUrl.searchParams.append('speaker', '1');
 
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
         // Gọi API synthesis
         const synthesisResponse = await fetch(
-            'http://54.251.229.43:50021/synthesis?speaker=1',
+            `${process.env.SHOWAI_VOICEVOX_API_URL}/synthesis?speaker=1`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -43,4 +43,4 @@ export async function POST(req: Request) {
             { status: 500 }
         );
     }
-} 
+}
