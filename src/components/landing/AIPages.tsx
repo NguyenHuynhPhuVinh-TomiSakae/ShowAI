@@ -736,6 +736,62 @@ export default function AIPages() {
                                                     ✨
                                                 </motion.div>
                                             ))}
+
+                                            {/* Điều chỉnh vị trí hiệu ứng chuyển đổi nhân vật sang bên phải trong khung */}
+                                            <motion.div
+                                                animate={{
+                                                    opacity: [0.4, 0.8, 0.4],
+                                                    scale: [0.95, 1.05, 0.95]
+                                                }}
+                                                transition={{
+                                                    duration: 3,
+                                                    repeat: Infinity,
+                                                    ease: "easeInOut"
+                                                }}
+                                                className="absolute top-4 right-4 flex flex-col items-center
+                                                    text-xs text-purple-400/70 bg-purple-500/5 rounded-lg p-1"
+                                            >
+                                                <motion.div
+                                                    animate={{
+                                                        rotateY: [0, 360]
+                                                    }}
+                                                    transition={{
+                                                        duration: 3,
+                                                        repeat: Infinity,
+                                                        ease: "easeInOut"
+                                                    }}
+                                                    className="flex space-x-1"
+                                                >
+                                                    {['🧙‍♂️', '🦸‍♂️', '🥷'].map((emoji, i) => (
+                                                        <motion.span
+                                                            key={i}
+                                                            initial={{ opacity: 0 }}
+                                                            animate={{
+                                                                opacity: [0, 1, 0],
+                                                            }}
+                                                            transition={{
+                                                                duration: 3,
+                                                                delay: i,
+                                                                repeat: Infinity,
+                                                            }}
+                                                        >
+                                                            {emoji}
+                                                        </motion.span>
+                                                    ))}
+                                                </motion.div>
+                                                <motion.div
+                                                    animate={{
+                                                        opacity: [0.5, 1, 0.5]
+                                                    }}
+                                                    transition={{
+                                                        duration: 2,
+                                                        repeat: Infinity
+                                                    }}
+                                                    className="mt-1 whitespace-nowrap"
+                                                >
+                                                    Đổi vai
+                                                </motion.div>
+                                            </motion.div>
                                         </>
                                     )}
                                     {page.title === "Học Tập" && (
@@ -863,6 +919,69 @@ export default function AIPages() {
                                                     ✨
                                                 </motion.div>
                                             ))}
+
+                                            {/* Thêm hiệu ứng bảng điểm và tiến độ học tập */}
+                                            <motion.div
+                                                animate={{
+                                                    opacity: [0.4, 0.8, 0.4],
+                                                    scale: [0.95, 1.05, 0.95]
+                                                }}
+                                                transition={{
+                                                    duration: 3,
+                                                    repeat: Infinity,
+                                                    ease: "easeInOut"
+                                                }}
+                                                className="absolute top-4 right-4 flex flex-col items-center
+                                                    bg-rose-500/5 rounded-lg p-2 border border-rose-500/20"
+                                            >
+                                                <div className="text-rose-400/70 text-xs mb-1">Tiến độ</div>
+                                                {/* Thanh tiến độ động */}
+                                                {['Toán', 'Văn', 'Anh'].map((subject, i) => (
+                                                    <motion.div
+                                                        key={subject}
+                                                        className="flex items-center space-x-2 mb-1"
+                                                    >
+                                                        <span className="text-[10px] text-rose-400/60 w-8">{subject}</span>
+                                                        <motion.div
+                                                            animate={{
+                                                                width: ['30%', '100%', '30%'],
+                                                                backgroundColor: [
+                                                                    'rgba(244,63,94,0.2)',
+                                                                    'rgba(244,63,94,0.4)',
+                                                                    'rgba(244,63,94,0.2)'
+                                                                ]
+                                                            }}
+                                                            transition={{
+                                                                duration: 2,
+                                                                delay: i * 0.7,
+                                                                repeat: Infinity
+                                                            }}
+                                                            className="h-1 w-16 rounded-full"
+                                                        />
+                                                    </motion.div>
+                                                ))}
+
+                                                {/* Biểu tượng thành tích */}
+                                                <div className="flex space-x-1 mt-1">
+                                                    {['🏆', '⭐', '📈'].map((icon, i) => (
+                                                        <motion.span
+                                                            key={i}
+                                                            animate={{
+                                                                scale: [1, 1.2, 1],
+                                                                opacity: [0.5, 1, 0.5]
+                                                            }}
+                                                            transition={{
+                                                                duration: 1.5,
+                                                                delay: i * 0.5,
+                                                                repeat: Infinity
+                                                            }}
+                                                            className="text-xs"
+                                                        >
+                                                            {icon}
+                                                        </motion.span>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
                                         </>
                                     )}
 
