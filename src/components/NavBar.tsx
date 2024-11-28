@@ -12,6 +12,7 @@ import DesktopNavBar from './DesktopNavBar';
 import AIImageGenModal from './AIImageGenModal';
 import FileConversionModal from './FileConversionModal';
 import AnimeGenModal from './AnimeGenModal';
+import HumanGenModal from './HumanGenModal';
 
 const NavBar = () => {
     const router = useRouter();
@@ -22,6 +23,7 @@ const NavBar = () => {
     const [isAIImageGenModalOpen, setIsAIImageGenModalOpen] = useState(false);
     const [isFileConversionModalOpen, setIsFileConversionModalOpen] = useState(false);
     const [isAnimeGenModalOpen, setIsAnimeGenModalOpen] = useState(false);
+    const [isHumanGenModalOpen, setIsHumanGenModalOpen] = useState(false);
     const { auth } = useFirebase();
     const { getUserFromFirestore } = useFirestoreOperations();
 
@@ -101,6 +103,7 @@ const NavBar = () => {
                     setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
                     setIsFileConversionModalOpen={setIsFileConversionModalOpen}
                     setIsAnimeGenModalOpen={setIsAnimeGenModalOpen}
+                    setIsHumanGenModalOpen={setIsHumanGenModalOpen}
                 />
                 <DesktopNavBar
                     isAIToolsDropdownOpen={isAIToolsDropdownOpen}
@@ -113,6 +116,7 @@ const NavBar = () => {
                     setIsAIImageGenModalOpen={setIsAIImageGenModalOpen}
                     setIsFileConversionModalOpen={setIsFileConversionModalOpen}
                     setIsAnimeGenModalOpen={setIsAnimeGenModalOpen}
+                    setIsHumanGenModalOpen={setIsHumanGenModalOpen}
                 />
             </div>
             {isAIImageGenModalOpen && (
@@ -126,6 +130,9 @@ const NavBar = () => {
                     isOpen={isAnimeGenModalOpen}
                     onClose={() => setIsAnimeGenModalOpen(false)}
                 />
+            )}
+            {isHumanGenModalOpen && (
+                <HumanGenModal isOpen={isHumanGenModalOpen} onClose={() => setIsHumanGenModalOpen(false)} />
             )}
         </nav>
     );

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad, FaTheaterMasks, FaGraduationCap } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad, FaTheaterMasks, FaGraduationCap, FaPortrait } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type { MotionProps } from 'framer-motion';
@@ -19,6 +19,7 @@ interface DesktopNavBarProps {
     setIsAIImageGenModalOpen: (isOpen: boolean) => void;
     setIsFileConversionModalOpen: (isOpen: boolean) => void;
     setIsAnimeGenModalOpen: (isOpen: boolean) => void;
+    setIsHumanGenModalOpen: (isOpen: boolean) => void;
 }
 
 const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
@@ -30,7 +31,8 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
     handleLogout,
     setIsAIImageGenModalOpen,
     setIsFileConversionModalOpen,
-    setIsAnimeGenModalOpen
+    setIsAnimeGenModalOpen,
+    setIsHumanGenModalOpen
 }) => {
     const router = useRouter();
     const aiToolsRef = useRef<HTMLDivElement>(null);
@@ -80,8 +82,12 @@ const DesktopNavBar: React.FC<DesktopNavBarProps> = ({
                                             Tạo Hình Ảnh
                                         </button>
                                         <button onClick={() => { setIsAnimeGenModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-blue-400 hover:text-gray-800">
-                                            <FaImage className="mr-3" />
+                                            <FaTheaterMasks className="mr-3" />
                                             Tạo Ảnh Anime
+                                        </button>
+                                        <button onClick={() => { setIsHumanGenModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-blue-400 hover:text-gray-800">
+                                            <FaPortrait className="mr-3" />
+                                            Tạo Ảnh Người
                                         </button>
                                         <button onClick={() => { setIsFileConversionModalOpen(true); setIsAIToolsDropdownOpen(false); }} className="dropdown-item ai-hoverable hover:bg-blue-400 hover:text-gray-800">
                                             <FaExchangeAlt className="mr-3" />

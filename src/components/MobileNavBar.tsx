@@ -1,5 +1,5 @@
 import { IoClose } from 'react-icons/io5';
-import { FaBars } from 'react-icons/fa';
+import { FaBars, FaPortrait } from 'react-icons/fa';
 import { FaChevronDown, FaChevronUp, FaTools, FaSignOutAlt, FaUserCircle, FaUser, FaTrophy, FaCode, FaImage, FaComments, FaRobot, FaExchangeAlt, FaGamepad, FaTheaterMasks, FaGraduationCap } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -22,6 +22,7 @@ interface MobileNavBarProps {
     setIsAIImageGenModalOpen: (isOpen: boolean) => void;
     setIsFileConversionModalOpen: (isOpen: boolean) => void;
     setIsAnimeGenModalOpen: (isOpen: boolean) => void;
+    setIsHumanGenModalOpen: (isOpen: boolean) => void;
 }
 
 const MobileNavBar: React.FC<MobileNavBarProps> = ({
@@ -35,7 +36,8 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
     handleLogout,
     setIsAIImageGenModalOpen,
     setIsFileConversionModalOpen,
-    setIsAnimeGenModalOpen
+    setIsAnimeGenModalOpen,
+    setIsHumanGenModalOpen
 }) => {
     const router = useRouter();
     const sidebarRef = useRef<HTMLDivElement>(null);
@@ -147,8 +149,18 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({
                                                     }}
                                                     className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
                                                 >
-                                                    <FaImage className="mr-3" />
+                                                    <FaTheaterMasks className="mr-3" />
                                                     Tạo Ảnh Anime
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setIsHumanGenModalOpen(true);
+                                                        toggleSidebar();
+                                                    }}
+                                                    className="dropdown-item text-blue-400 hover:bg-blue-400 hover:text-gray-800"
+                                                >
+                                                    <FaPortrait className="mr-3" />
+                                                    Tạo Ảnh Người
                                                 </button>
                                                 <button
                                                     onClick={() => {
