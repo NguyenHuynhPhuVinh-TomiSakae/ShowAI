@@ -506,3 +506,225 @@
 .animate-power-line {
     animation: power-line 2s ease-in-out;
 }
+
+@keyframes ping-slow {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+}
+
+.animate-ping-slow {
+    animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-pulse-slow {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes circuit-flow {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+@keyframes grid-flow {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes icon-pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes feature-pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.5);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes button-pulse {
+    0% {
+        box-shadow: 0 0 0 0 currentColor;
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px transparent;
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 transparent;
+    }
+}
+
+@keyframes arrow-pulse {
+    0% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(4px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.5;
+    }
+}
+
+.animate-circuit-flow {
+    animation: circuit-flow 20s linear infinite;
+}
+
+.animate-grid-flow {
+    animation: grid-flow 15s linear infinite;
+}
+
+.animate-icon-pulse {
+    animation: icon-pulse 2s ease-in-out infinite;
+}
+
+.animate-feature-pulse {
+    animation: feature-pulse 1.5s ease-in-out infinite;
+}
+
+.animate-button-pulse {
+    animation: button-pulse 2s infinite;
+}
+
+.animate-arrow-pulse {
+    animation: arrow-pulse 1s ease-in-out infinite;
+}
+
+.animate-blink {
+    animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes feature-glow {
+    0% {
+        border-color: rgba(62, 82, 232, 0.3);
+    }
+
+    50% {
+        border-color: rgba(62, 82, 232, 0.6);
+    }
+
+    100% {
+        border-color: rgba(62, 82, 232, 0.3);
+    }
+}
+
+.hover\:feature-glow:hover {
+    animation: feature-glow 2s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spin-slow-reverse {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+}
+
+.animate-spin-slow-reverse {
+    animation: spin-slow-reverse 20s linear infinite;
+}
+
+@keyframes ping-slow {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    75%,
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes spin-slow {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes gradient-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
