@@ -50,6 +50,7 @@ export default function AIPages() {
     const router = useRouter();
     const pathname = usePathname();
     const isDesktop = useMediaQuery({ minWidth: 1024 });
+    const isMobileOrTablet = useMediaQuery({ maxWidth: 1023 });
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -94,58 +95,62 @@ export default function AIPages() {
                     className="text-center mb-16"
                 >
                     <div className="relative inline-block">
-                        <motion.div
-                            animate={{
-                                rotate: 360,
-                                scale: [1, 1.2, 1],
-                                borderWidth: ["2px", "3px", "2px"]
-                            }}
-                            transition={{
-                                rotate: { duration: 10, repeat: Infinity, ease: "linear" },
-                                scale: { duration: 2, repeat: Infinity },
-                                borderWidth: { duration: 2, repeat: Infinity }
-                            }}
-                            className="absolute -left-8 -top-8 w-6 h-6 border-l-2 border-t-2 border-indigo-400/50"
-                        ></motion.div>
-                        <motion.div
-                            animate={{
-                                rotate: -360,
-                                scale: [1, 1.2, 1],
-                                borderWidth: ["2px", "3px", "2px"]
-                            }}
-                            transition={{
-                                rotate: { duration: 10, repeat: Infinity, ease: "linear" },
-                                scale: { duration: 2, repeat: Infinity, delay: 0.5 },
-                                borderWidth: { duration: 2, repeat: Infinity, delay: 0.5 }
-                            }}
-                            className="absolute -right-8 -top-8 w-6 h-6 border-r-2 border-t-2 border-indigo-400/50"
-                        ></motion.div>
-                        <motion.div
-                            animate={{
-                                rotate: -360,
-                                scale: [1, 1.2, 1],
-                                borderWidth: ["2px", "3px", "2px"]
-                            }}
-                            transition={{
-                                rotate: { duration: 10, repeat: Infinity, ease: "linear" },
-                                scale: { duration: 2, repeat: Infinity, delay: 1 },
-                                borderWidth: { duration: 2, repeat: Infinity, delay: 1 }
-                            }}
-                            className="absolute -left-8 -bottom-8 w-6 h-6 border-l-2 border-b-2 border-indigo-400/50"
-                        ></motion.div>
-                        <motion.div
-                            animate={{
-                                rotate: 360,
-                                scale: [1, 1.2, 1],
-                                borderWidth: ["2px", "3px", "2px"]
-                            }}
-                            transition={{
-                                rotate: { duration: 10, repeat: Infinity, ease: "linear" },
-                                scale: { duration: 2, repeat: Infinity, delay: 1.5 },
-                                borderWidth: { duration: 2, repeat: Infinity, delay: 1.5 }
-                            }}
-                            className="absolute -right-8 -bottom-8 w-6 h-6 border-r-2 border-b-2 border-indigo-400/50"
-                        ></motion.div>
+                        {!isMobileOrTablet && (
+                            <>
+                                <motion.div
+                                    animate={{
+                                        rotate: 360,
+                                        scale: [1, 1.2, 1],
+                                        borderWidth: ["2px", "3px", "2px"]
+                                    }}
+                                    transition={{
+                                        rotate: { duration: 10, repeat: Infinity, ease: "linear" },
+                                        scale: { duration: 2, repeat: Infinity },
+                                        borderWidth: { duration: 2, repeat: Infinity }
+                                    }}
+                                    className="absolute -left-8 -top-8 w-6 h-6 border-l-2 border-t-2 border-indigo-400/50"
+                                ></motion.div>
+                                <motion.div
+                                    animate={{
+                                        rotate: -360,
+                                        scale: [1, 1.2, 1],
+                                        borderWidth: ["2px", "3px", "2px"]
+                                    }}
+                                    transition={{
+                                        rotate: { duration: 10, repeat: Infinity, ease: "linear" },
+                                        scale: { duration: 2, repeat: Infinity, delay: 0.5 },
+                                        borderWidth: { duration: 2, repeat: Infinity, delay: 0.5 }
+                                    }}
+                                    className="absolute -right-8 -top-8 w-6 h-6 border-r-2 border-t-2 border-indigo-400/50"
+                                ></motion.div>
+                                <motion.div
+                                    animate={{
+                                        rotate: -360,
+                                        scale: [1, 1.2, 1],
+                                        borderWidth: ["2px", "3px", "2px"]
+                                    }}
+                                    transition={{
+                                        rotate: { duration: 10, repeat: Infinity, ease: "linear" },
+                                        scale: { duration: 2, repeat: Infinity, delay: 1 },
+                                        borderWidth: { duration: 2, repeat: Infinity, delay: 1 }
+                                    }}
+                                    className="absolute -left-8 -bottom-8 w-6 h-6 border-l-2 border-b-2 border-indigo-400/50"
+                                ></motion.div>
+                                <motion.div
+                                    animate={{
+                                        rotate: 360,
+                                        scale: [1, 1.2, 1],
+                                        borderWidth: ["2px", "3px", "2px"]
+                                    }}
+                                    transition={{
+                                        rotate: { duration: 10, repeat: Infinity, ease: "linear" },
+                                        scale: { duration: 2, repeat: Infinity, delay: 1.5 },
+                                        borderWidth: { duration: 2, repeat: Infinity, delay: 1.5 }
+                                    }}
+                                    className="absolute -right-8 -bottom-8 w-6 h-6 border-r-2 border-b-2 border-indigo-400/50"
+                                ></motion.div>
+                            </>
+                        )}
 
                         <h2 className="text-4xl sm:text-6xl font-bold text-transparent 
                             bg-gradient-to-r from-indigo-300 via-blue-400 to-indigo-300 bg-clip-text
@@ -155,38 +160,42 @@ export default function AIPages() {
                             Khám Phá Các Tính Năng AI
                         </h2>
 
-                        <motion.div
-                            animate={{
-                                rotate: 360,
-                                boxShadow: [
-                                    "0 0 0 rgba(99,102,241,0.2)",
-                                    "0 0 15px rgba(99,102,241,0.4)",
-                                    "0 0 0 rgba(99,102,241,0.2)"
-                                ]
-                            }}
-                            transition={{
-                                rotate: { duration: 8, repeat: Infinity, ease: "linear" },
-                                boxShadow: { duration: 2, repeat: Infinity }
-                            }}
-                            className="absolute -left-12 top-1/2 w-8 h-8 border-2 border-indigo-400/50 rounded-full
-                                before:content-[''] before:absolute before:inset-1 before:border-2 before:border-indigo-400/50 before:rounded-full"
-                        ></motion.div>
-                        <motion.div
-                            animate={{
-                                rotate: -360,
-                                boxShadow: [
-                                    "0 0 0 rgba(99,102,241,0.2)",
-                                    "0 0 15px rgba(99,102,241,0.4)",
-                                    "0 0 0 rgba(99,102,241,0.2)"
-                                ]
-                            }}
-                            transition={{
-                                rotate: { duration: 8, repeat: Infinity, ease: "linear" },
-                                boxShadow: { duration: 2, repeat: Infinity, delay: 1 }
-                            }}
-                            className="absolute -right-12 top-1/2 w-8 h-8 border-2 border-indigo-400/50 rounded-full
-                                before:content-[''] before:absolute before:inset-1 before:border-2 before:border-indigo-400/50 before:rounded-full"
-                        ></motion.div>
+                        {!isMobileOrTablet && (
+                            <>
+                                <motion.div
+                                    animate={{
+                                        rotate: 360,
+                                        boxShadow: [
+                                            "0 0 0 rgba(99,102,241,0.2)",
+                                            "0 0 15px rgba(99,102,241,0.4)",
+                                            "0 0 0 rgba(99,102,241,0.2)"
+                                        ]
+                                    }}
+                                    transition={{
+                                        rotate: { duration: 8, repeat: Infinity, ease: "linear" },
+                                        boxShadow: { duration: 2, repeat: Infinity }
+                                    }}
+                                    className="absolute -left-12 top-1/2 w-8 h-8 border-2 border-indigo-400/50 rounded-full
+                                        before:content-[''] before:absolute before:inset-1 before:border-2 before:border-indigo-400/50 before:rounded-full"
+                                ></motion.div>
+                                <motion.div
+                                    animate={{
+                                        rotate: -360,
+                                        boxShadow: [
+                                            "0 0 0 rgba(99,102,241,0.2)",
+                                            "0 0 15px rgba(99,102,241,0.4)",
+                                            "0 0 0 rgba(99,102,241,0.2)"
+                                        ]
+                                    }}
+                                    transition={{
+                                        rotate: { duration: 8, repeat: Infinity, ease: "linear" },
+                                        boxShadow: { duration: 2, repeat: Infinity, delay: 1 }
+                                    }}
+                                    className="absolute -right-12 top-1/2 w-8 h-8 border-2 border-indigo-400/50 rounded-full
+                                        before:content-[''] before:absolute before:inset-1 before:border-2 before:border-indigo-400/50 before:rounded-full"
+                                ></motion.div>
+                            </>
+                        )}
 
                         <motion.div
                             animate={{
@@ -519,19 +528,36 @@ export default function AIPages() {
 
                                             {/* IDE-like tab bar */}
                                             <motion.div
-                                                className="absolute top-8 right-8 flex space-x-2"
+                                                className="absolute top-8 right-8 flex space-x-2 overflow-hidden max-w-[150px] sm:max-w-none"
                                                 animate={{ opacity: [0.5, 0.8, 0.5] }}
                                                 transition={{ duration: 2, repeat: Infinity }}
                                             >
-                                                {['index.tsx', 'styles.css', 'utils.ts'].map((file, i) => (
-                                                    <div
-                                                        key={file}
-                                                        className={`text-xs px-3 py-1 rounded-t-md font-mono
-                                                            ${i === 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-500/10 text-emerald-400/50'}`}
-                                                    >
-                                                        {file}
-                                                    </div>
-                                                ))}
+                                                <motion.div
+                                                    className="flex space-x-2"
+                                                    animate={{
+                                                        x: isMobileOrTablet ? [-200, 0] : 0
+                                                    }}
+                                                    transition={{
+                                                        x: isMobileOrTablet ? {
+                                                            duration: 8,
+                                                            repeat: Infinity,
+                                                            repeatType: "reverse",
+                                                            ease: "linear"
+                                                        } : {
+                                                            duration: 0
+                                                        }
+                                                    }}
+                                                >
+                                                    {['index.tsx', 'styles.css', 'utils.ts'].map((file, i) => (
+                                                        <div
+                                                            key={file}
+                                                            className={`text-[10px] sm:text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-t-md font-mono whitespace-nowrap
+                                                                ${i === 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-500/10 text-emerald-400/50'}`}
+                                                        >
+                                                            {file}
+                                                        </div>
+                                                    ))}
+                                                </motion.div>
                                             </motion.div>
 
                                             {/* Terminal window */}
