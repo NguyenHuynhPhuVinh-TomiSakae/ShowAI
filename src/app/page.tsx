@@ -47,7 +47,7 @@ export default function Home() {
   const [allTags, setAllTags] = useState<string[]>([]);
   const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [showLoading, setShowLoading] = useState(true);
   const router = useRouter();
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -86,7 +86,7 @@ export default function Home() {
         }
       } finally {
         setIsLoading(false);
-        setInitialLoading(false);
+        setShowLoading(false);
       }
     };
 
@@ -96,7 +96,7 @@ export default function Home() {
   }, []);
 
   const handleLoadingComplete = () => {
-    setInitialLoading(false);
+    setShowLoading(false);
   };
 
   const handlePageChange = async (newPage: number) => {
@@ -152,68 +152,70 @@ export default function Home() {
 
   return (
     <>
-      {initialLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
+      {showLoading ? (
+        <LoadingScreen onLoadingComplete={handleLoadingComplete} />
+      ) : (
+        <div className="bg-[#0F172A] text-white min-h-screen">
+          <style jsx global>{`
+            html, body {
+              scrollbar-width: none;
+              -ms-overflow-style: none;
+            }
+            html::-webkit-scrollbar,
+            body::-webkit-scrollbar {
+              display: none;
+            }
+          `}</style>
 
-      <div className="bg-[#0F172A] text-white min-h-screen">
-        <style jsx global>{`
-          html, body {
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-          }
-          html::-webkit-scrollbar,
-          body::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
+          {isMounted && (
+            <>
+              <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
+              <div className="px-4 py-8">
+                {isLoading && !showLoading ? (
+                  <SkeletonLoader />
+                ) : error ? (
+                  <div className="text-center text-red-500">{error}</div>
+                ) : aiWebsites && aiWebsites.length > 0 ? (
+                  <WebsiteList websites={aiWebsites} onTagClick={handleTagSearch} />
+                ) : null}
 
-        {isMounted && (
-          <>
-            <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
-            <div className="px-4 py-8">
-              {isLoading && !initialLoading ? (
-                <SkeletonLoader />
-              ) : error ? (
-                <div className="text-center text-red-500">{error}</div>
-              ) : aiWebsites && aiWebsites.length > 0 ? (
-                <WebsiteList websites={aiWebsites} onTagClick={handleTagSearch} />
-              ) : null}
+                {paginationInfo && (
+                  <div className="mt-8 flex justify-center items-center space-x-4">
+                    {paginationInfo.currentPage > 1 && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(paginationInfo.currentPage - 1)}
+                      >
+                        <FaChevronLeft className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <span>{paginationInfo.currentPage}</span>
+                    {paginationInfo.currentPage < paginationInfo.totalPages && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(paginationInfo.currentPage + 1)}
+                      >
+                        <FaChevronRight className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <CombinedFeatures />
+              <AIPowered />
+              <AIPages />
+              <AIUpdates />
+              <FlutterAIApp />
+            </>
+          )}
 
-              {paginationInfo && (
-                <div className="mt-8 flex justify-center items-center space-x-4">
-                  {paginationInfo.currentPage > 1 && (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handlePageChange(paginationInfo.currentPage - 1)}
-                    >
-                      <FaChevronLeft className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <span>{paginationInfo.currentPage}</span>
-                  {paginationInfo.currentPage < paginationInfo.totalPages && (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handlePageChange(paginationInfo.currentPage + 1)}
-                    >
-                      <FaChevronRight className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-            <CombinedFeatures />
-            <AIPowered />
-            <AIPages />
-            <AIUpdates />
-            <FlutterAIApp />
-          </>
-        )}
-
-        <ModalPortal>
-          {!isMobile && <CustomScrollbar />}
-        </ModalPortal>
-      </div>
+          <ModalPortal>
+            {!isMobile && <CustomScrollbar />}
+          </ModalPortal>
+        </div>
+      )}
     </>
   );
 }
