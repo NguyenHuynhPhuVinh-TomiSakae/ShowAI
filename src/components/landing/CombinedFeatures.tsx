@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
-import { FaSearch, FaStar, FaUsers, FaRobot, FaBrain, FaCode, FaImage, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { useMediaQuery } from 'react-responsive';
+import React, { useState } from 'react';
+import { FaSearch, FaStar, FaUsers, FaRobot, FaBrain, FaCode, FaImage } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 const features = [
     {
@@ -80,300 +79,445 @@ const aiModels = [
         icon: <FaBrain className="w-8 h-8" />,
         name: 'Qwen 2 72B',
         description: 'Mô hình lớn nhất từ Alibaba, ngang tầm với Meta Llama 3 và tốt nhất cho tiếng Trung. Hỗ trợ 128k token.',
-        features: ['Xử lý ngôn ngữ tự nhiên', 'Hỗ trợ đa ngôn ngữ', 'Ngữ cảnh dài 128k']
+        features: ['Xử l ngôn ngữ tự nhiên', 'Hỗ trợ đa ngôn ngữ', 'Ngữ cảnh dài 128k']
     }
 ];
 
-const LightningEffect = ({ direction, style }: {
-    direction: 'horizontal' | 'vertical';
-    style?: React.CSSProperties;
-}) => (
-    <div style={style} className="relative">
-        <div className={`absolute ${direction === 'horizontal' ? 'h-[1px] w-full' : 'w-[1px] h-full'} bg-[#3E52E8]/10`} />
-        <motion.div
-            className={`absolute ${direction === 'horizontal' ? 'h-[1px] w-[20%]' : 'w-[1px] h-[20%]'} bg-[#3E52E8]/40`}
-            animate={{
-                [direction === 'horizontal' ? 'x' : 'y']: ['0%', '400%'],
-            }}
-            transition={{
-                duration: 2,
-                repeat: Infinity,
-                repeatDelay: Math.random() * 5
-            }}
-        />
-    </div>
-);
-
-const CardWrapper = React.memo(({ children, index }: { children: React.ReactNode, index: number }) => {
-    const animationConfig = useMemo(() => ({
-        initial: { opacity: 0, y: 20 },
-        whileInView: { opacity: 1, y: 0 },
-        viewport: { once: true, amount: 0.3 },
-        transition: {
-            duration: 0.5,
-            delay: index * 0.1,
-            type: "tween"
-        }
-    }), [index]);
-
-    return (
-        <motion.div
-            {...animationConfig}
-            className="group relative bg-gradient-to-br from-[#2A3284]/10 to-[#3E52E8]/10 
-                       backdrop-blur-md rounded-2xl p-6 border border-[#3E52E8]/20
-                       hover:border-[#3E52E8]/50 transition-all duration-300
-                       hover:shadow-lg hover:shadow-[#3E52E8]/20
-                       will-change-transform"
-        >
-            <div className="relative z-10">
-                {children}
-            </div>
-        </motion.div>
-    );
-});
-CardWrapper.displayName = 'CardWrapper';
-
-const BackgroundEffects = React.memo(() => {
-    return (
-        <div className="absolute inset-0">
-            {/* Grid Lines */}
-            {[...Array(20)].map((_, i) => (
-                <React.Fragment key={i}>
-                    <LightningEffect
-                        direction="horizontal"
-                        style={{ top: `${(i + 1) * 5}%` }}
-                    />
-                    <LightningEffect
-                        direction="vertical"
-                        style={{ left: `${(i + 1) * 5}%` }}
-                    />
-                </React.Fragment>
-            ))}
-
-            {/* Corner Spotlights */}
-            <div className="absolute -top-[40px] -left-[40px] w-[20rem] h-[20rem]">
-                <motion.div
-                    className="absolute top-0 left-0 w-12 h-full bg-gradient-to-b from-white/70 via-white/30 to-transparent transform origin-top-left blur-[2px]"
-                    animate={{ rotate: [25, 35, 25] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <motion.div
-                    className="absolute top-0 left-0 w-full h-12 bg-gradient-to-r from-white/70 via-white/30 to-transparent transform origin-top-left blur-[2px]"
-                    animate={{ rotate: [25, 35, 25] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                />
-            </div>
-            <div className="absolute -top-[40px] -right-[40px] w-[20rem] h-[20rem]">
-                <motion.div
-                    className="absolute top-0 right-0 w-12 h-full bg-gradient-to-b from-white/70 via-white/30 to-transparent transform origin-top-right blur-[2px]"
-                    animate={{ rotate: [-25, -35, -25] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <motion.div
-                    className="absolute top-0 right-0 w-full h-12 bg-gradient-to-l from-white/70 via-white/30 to-transparent transform origin-top-right blur-[2px]"
-                    animate={{ rotate: [-25, -35, -25] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                />
-            </div>
-
-            {/* Moving Points */}
-            <div className="absolute inset-0">
-                {/* Thêm các điểm chuyển động */}
-                {[
-                    { color: 'blue-400/50', shadow: 'rgba(96, 165, 250, 0.3)', top: '15%', left: '20%' },
-                    { color: 'purple-400/50', shadow: 'rgba(168, 85, 247, 0.3)', top: '10%', right: '25%' },
-                    { color: 'cyan-400/50', shadow: 'rgba(34, 211, 238, 0.3)', top: '25%', left: '40%' },
-                    { color: 'indigo-400/50', shadow: 'rgba(129, 140, 248, 0.3)', top: '20%', right: '35%' },
-                    { color: 'pink-400/50', shadow: 'rgba(244, 114, 182, 0.3)', top: '15%', left: '65%' }
-                ].map((point, index) => (
-                    <motion.div
-                        key={index}
-                        className={`absolute h-2 w-2 rounded-full bg-${point.color}`}
-                        style={{
-                            boxShadow: `0 0 10px 2px ${point.shadow}`,
-                            top: point.top,
-                            left: point.left,
-                            right: point.right
-                        }}
-                        animate={{
-                            x: [10, -10, 10],
-                            y: [5, -5, 5],
-                        }}
-                        transition={{
-                            duration: 4 + index,
-                            ease: "easeInOut",
-                            repeat: Infinity,
-                            delay: index * 0.5
-                        }}
-                    />
-                ))}
-            </div>
+const Card = ({ children }: { children: React.ReactNode }) => (
+    <div className="bg-gray-800 rounded-lg p-4 sm:p-6 relative group hover:bg-gray-800/80 
+                    transition-all duration-300 overflow-hidden
+                    border border-gray-700/50 hover:border-blue-500/50
+                    shadow-lg hover:shadow-blue-500/20">
+        <div className="absolute -top-2 -left-2 w-4 h-4">
+            <div className="absolute w-full h-[1px] bg-blue-500/50 transform rotate-45" />
+            <div className="absolute h-full w-[1px] bg-blue-500/50" />
         </div>
-    );
-});
-BackgroundEffects.displayName = 'BackgroundEffects';
+        <div className="absolute -top-2 -right-2 w-4 h-4">
+            <div className="absolute w-full h-[1px] bg-blue-500/50 transform -rotate-45" />
+            <div className="absolute h-full w-[1px] bg-blue-500/50 right-0" />
+        </div>
 
-const IconWrapper = ({ icon }: { icon: React.ReactNode }) => (
-    <div className="text-[#3E52E8] mb-4 transform group-hover:scale-110 transition-transform duration-300">
-        {icon}
+        <motion.div
+            className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/50"
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+        />
+
+        <div className="absolute inset-x-8 top-0">
+            <motion.div
+                className="h-[1px] w-full"
+                animate={{
+                    background: ['linear-gradient(90deg, transparent, #3B82F6, transparent)',
+                        'linear-gradient(90deg, transparent, transparent, transparent)']
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+            />
+        </div>
+
+        <div className="absolute inset-0 opacity-5 bg-circuit-pattern" />
+
+        {children}
     </div>
 );
 
 const FeaturesContent = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {features.map((feature, index) => (
-            <CardWrapper key={index} index={index}>
-                <div className="relative">
-                    <IconWrapper icon={feature.icon} />
-                    <h3 className="text-xl font-semibold text-gray-100 mb-2">
-                        {feature.title}
-                    </h3>
-                    <p className="text-gray-300 mb-4">{feature.description}</p>
-                    <ul className="space-y-2">
-                        {feature.features.map((item) => (
-                            <li key={item} className="text-gray-200 flex items-center">
-                                <FaRobot className="w-4 h-4 mr-2 text-[#3E52E8]" />
-                                {item}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </CardWrapper>
+            <Card key={index}>
+                <div className="text-blue-500 mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
+                <p className="text-gray-300 mb-4">{feature.description}</p>
+                <ul className="space-y-2">
+                    {feature.features.map((item) => (
+                        <li key={item} className="text-gray-200">{item}</li>
+                    ))}
+                </ul>
+            </Card>
         ))}
     </div>
 );
 
 const IntegrationContent = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {aiServices.map((service, index) => (
-            <CardWrapper key={service.name} index={index}>
-                <div className="relative">
-                    <IconWrapper icon={service.icon} />
-                    <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-blue-400">{service.name}</h3>
-                    <p className="text-gray-300 mb-4">{service.description}</p>
-                    <ul className="space-y-2">
-                        {service.features.map((feature) => (
-                            <li key={feature} className="text-gray-200 flex items-center">
-                                <FaRobot className="w-4 h-4 mr-2 text-[#3E52E8]" />
-                                {feature}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </CardWrapper>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {aiServices.map((service) => (
+            <Card key={service.name}>
+                <div className="text-blue-500 mb-4">{service.icon}</div>
+                <h3 className="text-xl font-semibold text-white mb-2">{service.name}</h3>
+                <p className="text-gray-300 mb-4">{service.description}</p>
+                <ul className="space-y-2">
+                    {service.features.map((feature) => (
+                        <li key={feature} className="text-gray-200">{feature}</li>
+                    ))}
+                </ul>
+            </Card>
         ))}
     </div>
 );
 
 const ModelsContent = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {aiModels.map((model, index) => (
-            <CardWrapper key={model.name} index={index}>
-                <div className="relative">
-                    <IconWrapper icon={model.icon} />
-                    <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-blue-400">{model.name}</h3>
-                    <p className="text-gray-300 mb-4">{model.description}</p>
-                    <ul className="space-y-2">
-                        {model.features.map((feature) => (
-                            <li key={feature} className="text-gray-200 flex items-center">
-                                <FaRobot className="w-4 h-4 mr-2 text-[#3E52E8]" />
-                                {feature}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </CardWrapper>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {aiModels.map((model) => (
+            <Card key={model.name}>
+                <div className="text-blue-500 mb-4">{model.icon}</div>
+                <h3 className="text-xl font-semibold text-white mb-2">{model.name}</h3>
+                <p className="text-gray-300 mb-4">{model.description}</p>
+                <ul className="space-y-2">
+                    {model.features.map((feature) => (
+                        <li key={feature} className="text-gray-200">{feature}</li>
+                    ))}
+                </ul>
+            </Card>
         ))}
     </div>
 );
 
 export default function CombinedFeatures() {
     const [activeSection, setActiveSection] = useState<'features' | 'integration' | 'models'>('features');
-    const isDesktop = useMediaQuery({ minWidth: 1024 });
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
-    const contentSections = useMemo(() => ({
-        features: <FeaturesContent />,
-        integration: <IntegrationContent />,
-        models: <ModelsContent />
-    }), []);
+    const handleSectionChange = (section: typeof activeSection) => {
+        setIsTransitioning(true);
+        setTimeout(() => {
+            setActiveSection(section);
+            setIsTransitioning(false);
+        }, 300);
+    };
+
+    const getContent = () => {
+        const content = {
+            features: <FeaturesContent />,
+            integration: <IntegrationContent />,
+            models: <ModelsContent />
+        }[activeSection] || <FeaturesContent />;
+
+        return (
+            <motion.div
+                key={activeSection}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.5 }}
+                className="relative"
+            >
+                {isTransitioning && (
+                    <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent"
+                        initial={{ x: '-100%' }}
+                        animate={{ x: '100%' }}
+                        transition={{ duration: 0.3 }}
+                    />
+                )}
+                {content}
+            </motion.div>
+        );
+    };
 
     return (
-        <LazyMotion features={domAnimation}>
-            <div className="relative bg-[#0F172A] py-16 overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="relative bg-gradient-to-br from-[#1E293B]/50 to-[#0F172A]/50 rounded-3xl p-8 
-                                  backdrop-blur-lg border border-[#3E52E8]/20 overflow-hidden
-                                  shadow-lg hover:shadow-xl transition-all duration-500">
-                        <BackgroundEffects />
-
-                        <div className="relative z-10">
+        <div className="py-8 sm:py-16 relative">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div className="relative border-2 border-gray-700/50 rounded-2xl p-4 sm:p-8 
+                               bg-gradient-to-b from-gray-900 via-gray-800/50 to-gray-900">
+                    {/* Góc máy */}
+                    {['-top-2 -left-2', '-top-2 -right-2', '-bottom-2 -left-2', '-bottom-2 -right-2'].map((position, i) => (
+                        <div key={i} className={`absolute ${position} w-6 h-6`}>
                             <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5 }}
-                                className="text-center mb-12"
-                            >
-                                <h2 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent 
-                                    bg-gradient-to-r from-blue-400 to-purple-500 leading-tight py-2">
-                                    {activeSection === 'features'
-                                        ? 'Tính Năng Nổi Bật'
-                                        : activeSection === 'integration'
-                                            ? 'Tích Hợp Đa Dạng API AI'
-                                            : 'Mô Hình AI Hàng Đầu'}
-                                </h2>
-                                <p className="mt-4 text-xl text-gray-300 max-w-3xl mx-auto">
-                                    {activeSection === 'features'
-                                        ? 'Khám phá những tính năng giúp bạn tối ưu trải nghiệm với AI'
-                                        : activeSection === 'integration'
-                                            ? 'ShowAI tận dụng sức mạnh của nhiều API AI hàng đầu để mang đến trải nghiệm toàn diện'
-                                            : 'Khám phá các mô hình AI tiên tiến nhất hiện nay'}
-                                </p>
-                            </motion.div>
+                                className="absolute inset-0 border-2 border-blue-500/30"
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                            />
+                            <div className="absolute inset-2 bg-blue-500/10 rounded-full" />
+                            <motion.div
+                                className="absolute inset-[6px] bg-blue-500/30 rounded-full"
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            />
+                        </div>
+                    ))}
 
-                            <div className="relative w-full">
-                                <AnimatePresence mode="wait" initial={false}>
+                    {/* Đường ống dẫn điện */}
+                    <div className="absolute -left-3 top-1/4 w-6 h-32">
+                        <div className="absolute inset-0 border-l-2 border-blue-500/30" />
+                        {[0, 1, 2].map((i) => (
+                            <motion.div
+                                key={i}
+                                className="absolute left-0 w-2 h-2 bg-blue-500/30"
+                                style={{ top: `${i * 40}%` }}
+                                animate={{
+                                    opacity: [0.3, 1, 0.3],
+                                    width: ['8px', '16px', '8px']
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    delay: i * 0.3,
+                                    repeat: Infinity
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Điều chỉnh bảng điều khiển trên */}
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4
+                                  bg-gray-800 px-3 sm:px-6 py-1 sm:py-2 rounded-full border border-gray-700
+                                  flex items-center gap-2 sm:gap-4">
+                        <motion.div
+                            className="w-2 sm:w-3 h-2 sm:h-3 rounded-full bg-green-500/50"
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                        />
+                        <div className="text-[10px] sm:text-xs text-gray-400 font-mono">SYSTEM ACTIVE</div>
+                        <motion.div
+                            className="w-2 sm:w-3 h-2 sm:h-3 rounded-full bg-blue-500/50"
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, delay: 0.5, repeat: Infinity }}
+                        />
+                    </div>
+
+                    {/* Thêm đường dẫn năng lượng */}
+                    <div className="absolute -right-3 top-1/3 w-6 h-40">
+                        <div className="absolute inset-0 border-r-2 border-blue-500/30" />
+                        {[...Array(4)].map((_, i) => (
+                            <motion.div
+                                key={i}
+                                className="absolute right-0 w-2 h-2 bg-blue-500/30"
+                                style={{ top: `${i * 30}%` }}
+                                animate={{
+                                    opacity: [0.3, 1, 0.3],
+                                    width: ['8px', '16px', '8px']
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    delay: i * 0.3,
+                                    repeat: Infinity
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Điều chỉnh bảng điều khiển góc trên phải */}
+                    <div className="hidden sm:block absolute top-4 right-4 bg-gray-800/80 rounded-lg p-3
+                                  border border-gray-700/50 text-xs font-mono">
+                        <div className="flex items-center gap-2 mb-2">
+                            <motion.div
+                                className="w-2 h-2 rounded-full bg-green-500"
+                                animate={{ opacity: [0.5, 1, 0.5] }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                            />
+                            <span className="text-gray-400">SYSTEM READY</span>
+                        </div>
+                        <div className="space-y-1">
+                            {['SCANNING', 'PROCESSING', 'RENDERING'].map((status, i) => (
+                                <div key={status} className="flex items-center gap-2">
                                     <motion.div
-                                        key={activeSection}
-                                        initial={{ x: isDesktop ? 100 : 50, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        exit={{ x: isDesktop ? -100 : -50, opacity: 0 }}
-                                        transition={{ duration: 0.3, type: "tween" }}
-                                        className="w-full"
+                                        className="h-1 w-12 bg-blue-500/20 rounded-full overflow-hidden"
+                                        animate={{
+                                            backgroundColor: [
+                                                'rgba(59,130,246,0.2)',
+                                                'rgba(59,130,246,0.4)',
+                                                'rgba(59,130,246,0.2)'
+                                            ]
+                                        }}
+                                        transition={{ duration: 2, delay: i * 0.3, repeat: Infinity }}
                                     >
-                                        {contentSections[activeSection]}
+                                        <motion.div
+                                            className="h-full bg-blue-500"
+                                            animate={{ x: ['-100%', '100%'] }}
+                                            transition={{ duration: 2, delay: i * 0.3, repeat: Infinity }}
+                                        />
                                     </motion.div>
-                                </AnimatePresence>
+                                    <span className="text-gray-500">{status}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Nội dung chính */}
+                    <div className="space-y-6 sm:space-y-12 mt-6 sm:mt-0">
+                        {/* Tiêu đề với đèn báo */}
+                        <motion.div
+                            className="text-center relative pt-4 sm:pt-0"
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: false, amount: 0.3 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <div className="flex items-center justify-center gap-2 sm:gap-4 mb-2 sm:mb-4">
+                                {[0, 1, 2].map((i) => (
+                                    <motion.div
+                                        key={i}
+                                        className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-blue-500/50"
+                                        animate={{
+                                            scale: [1, 1.2, 1],
+                                            opacity: [0.5, 1, 0.5]
+                                        }}
+                                        transition={{
+                                            duration: 1.5,
+                                            delay: i * 0.2,
+                                            repeat: Infinity
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                            <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 px-2">
+                                {activeSection === 'features'
+                                    ? 'Tính Năng Nổi Bật'
+                                    : activeSection === 'integration'
+                                        ? 'Tích Hợp Đa Dạng API AI'
+                                        : 'Mô Hình AI Hàng Đầu'}
+                            </h2>
+
+                            {/* Thanh trạng thái */}
+                            <div className="max-w-[200px] sm:max-w-xs mx-auto mt-2 sm:mt-4 bg-gray-800 rounded-lg p-1.5 sm:p-2
+                                          border border-gray-700/50">
+                                <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-400">
+                                    <span>Status:</span>
+                                    <motion.span
+                                        animate={{ opacity: [0.5, 1, 0.5] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                    >
+                                        OPERATIONAL
+                                    </motion.span>
+                                </div>
+                                <motion.div
+                                    className="h-0.5 sm:h-1 bg-blue-500/20 rounded-full mt-1 sm:mt-2"
+                                    animate={{
+                                        scaleX: [0.3, 1, 0.3],
+                                        opacity: [0.5, 1, 0.5]
+                                    }}
+                                    transition={{ duration: 3, repeat: Infinity }}
+                                />
+                            </div>
+                        </motion.div>
+
+                        {/* Grid nội dung */}
+                        <motion.div
+                            className="relative"
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: false, amount: 0.3 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                        >
+                            {/* Đường kết nối */}
+                            <div className="absolute inset-0 grid grid-cols-4 gap-6 pointer-events-none">
+                                {[...Array(3)].map((_, i) => (
+                                    <motion.div
+                                        key={i}
+                                        className="col-span-1 border-t-2 border-blue-500/20"
+                                        animate={{ opacity: [0.2, 0.5, 0.2] }}
+                                        transition={{
+                                            duration: 2,
+                                            delay: i * 0.3,
+                                            repeat: Infinity
+                                        }}
+                                    />
+                                ))}
                             </div>
 
-                            <div className="flex justify-center gap-6 mt-12">
+                            {getContent()}
+                        </motion.div>
+
+                        {/* Nút điều khiển phân trang cải tiến */}
+                        <motion.div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-4 sm:mt-8">
+                            {['features', 'integration', 'models'].map((section) => (
                                 <button
-                                    onClick={() => {
-                                        if (activeSection === 'integration') setActiveSection('features');
-                                        if (activeSection === 'models') setActiveSection('integration');
-                                    }}
-                                    className={`p-4 rounded-full bg-[#3E52E8]/20 text-white 
-                                        ${activeSection !== 'features' ? 'opacity-100' : 'opacity-0'}
-                                        transition-all hover:bg-[#3E52E8]/50`}
+                                    key={section}
+                                    onClick={() => handleSectionChange(section as any)}
+                                    className={`px-3 sm:px-6 py-2 rounded-lg relative overflow-hidden text-xs sm:text-sm
+                                              ${activeSection === section ? 'bg-blue-500/20' : 'bg-gray-800'}
+                                              border border-gray-700 hover:border-blue-500/50
+                                              transition-all duration-300 group`}
+                                    disabled={isTransitioning}
                                 >
-                                    <FaChevronLeft className="w-5 h-5" />
+                                    {/* Hiệu ứng loading khi chuyển trang */}
+                                    {isTransitioning && activeSection === section && (
+                                        <motion.div
+                                            className="absolute inset-0 bg-blue-500/10"
+                                            animate={{
+                                                opacity: [0.2, 0.5, 0.2]
+                                            }}
+                                            transition={{ duration: 0.3, repeat: Infinity }}
+                                        />
+                                    )}
+
+                                    {/* Đèn trạng thái cải tiến */}
+                                    <div className="absolute top-1.5 right-1.5 w-2 h-2">
+                                        <motion.div
+                                            className={`absolute inset-0 rounded-full 
+                                                      ${activeSection === section ? 'bg-green-500' : 'bg-gray-500'}`}
+                                            animate={activeSection === section ? {
+                                                scale: [1, 1.2, 1],
+                                                opacity: [0.5, 1, 0.5]
+                                            } : {}}
+                                            transition={{ duration: 1.5, repeat: Infinity }}
+                                        />
+                                        {activeSection === section && (
+                                            <motion.div
+                                                className="absolute inset-0 rounded-full bg-green-500"
+                                                animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                                                transition={{ duration: 1, repeat: Infinity }}
+                                            />
+                                        )}
+                                    </div>
+
+                                    <span className="relative z-10 text-sm font-medium text-gray-300
+                                                   group-hover:text-white transition-colors">
+                                        {section === 'features' ? 'Tính năng' :
+                                            section === 'integration' ? 'API' : 'Mô hình'}
+                                    </span>
+
+                                    {/* Hiệu ứng quét nâng cao */}
+                                    <motion.div
+                                        className="absolute inset-0 bg-gradient-to-r from-transparent 
+                                                 via-blue-500/10 to-transparent"
+                                        animate={{ x: [-100, 200] }}
+                                        transition={{ duration: 1.5, repeat: Infinity }}
+                                    />
                                 </button>
-                                <button
-                                    onClick={() => {
-                                        if (activeSection === 'features') setActiveSection('integration');
-                                        if (activeSection === 'integration') setActiveSection('models');
-                                    }}
-                                    className={`p-4 rounded-full bg-[#3E52E8]/20 text-white 
-                                        ${activeSection !== 'models' ? 'opacity-100' : 'opacity-0'}
-                                        transition-all hover:bg-[#3E52E8]/50`}
-                                >
-                                    <FaChevronRight className="w-5 h-5" />
-                                </button>
-                            </div>
+                            ))}
+                        </motion.div>
+                    </div>
+
+                    {/* Bảng thông số góc dưới - ẩn trên mobile */}
+                    <div className="hidden sm:block absolute bottom-4 right-4 bg-gray-800/80 rounded-lg p-3
+                                  border border-gray-700/50 text-xs font-mono">
+                        <div className="flex items-center gap-2 text-gray-400">
+                            <motion.div
+                                className="w-1.5 h-1.5 rounded-full bg-blue-500"
+                                animate={{ opacity: [0.5, 1, 0.5] }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                            />
+                            System Load:
+                            <motion.span
+                                animate={{ opacity: [0.5, 1, 0.5] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            >
+                                {Math.floor(Math.random() * 30 + 70)}%
+                            </motion.span>
+                        </div>
+                        <div className="mt-1 grid grid-cols-2 gap-2">
+                            {['CPU', 'RAM', 'NETWORK', 'STORAGE'].map((metric) => (
+                                <div key={metric} className="flex items-center gap-1">
+                                    <motion.div
+                                        className="h-1 w-8 bg-blue-500/20 rounded-full overflow-hidden"
+                                        animate={{
+                                            backgroundColor: ['rgba(59,130,246,0.2)',
+                                                'rgba(59,130,246,0.4)',
+                                                'rgba(59,130,246,0.2)']
+                                        }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                    >
+                                        <motion.div
+                                            className="h-full bg-blue-500"
+                                            animate={{ width: ['30%', '70%', '30%'] }}
+                                            transition={{ duration: 3, repeat: Infinity }}
+                                        />
+                                    </motion.div>
+                                    <span className="text-gray-500">{metric}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
-        </LazyMotion>
+        </div>
     );
 }
