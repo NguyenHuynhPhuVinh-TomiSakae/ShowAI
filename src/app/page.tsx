@@ -15,6 +15,7 @@ import FlutterAIApp from '@/components/landing/FlutterAIApp';
 import CustomScrollbar from '@/components/common/CustomScrollbar';
 import ModalPortal from '@/components/ModalPortal';
 import { useMediaQuery } from 'react-responsive';
+import LoadingScreen from '@/components/LoadingScreen';
 
 interface AIWebsite {
   _id: string;
@@ -45,9 +46,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const router = useRouter();
   const abortControllerRef = useRef<AbortController | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
 
   const isMobile = useMediaQuery({ maxWidth: 767 });
 
@@ -60,39 +62,58 @@ export default function Home() {
     const urlParams = new URLSearchParams(window.location.search);
     const pageParam = urlParams.get('page');
     const initialPage = pageParam ? parseInt(pageParam, 10) : 1;
-    fetchData(initialPage);
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/showai?page=${initialPage}`, {
+          signal: controller.signal
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const apiResponse: ApiResponse = await response.json();
+        setAiWebsites(apiResponse.data);
+        setPaginationInfo(apiResponse.pagination);
+        setAllTags(apiResponse.tags);
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Error fetching data:', error);
+          setError('Failed to fetch data');
+        }
+      } finally {
+        setIsLoading(false);
+        setInitialLoading(false);
       }
     };
+
+    fetchData();
+
+    return () => controller.abort();
   }, []);
 
-  const fetchData = async (page: number) => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
+  const handleLoadingComplete = () => {
+    setInitialLoading(false);
+  };
 
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/showai?page=${page}`, {
-        signal: abortControllerRef.current.signal
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const apiResponse: ApiResponse = await response.json();
-      setAiWebsites(apiResponse.data);
-      setPaginationInfo(apiResponse.pagination);
-      setAllTags(apiResponse.tags);
-      setIsLoading(false);
-    } catch (error: unknown) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Fetch aborted');
-      } else {
-        console.error('Error fetching data:', error);
-        setError('Failed to fetch data');
+  const handlePageChange = async (newPage: number) => {
+    if (newPage >= 1 && newPage <= (paginationInfo?.totalPages || 1)) {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/showai?page=${newPage}`);
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const apiResponse: ApiResponse = await response.json();
+        setAiWebsites(apiResponse.data);
+        setPaginationInfo(apiResponse.pagination);
+        router.push(`/?page=${newPage}`);
+      } catch (error) {
+        console.error('Error changing page:', error);
+        setError('Failed to change page');
+      } finally {
         setIsLoading(false);
       }
     }
@@ -100,14 +121,6 @@ export default function Home() {
 
   const handleTagSearch = (tag: string) => {
     router.push(`/search?tag=${encodeURIComponent(tag)}`);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= (paginationInfo?.totalPages || 1)) {
-      setPaginationInfo(prev => prev ? { ...prev, currentPage: newPage } : null);
-      fetchData(newPage);
-      router.push(`/?page=${newPage}`);
-    }
   };
 
   const SkeletonLoader = () => (
@@ -138,74 +151,69 @@ export default function Home() {
   );
 
   return (
-    <div
-      className="bg-[#0F172A] text-white min-h-screen"
-      style={{
-        msOverflowStyle: 'none',
-        scrollbarWidth: 'none',
-        WebkitOverflowScrolling: 'touch',
-        '&::-webkit-scrollbar': {
-          display: 'none'
-        }
-      } as React.CSSProperties}
-    >
-      <style jsx global>{`
-        html, body {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        html::-webkit-scrollbar,
-        body::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
-      {isMounted && (
-        <>
-          <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
-          <div className="px-4 py-8">
-            {isLoading ? (
-              <SkeletonLoader />
-            ) : error ? (
-              <div className="text-center text-red-500">
-                {error}
-              </div>
-            ) : (
-              <WebsiteList websites={aiWebsites} onTagClick={handleTagSearch} />
-            )}
-            {paginationInfo && (
-              <div className="mt-8 flex justify-center items-center space-x-4">
-                {paginationInfo.currentPage > 1 && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handlePageChange(paginationInfo.currentPage - 1)}
-                  >
-                    <FaChevronLeft className="h-4 w-4" />
-                  </Button>
-                )}
-                <span>{paginationInfo.currentPage}</span>
-                {paginationInfo.currentPage < paginationInfo.totalPages && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handlePageChange(paginationInfo.currentPage + 1)}
-                  >
-                    <FaChevronRight className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
-          <CombinedFeatures />
-          <AIPowered />
-          <AIPages />
-          <AIUpdates />
-          <FlutterAIApp />
-        </>
-      )}
-      <ModalPortal>
-        {!isMobile && <CustomScrollbar />}
-      </ModalPortal>
-    </div>
+    <>
+      {initialLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
+
+      <div className="bg-[#0F172A] text-white min-h-screen">
+        <style jsx global>{`
+          html, body {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          html::-webkit-scrollbar,
+          body::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+
+        {isMounted && (
+          <>
+            <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
+            <div className="px-4 py-8">
+              {isLoading && !initialLoading ? (
+                <SkeletonLoader />
+              ) : error ? (
+                <div className="text-center text-red-500">{error}</div>
+              ) : aiWebsites && aiWebsites.length > 0 ? (
+                <WebsiteList websites={aiWebsites} onTagClick={handleTagSearch} />
+              ) : null}
+
+              {paginationInfo && (
+                <div className="mt-8 flex justify-center items-center space-x-4">
+                  {paginationInfo.currentPage > 1 && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(paginationInfo.currentPage - 1)}
+                    >
+                      <FaChevronLeft className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <span>{paginationInfo.currentPage}</span>
+                  {paginationInfo.currentPage < paginationInfo.totalPages && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(paginationInfo.currentPage + 1)}
+                    >
+                      <FaChevronRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+            <CombinedFeatures />
+            <AIPowered />
+            <AIPages />
+            <AIUpdates />
+            <FlutterAIApp />
+          </>
+        )}
+
+        <ModalPortal>
+          {!isMobile && <CustomScrollbar />}
+        </ModalPortal>
+      </div>
+    </>
   );
 }

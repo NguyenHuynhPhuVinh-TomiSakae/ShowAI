@@ -12,6 +12,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import OpenReplayTracker from '@/components/OpenReplayTracker';
 import AIInteractionToggle from "@/components/AIInteractionToggle";
 import LoadingAnimation from "@/components/LoadingAnimation";
+import LoadingProvider from "@/components/LoadingProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     images: [{ url: "/logo.jpg", width: 1200, height: 630, alt: "ShowAI Logo" }],
     type: "website",
     locale: "vi_VN",
-    url: "https://showai.vercel.app",
+    url: "https://showai.io.vn",
   },
   verification: {
     google: "ULMnsGmjmo7o0bGjwjkW7UDPlGKwJii5L8t6nOtJ49o",
@@ -54,19 +55,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#1A1A2E] text-gray-200`}
       >
-        <LoadingAnimation />
-        <Analytics />
-        <SpeedInsights />
-        <OpenReplayTracker />
-        <NavFooter>
-          {children}
-          <Toaster />
-        </NavFooter>
-        <ScrollToTopButton />
-        <GeminiChatIcon />
-        <VoiceCallIcon />
-        <AIInteractionToggle />
-        <div id="modal-root"></div>
+        <LoadingProvider>
+          <LoadingAnimation />
+          <Analytics />
+          <SpeedInsights />
+          <OpenReplayTracker />
+          <NavFooter>
+            {children}
+            <Toaster />
+          </NavFooter>
+          <ScrollToTopButton />
+          <GeminiChatIcon />
+          <VoiceCallIcon />
+          <AIInteractionToggle />
+          <div id="modal-root"></div>
+        </LoadingProvider>
         <Script id="structured-data" type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
