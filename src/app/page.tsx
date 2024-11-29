@@ -12,6 +12,10 @@ import CombinedFeatures from '@/components/landing/CombinedFeatures';
 import AIPages from '@/components/landing/AIPages';
 import AIUpdates from '@/components/landing/AIUpdates';
 import FlutterAIApp from '@/components/landing/FlutterAIApp';
+import CustomScrollbar from '@/components/common/CustomScrollbar';
+import ModalPortal from '@/components/ModalPortal';
+import { useMediaQuery } from 'react-responsive';
+
 interface AIWebsite {
   _id: string;
   id: string;
@@ -44,6 +48,8 @@ export default function Home() {
   const router = useRouter();
   const abortControllerRef = useRef<AbortController | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+
+  const isMobile = useMediaQuery({ maxWidth: 767 });
 
   useEffect(() => {
     setIsMounted(true);
@@ -132,7 +138,27 @@ export default function Home() {
   );
 
   return (
-    <div className="bg-[#0F172A] text-white min-h-screen">
+    <div
+      className="bg-[#0F172A] text-white min-h-screen"
+      style={{
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none',
+        WebkitOverflowScrolling: 'touch',
+        '&::-webkit-scrollbar': {
+          display: 'none'
+        }
+      } as React.CSSProperties}
+    >
+      <style jsx global>{`
+        html, body {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {isMounted && (
         <>
           <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
@@ -177,6 +203,9 @@ export default function Home() {
           <FlutterAIApp />
         </>
       )}
+      <ModalPortal>
+        {!isMobile && <CustomScrollbar />}
+      </ModalPortal>
     </div>
   );
 }
