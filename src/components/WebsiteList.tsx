@@ -302,7 +302,7 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
 
     return (
         <motion.div
-            className={`grid gap-6 ${isSidebar
+            className={`grid gap-6 relative z-[10] ${isSidebar
                 ? "grid-cols-1"
                 : isRandom
                     ? "grid-cols-1 sm:grid-cols-2"

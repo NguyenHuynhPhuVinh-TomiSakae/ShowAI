@@ -43,7 +43,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onTagClick, allTags = [] }) => {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center relative z-[9999]">
             <div className="relative flex w-full max-w-md items-center">
                 <div className="relative flex w-full p-[3px] bg-gradient-to-r from-[#3E52E8] to-[#4B5EFF] rounded-full shadow-lg">
                     <div className="relative flex w-full bg-gray-900 rounded-full">
@@ -80,10 +80,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ onTagClick, allTags = [] }) => {
                 </div>
                 <div
                     ref={dropdownRef}
-                    className={`absolute top-full left-0 mt-3 w-full bg-gray-900 rounded-lg shadow-xl z-10 p-4 border border-[#3E52E8] transition-all duration-300 ${showTagDropdown ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                    className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-full bg-gray-900 rounded-lg shadow-xl z-[10000] p-4 border border-[#3E52E8] transition-all duration-300 ${showTagDropdown ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
                         } origin-top`}
                 >
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto">
                         {allTags.map((tag, index) => (
                             <button
                                 key={index}

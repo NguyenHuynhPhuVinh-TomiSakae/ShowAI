@@ -170,7 +170,7 @@ export default function Home() {
           {isMounted && (
             <>
               <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
-              <div className="px-4 py-8">
+              <div className="px-4 py-8 relative z-[1]">
                 {isLoading && !showLoading ? (
                   <SkeletonLoader />
                 ) : error ? (
