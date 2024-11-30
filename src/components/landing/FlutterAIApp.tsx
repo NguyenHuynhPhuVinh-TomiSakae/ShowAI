@@ -124,7 +124,7 @@ const FlutterAIApp = () => {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
+                    viewport={{ once: true, amount: 0.3 }}
                     className="text-center mb-8 sm:mb-16"
                 >
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent 
@@ -143,7 +143,7 @@ const FlutterAIApp = () => {
                     <motion.div
                         initial={{ opacity: 0, x: -50 }}
                         whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: false, amount: 0.3 }}
+                        viewport={{ once: true, amount: 0.3 }}
                         className="space-y-4 sm:space-y-8 px-2 sm:px-0"
                     >
                         {[
@@ -172,7 +172,7 @@ const FlutterAIApp = () => {
                                 key={index}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: false, amount: 0.3 }}
+                                viewport={{ once: true, amount: 0.3 }}
                                 transition={{ delay: index * 0.1 }}
                                 className="flex gap-4 p-6 rounded-xl bg-[#0C1221]/80
                                     border border-[#00FF95]/20 hover:border-[#00FF95]/40 transition-all duration-300
@@ -336,7 +336,7 @@ const FlutterAIApp = () => {
                     <motion.div
                         initial={{ opacity: 0, x: 50 }}
                         whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: false, amount: 0.3 }}
+                        viewport={{ once: true, amount: 0.3 }}
                         className="relative mt-8 lg:mt-0"
                     >
                         <div className="relative w-[280px] sm:w-[350px] h-[560px] sm:h-[700px] mx-auto">

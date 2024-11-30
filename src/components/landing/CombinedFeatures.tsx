@@ -195,7 +195,7 @@ export default function CombinedFeatures() {
                 key={activeSection}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
+                viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.5 }}
                 className="relative"
             >
@@ -337,7 +337,7 @@ export default function CombinedFeatures() {
                             className="text-center relative pt-4 sm:pt-0"
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: false, amount: 0.3 }}
+                            viewport={{ once: true, amount: 0.3 }}
                             transition={{ duration: 0.5 }}
                         >
                             <div className="flex items-center justify-center gap-2 sm:gap-4 mb-2 sm:mb-4">
@@ -393,7 +393,7 @@ export default function CombinedFeatures() {
                             className="relative"
                             initial={{ opacity: 0, y: 50 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: false, amount: 0.3 }}
+                            viewport={{ once: true, amount: 0.3 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
                         >
                             {/* Đường kết nối */}

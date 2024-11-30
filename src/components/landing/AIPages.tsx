@@ -72,7 +72,7 @@ export default function AIPages() {
         return {
             initial: { opacity: 0, y: 50 },
             whileInView: { opacity: 1, y: 0 },
-            viewport: { once: false, amount: 0.3 },
+            viewport: { once: true, amount: 0.3 },
             transition: {
                 duration: 0.5,
                 delay: index * 0.1
@@ -90,7 +90,7 @@ export default function AIPages() {
                 <motion.div
                     initial={{ opacity: 0, y: isDesktop ? 20 : 0 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
+                    viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: isDesktop ? 0.5 : 0.3 }}
                     className="text-center mb-16"
                 >

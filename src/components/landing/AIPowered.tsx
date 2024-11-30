@@ -107,7 +107,12 @@ const AIPowered = () => {
             <div className="container mx-auto px-4 relative z-10">
                 <div className="flex flex-col lg:flex-row items-center gap-12">
                     {/* Nội dung bên trái */}
-                    <motion.div className="lg:w-1/2 space-y-6">
+                    <motion.div
+                        className="lg:w-1/2 space-y-6"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                    >
                         <div className="relative">
                             <div className="absolute -left-4 top-0 h-full w-px bg-gradient-to-b from-transparent via-[#3E52E8] to-transparent" />
                             <h2 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">
@@ -136,6 +141,7 @@ const AIPowered = () => {
                                     key={index}
                                     initial={isDesktop ? { opacity: 0, x: -20 } : { opacity: 0 }}
                                     whileInView={isDesktop ? { opacity: 1, x: 0 } : { opacity: 1 }}
+                                    viewport={{ once: true }}
                                     transition={{ delay: isDesktop ? index * 0.2 : 0.1 }}
                                     className="group relative backdrop-blur-sm"
                                     onMouseEnter={() => setActiveImage(index)}
@@ -344,7 +350,12 @@ const AIPowered = () => {
                     </motion.div>
 
                     {/* Phần hình ảnh bên phải */}
-                    <motion.div className="lg:w-1/2 relative">
+                    <motion.div
+                        className="lg:w-1/2 relative"
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                    >
                         {/* Ảnh chính */}
                         <div className={`relative transition-all duration-500 
                                      ${activeImage !== null ? 'opacity-0' : 'opacity-100'}`}>
