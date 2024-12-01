@@ -32,6 +32,7 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
     const [isLoli, setIsLoli] = useState(false);
     const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
     const [currentAudioSource, setCurrentAudioSource] = useState<AudioBufferSourceNode | null>(null);
+    const [audioError, setAudioError] = useState('');
 
     useEffect(() => {
         // Khởi tạo Web Speech API
@@ -177,18 +178,33 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
                             for await (const chunk of audio) {
                                 chunks.push(chunk);
                             }
-                            const audioBuffer = Buffer.concat(chunks);
-                            const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-                            const url = URL.createObjectURL(blob);
+
+                            const audioBlob = new Blob(chunks, { type: 'audio/mpeg' });
+                            const audioUrl = URL.createObjectURL(audioBlob);
 
                             if (audioRef.current) {
-                                audioRef.current.src = url;
-                                await audioRef.current.play();
-                                setIsPlaying(true);
+                                audioRef.current.src = audioUrl;
+                                audioRef.current.volume = 1.0;
+
+                                try {
+                                    await audioRef.current.play();
+                                    setIsPlaying(true);
+                                    console.log('Đang phát audio');
+                                } catch (playError: unknown) {
+                                    const error = playError as Error;
+                                    console.error('Lỗi phát audio:', error);
+                                    setAudioError('Lỗi phát audio: ' + error.message);
+                                }
+
+                                audioRef.current.onended = () => {
+                                    setIsPlaying(false);
+                                    URL.revokeObjectURL(audioUrl);
+                                };
                             }
-                        } catch (error) {
-                            console.error('Lỗi khi xử lý ElevenLabs:', error);
-                            setResponse(prevResponse => prevResponse + '\n[Lỗi chuyển đổi giọng nói]');
+                        } catch (error: unknown) {
+                            const err = error as Error;
+                            console.error('Lỗi ElevenLabs:', err);
+                            setAudioError('Lỗi tạo audio: ' + err.message);
                         }
                     }
                 } catch (error) {
@@ -345,9 +361,14 @@ const VoiceCallModal: React.FC<VoiceCallModalProps> = ({ isOpen, onClose }) => {
                                         <span>Đang xử lý...</span>
                                     </div>
                                 )}
+
+                                {audioError && (
+                                    <div className="text-red-500 text-lg">{audioError}</div>
+                                )}
                             </div>
                         </div>
                     </motion.div>
+                    <audio ref={audioRef} />
                 </motion.div>
             )}
         </AnimatePresence>
