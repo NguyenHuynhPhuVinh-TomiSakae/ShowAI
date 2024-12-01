@@ -52,6 +52,7 @@ const GlitchText = ({ text }: { text: string }) => {
 
 const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
     const [progress, setProgress] = useState(0);
+    const [displayProgress, setDisplayProgress] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
     const [showCompletionEffect, setShowCompletionEffect] = useState(false);
     const [hasError, setHasError] = useState(false);
@@ -66,14 +67,27 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                     onLoadingComplete();
                 }, 5000);
             }
-        }, 10000);
+        }, 20000);
 
         const preloadAssets = async () => {
             const assetsToPreload = [
+                '/gears/gear1.svg',
+                '/gears/gear2.svg',
+                '/gears/gear3.svg',
+                '/thirdparty/logos/google.svg',
+                '/thirdparty/logos/mistral.svg',
+                '/thirdparty/templates/code-interpreter-multilang.svg',
+                '/thirdparty/templates/gradio-developer.svg',
+                '/thirdparty/templates/nextjs-developer.svg',
+                '/thirdparty/templates/streamlit-developer.svg',
+                '/thirdparty/templates/vue-developer.svg',
                 '/cursor.png',
                 '/cursor1.mp4',
                 '/cursor2.mp4',
-                '/cursor3.mp4'
+                '/cursor3.mp4',
+                '/grid.svg',
+                '/logo.jpg',
+                '/showai.jpg',
             ];
 
             let loadedAssets = 0;
@@ -83,8 +97,10 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                 return new Promise((resolve) => {
                     const updateProgress = () => {
                         loadedAssets++;
-                        setProgress((loadedAssets / totalAssets) * 100);
-                        resolve(true);
+                        setTimeout(() => {
+                            setProgress((loadedAssets / totalAssets) * 100);
+                            resolve(true);
+                        }, 100 + Math.random() * 200);
                     };
 
                     if (asset.endsWith('.mp4')) {
@@ -122,6 +138,21 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
             document.body.classList.remove('loading-complete');
         };
     }, [onLoadingComplete, isComplete]);
+
+    useEffect(() => {
+        const animateProgress = () => {
+            if (displayProgress < progress) {
+                setDisplayProgress(prev => {
+                    const increment = Math.max(1, Math.floor((progress - prev) / 3));
+                    const next = prev + increment;
+                    return next > progress ? progress : next;
+                });
+            }
+        };
+
+        const intervalId = setInterval(animateProgress, 50);
+        return () => clearInterval(intervalId);
+    }, [progress, displayProgress]);
 
     return (
         <motion.div
@@ -527,7 +558,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                                     ) : isComplete ? (
                                         "KHỞI ĐỘNG HOÀN TẤT"
                                     ) : (
-                                        <GlitchText text={`ĐANG TẢI SYSTEM... ${Math.round(progress)}%`} />
+                                        <GlitchText text={`ĐANG TẢI SYSTEM... ${Math.round(displayProgress)}%`} />
                                     )}
                                 </motion.p>
                             </div>
