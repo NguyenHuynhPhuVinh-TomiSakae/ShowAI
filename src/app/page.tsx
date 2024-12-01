@@ -275,13 +275,13 @@ export default function Home() {
               e.preventDefault();
             }
           } else {
-            sectionScrollAttemptRef.current = 0;
+            sectionScrollAttemptRef.current = Math.max(0, sectionScrollAttemptRef.current - 0.3);
           }
           sectionLastScrollRef.current = now;
 
           const progress = Math.min(sectionScrollAttemptRef.current / SCROLL_THRESHOLD, 1);
           setSectionScrollProgress(progress);
-          setIsNearEnd(true);
+          setIsNearEnd(progress > 0.3);
 
           if (progress >= 1) {
             let isTransitioning = false;
@@ -300,10 +300,9 @@ export default function Home() {
             }
           }
         } else {
-          sectionScrollAttemptRef.current = 0;
+          sectionScrollAttemptRef.current = Math.max(0, sectionScrollAttemptRef.current - 0.3);
           setSectionScrollProgress(0);
           setIsNearEnd(false);
-          sectionLastScrollRef.current = 0;
         }
       }
     };
@@ -368,9 +367,17 @@ export default function Home() {
     if (index === -1) {
       setShowNextComponents(false);
       setCurrentSection(0);
+      setSectionScrollProgress(0);
+      setScrollProgress(0);
+      setIsNearEnd(false);
+      sectionScrollAttemptRef.current = 0;
+      scrollAttemptCountRef.current = 0;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setCurrentSection(index);
+      setSectionScrollProgress(0);
+      setIsNearEnd(false);
+      sectionScrollAttemptRef.current = 0;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
