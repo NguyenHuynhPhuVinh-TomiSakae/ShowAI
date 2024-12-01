@@ -72,7 +72,7 @@ export default function Home() {
   const [, setHeaderScrollProgress] = useState(0);
   const [showHeaderNext, setShowHeaderNext] = useState(false);
 
-  const SCROLL_THRESHOLD = 30;
+  const SCROLL_THRESHOLD = 20;
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (!showNextComponents && websiteListRef.current) {
