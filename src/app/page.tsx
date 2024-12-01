@@ -57,7 +57,7 @@ export default function Home() {
   const [, setInitialContentLoaded] = useState(false);
   const [, setShowInitialContent] = useState(false);
 
-  const [isLoadingComplete, setIsLoadingComplete] = useState(false);
+  const [, setIsLoadingComplete] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showNextComponents, setShowNextComponents] = useState(false);
   const websiteListRef = useRef<HTMLDivElement>(null);
@@ -375,28 +375,29 @@ export default function Home() {
     }
   };
 
+  const handleLoadingFinish = () => {
+    setTimeout(() => {
+      setShowLoading(false);
+      setIsLoadingComplete(true);
+      handleLoadingComplete();
+      sessionStorage.setItem('initialLoadComplete', 'true');
+    }, 2000);
+  };
+
   return (
     <AnimatePresence mode="wait">
-      {showLoading ? (
-        <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
-      ) : isLoadingComplete ? (
+      {showLoading && !sessionStorage.getItem('initialLoadComplete') ? (
+        <LoadingScreen key="loading" onLoadingComplete={handleLoadingFinish} />
+      ) : (
         <motion.div
           key="content"
           className="bg-[#0F172A] text-white min-h-screen"
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-            filter: "brightness(1)",
-            transition: {
-              duration: 1.2,
-              ease: [0.16, 1, 0.3, 1],
-              opacity: { duration: 1.5 },
-              scale: {
-                duration: 1.8,
-                ease: [0.34, 1.56, 0.64, 1]
-              }
-            }
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{
+            duration: 0.5,
+            ease: "easeInOut"
           }}
         >
           <style jsx global>
@@ -488,7 +489,7 @@ export default function Home() {
             )}
           </ModalPortal>
         </motion.div>
-      ) : null}
+      )}
     </AnimatePresence>
   );
 }
