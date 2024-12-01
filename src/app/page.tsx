@@ -384,9 +384,18 @@ export default function Home() {
     }, 2000);
   };
 
+  // Thêm state để theo dõi việc load lần đầu
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
+
+  useEffect(() => {
+    // Kiểm tra sessionStorage chỉ khi ở phía client
+    const initialLoadComplete = sessionStorage.getItem('initialLoadComplete');
+    setHasInitialLoad(!!initialLoadComplete);
+  }, []);
+
   return (
     <AnimatePresence mode="wait">
-      {showLoading && !sessionStorage.getItem('initialLoadComplete') ? (
+      {showLoading && !hasInitialLoad ? (
         <LoadingScreen key="loading" onLoadingComplete={handleLoadingFinish} />
       ) : (
         <motion.div
