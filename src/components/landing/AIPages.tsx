@@ -212,7 +212,7 @@ export default function AIPages() {
                         <div className="absolute -inset-1 border border-indigo-700/20 rounded-lg"></div>
                     </div>
 
-                    <motion.p
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 }}
@@ -232,7 +232,7 @@ export default function AIPages() {
                             transition={{ duration: 2, repeat: Infinity, delay: 1 }}
                             className="absolute right-0 bottom-0 w-12 h-px bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent"
                         ></motion.div>
-                    </motion.p>
+                    </motion.div>
                 </motion.div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

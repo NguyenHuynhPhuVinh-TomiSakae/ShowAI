@@ -255,6 +255,33 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
     const router = useRouter();
     const { auth, db } = useFirebase();
 
+    // Thêm container variants cho animation
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1 // Độ trễ giữa mỗi card
+            }
+        }
+    };
+
+    // Variants cho từng card
+    const itemVariants = {
+        hidden: {
+            opacity: 0,
+            y: 20
+        },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.5,
+                ease: "easeOut"
+            }
+        }
+    };
+
     const handleWebsiteClick = async (id: string) => {
         // Chuyển hướng ngay lập tức
         router.push(`/show?id=${id}`);
@@ -310,17 +337,24 @@ const WebsiteList: React.FC<WebsiteListProps> = ({ websites, onTagClick, isSideb
                         ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                         : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 }`}
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
         >
             {websites.map((website) => (
-                <WebsiteCard
+                <motion.div
                     key={website.id}
-                    website={website}
-                    onClick={() => handleWebsiteClick(website.id)}
-                    onTagClick={onTagClick}
-                    isRandom={isRandom}
-                    isShuffled={isShuffled}
-                    isSidebar={isSidebar}
-                />
+                    variants={itemVariants}
+                >
+                    <WebsiteCard
+                        website={website}
+                        onClick={() => handleWebsiteClick(website.id)}
+                        onTagClick={onTagClick}
+                        isRandom={isRandom}
+                        isShuffled={isShuffled}
+                        isSidebar={isSidebar}
+                    />
+                </motion.div>
             ))}
         </motion.div>
     );

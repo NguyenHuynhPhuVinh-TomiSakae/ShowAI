@@ -108,19 +108,15 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
     return (
         <motion.div
             className="fixed inset-0 z-[9999] w-full h-full bg-gradient-to-b from-[#0F172A] to-[#1E293B] overflow-hidden"
-            initial={{ opacity: 1, scale: 1 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 1 }}
             exit={{
-                opacity: [1, 1, 0],
-                scale: [1, 0.8, 0],
+                opacity: 0,
+                scale: 1.1,
+                filter: "brightness(1.5)",
                 transition: {
-                    duration: 1.5,
-                    times: [0, 0.5, 1],
-                    ease: "easeInOut",
+                    duration: 0.8,
+                    ease: [0.645, 0.045, 0.355, 1]
                 }
-            }}
-            onAnimationComplete={() => {
-                console.log('Loading screen animation complete');
             }}
         >
             {showCompletionEffect && (
@@ -144,6 +140,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             opacity: [0.5, 0.3, 0.5, 0.3, 0.5],
                             scaleX: [1.02, 1, 1.01, 0.99, 1]
                         }}
+                        exit={{
+                            opacity: 0,
+                            scale: 1.1,
+                            transition: { duration: 0.4 }
+                        }}
                         transition={{
                             duration: 0.5,
                             repeat: Infinity,
@@ -160,6 +161,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             opacity: [0.3, 0.5, 0.3, 0.5, 0.3],
                             scaleY: [1.01, 1, 1.02, 0.99, 1]
                         }}
+                        exit={{
+                            opacity: 0,
+                            scale: 1.1,
+                            transition: { duration: 0.4 }
+                        }}
                         transition={{
                             duration: 0.35,
                             repeat: Infinity,
@@ -175,6 +181,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                         animate={{
                             y: [0, 100],
                             opacity: [0.1, 0.3, 0.1]
+                        }}
+                        exit={{
+                            opacity: 0,
+                            scale: 1.1,
+                            transition: { duration: 0.4 }
                         }}
                         transition={{
                             duration: 1.5,
@@ -203,6 +214,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                                 opacity: [0, 0.5, 0],
                                 scale: [1, 1.2, 0.8, 1]
                             }}
+                            exit={{
+                                opacity: 0,
+                                scale: 1.1,
+                                transition: { duration: 0.4 }
+                            }}
                             transition={{
                                 duration: 0.3 + Math.random() * 0.5,
                                 repeat: Infinity,
@@ -217,6 +233,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                         className="absolute inset-0 bg-[#00FF95]/10"
                         animate={{
                             opacity: [0, 0.2, 0, 0.1, 0],
+                        }}
+                        exit={{
+                            opacity: 0,
+                            scale: 1.1,
+                            transition: { duration: 0.4 }
                         }}
                         transition={{
                             duration: 0.2,
@@ -238,6 +259,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             opacity: [0.1, 0.15, 0.1],
                             backgroundPosition: ['0% 0%', '100% 100%'],
                         }}
+                        exit={{
+                            opacity: 0,
+                            scale: 1.1,
+                            transition: { duration: 0.4 }
+                        }}
                         transition={{
                             duration: 0.5,
                             repeat: Infinity,
@@ -252,6 +278,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             style={{ top: item.position.top, left: item.position.left }}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: [0, 1, 0.8] }}
+                            exit={{
+                                opacity: 0,
+                                scale: 1.1,
+                                transition: { duration: 0.4 }
+                            }}
                             transition={{ delay: item.delay, duration: 1, repeat: Infinity }}
                         >
                             <GlitchText text={item.text} />
@@ -270,6 +301,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             }}
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: 1 }}
+                            exit={{
+                                opacity: 0,
+                                scale: 1.1,
+                                transition: { duration: 0.4 }
+                            }}
                             transition={{
                                 duration: 0.8,
                                 delay: i * 0.1,
@@ -290,6 +326,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             }}
                             initial={{ scaleY: 0 }}
                             animate={{ scaleY: 1 }}
+                            exit={{
+                                opacity: 0,
+                                scale: 1.1,
+                                transition: { duration: 0.4 }
+                            }}
                             transition={{
                                 duration: 0.8,
                                 delay: i * 0.1,
@@ -311,6 +352,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             animate={{
                                 opacity: [0, 1, 0],
                                 x: [-50, 0, 50],
+                            }}
+                            exit={{
+                                opacity: 0,
+                                scale: 1.1,
+                                transition: { duration: 0.4 }
                             }}
                             transition={{
                                 duration: 2,
@@ -340,6 +386,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             }}
                             initial={{ y: -100 }}
                             animate={{ y: window.innerHeight }}
+                            exit={{
+                                opacity: 0,
+                                scale: 1.1,
+                                transition: { duration: 0.4 }
+                            }}
                             transition={{
                                 duration: 2 + Math.random() * 2,
                                 repeat: Infinity,
@@ -365,6 +416,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                         opacity: [1, 1, 0],
                         y: [0, 0, -50]
                     } : {}}
+                    exit={{
+                        opacity: 0,
+                        scale: 1.1,
+                        transition: { duration: 0.4 }
+                    }}
                     transition={{
                         duration: 1.5,
                         times: [0, 0.4, 1],
@@ -381,6 +437,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             backgroundColor: "rgba(0, 255, 149, 0.1)",
                             boxShadow: "0 0 30px rgba(0, 255, 149, 0.3)"
                         } : {}}
+                        exit={{
+                            opacity: 0,
+                            scale: 1.1,
+                            transition: { duration: 0.4 }
+                        }}
                         transition={{ duration: 0.5 }}
                     >
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0F172A] px-4 text-[#00FF95]/70 text-xs">
@@ -403,6 +464,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                                     className="text-white/90 text-sm font-medium tracking-wider"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
+                                    exit={{
+                                        opacity: 0,
+                                        scale: 1.1,
+                                        transition: { duration: 0.4 }
+                                    }}
                                     transition={{ delay: 0.5 }}
                                 >
                                     {isComplete ? (
@@ -429,6 +495,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                     className="absolute inset-0 bg-white"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: [0, 1, 0] }}
+                    exit={{
+                        opacity: 0,
+                        scale: 1.1,
+                        transition: { duration: 0.4 }
+                    }}
                     transition={{
                         duration: 1,
                         times: [0, 0.1, 1],
@@ -454,6 +525,11 @@ const LoadingDots = ({ isComplete }: { isComplete: boolean }) => (
                     scale: [1, 1.5, 1],
                     opacity: [0.3, 1, 0.3],
                 }}
+                exit={{
+                    opacity: 0,
+                    scale: 1.1,
+                    transition: { duration: 0.4 }
+                }}
                 transition={isComplete ? {
                     duration: 0.8,
                     delay: index * 0.1,
@@ -477,6 +553,11 @@ const ProgressBar = ({ progress, isComplete }: { progress: number, isComplete: b
                 width: `${progress}%`,
                 backgroundColor: isComplete ? "#00FF95" : "#00FF95",
             }}
+            exit={{
+                opacity: 0,
+                scale: 1.1,
+                transition: { duration: 0.4 }
+            }}
             transition={{ duration: 0.5 }}
         >
             {isComplete && (
@@ -484,6 +565,11 @@ const ProgressBar = ({ progress, isComplete }: { progress: number, isComplete: b
                     className="absolute inset-0 bg-white"
                     animate={{
                         opacity: [0, 1, 0],
+                    }}
+                    exit={{
+                        opacity: 0,
+                        scale: 1.1,
+                        transition: { duration: 0.4 }
                     }}
                     transition={{
                         duration: 0.5,

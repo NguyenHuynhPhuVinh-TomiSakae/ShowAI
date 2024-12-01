@@ -16,6 +16,7 @@ import CustomScrollbar from '@/components/common/CustomScrollbar';
 import ModalPortal from '@/components/ModalPortal';
 import { useMediaQuery } from 'react-responsive';
 import LoadingScreen from '@/components/LoadingScreen';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 
 interface AIWebsite {
   _id: string;
@@ -52,6 +53,39 @@ export default function Home() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const isMobile = useMediaQuery({ maxWidth: 767 });
+
+  const [, setInitialContentLoaded] = useState(false);
+  const [, setShowInitialContent] = useState(false);
+
+  const [isLoadingComplete, setIsLoadingComplete] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [showNextComponents, setShowNextComponents] = useState(false);
+  const websiteListRef = useRef<HTMLDivElement>(null);
+  const currentSectionRef = useRef<HTMLDivElement>(null);
+  const [sectionScrollProgress, setSectionScrollProgress] = useState(0);
+  const [isNearEnd, setIsNearEnd] = useState(false);
+  const lastScrollAttemptRef = useRef(0);
+  const scrollAttemptCountRef = useRef(0);
+
+  const { scrollY } = useScroll();
+
+  const [, setHeaderScrollProgress] = useState(0);
+  const [showHeaderNext, setShowHeaderNext] = useState(false);
+
+  const SCROLL_THRESHOLD = 30;
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (!showNextComponents && websiteListRef.current) {
+      const element = websiteListRef.current;
+      const elementHeight = element.offsetHeight;
+      const windowHeight = window.innerHeight;
+      const scrollPosition = latest;
+      const scrollableHeight = elementHeight - windowHeight;
+      const scrollPercentage = scrollPosition / scrollableHeight;
+
+      setShowHeaderNext(scrollPercentage > 0.7);
+    }
+  });
 
   useEffect(() => {
     setIsMounted(true);
@@ -97,6 +131,11 @@ export default function Home() {
 
   const handleLoadingComplete = () => {
     setShowLoading(false);
+    setIsLoadingComplete(true);
+    setInitialContentLoaded(true);
+    setTimeout(() => {
+      setShowInitialContent(true);
+    }, 100);
   };
 
   const handlePageChange = async (newPage: number) => {
@@ -150,27 +189,224 @@ export default function Home() {
     </div>
   );
 
-  return (
-    <>
-      {showLoading ? (
-        <LoadingScreen onLoadingComplete={handleLoadingComplete} />
-      ) : (
-        <div className="bg-[#0F172A] text-white min-h-screen">
-          <style jsx global>{`
-            html, body {
-              scrollbar-width: none;
-              -ms-overflow-style: none;
-            }
-            html::-webkit-scrollbar,
-            body::-webkit-scrollbar {
-              display: none;
-            }
-          `}</style>
+  const [currentSection, setCurrentSection] = useState(0);
+  const sections = [
+    { component: CombinedFeatures },
+    { component: AIPowered },
+    { component: AIPages },
+    { component: AIUpdates },
+    { component: FlutterAIApp }
+  ];
 
-          {isMounted && (
+  const sectionScrollAttemptRef = useRef(0);
+  const sectionLastScrollRef = useRef(0);
+
+  useEffect(() => {
+    const handleHeaderWheel = (e: WheelEvent) => {
+      if (!showNextComponents && websiteListRef.current) {
+        const scrollingUp = e.deltaY < 0;
+        const element = websiteListRef.current;
+        const threshold = 50;
+        const isAtBottom = window.innerHeight + window.pageYOffset >= element.offsetHeight - threshold;
+
+        if (!scrollingUp && isAtBottom) {
+          const now = Date.now();
+          if (now - lastScrollAttemptRef.current < 300) {
+            scrollAttemptCountRef.current += 1;
+            if (scrollAttemptCountRef.current > SCROLL_THRESHOLD * 0.3) {
+              e.preventDefault();
+            }
+          } else {
+            scrollAttemptCountRef.current = Math.max(0, scrollAttemptCountRef.current - 0.3);
+          }
+          lastScrollAttemptRef.current = now;
+
+          const progress = Math.min(scrollAttemptCountRef.current / SCROLL_THRESHOLD, 1);
+          setScrollProgress(progress);
+
+          if (progress >= 1) {
+            setShowNextComponents(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            scrollAttemptCountRef.current = 0;
+            setScrollProgress(0);
+            setHeaderScrollProgress(0);
+            setShowHeaderNext(false);
+            setIsNearEnd(false);
+          }
+        } else if (scrollingUp || !isAtBottom) {
+          scrollAttemptCountRef.current = 0;
+          setScrollProgress(0);
+          setShowHeaderNext(false);
+          lastScrollAttemptRef.current = 0;
+        }
+      }
+    };
+
+    const handleHeaderTouch = (e: TouchEvent) => {
+      if (showHeaderNext && scrollAttemptCountRef.current > SCROLL_THRESHOLD * 0.3) {
+        e.preventDefault();
+      }
+    };
+
+    if (!showNextComponents) {
+      window.addEventListener('wheel', handleHeaderWheel, { passive: false });
+      window.addEventListener('touchmove', handleHeaderTouch, { passive: false });
+    }
+
+    return () => {
+      window.removeEventListener('wheel', handleHeaderWheel);
+      window.removeEventListener('touchmove', handleHeaderTouch);
+    };
+  }, [showNextComponents, showHeaderNext]);
+
+  useEffect(() => {
+    const handleSectionWheel = (e: WheelEvent) => {
+      if (showNextComponents && currentSectionRef.current && currentSection < sections.length - 1) {
+        const scrollingUp = e.deltaY < 0;
+        const element = currentSectionRef.current;
+        const threshold = 50;
+        const isAtBottom = window.innerHeight + window.pageYOffset >= element.offsetHeight - threshold;
+
+        if (!scrollingUp && isAtBottom) {
+          const now = Date.now();
+          if (now - sectionLastScrollRef.current < 300) {
+            sectionScrollAttemptRef.current += 1;
+            if (sectionScrollAttemptRef.current > SCROLL_THRESHOLD * 0.3) {
+              e.preventDefault();
+            }
+          } else {
+            sectionScrollAttemptRef.current = 0;
+          }
+          sectionLastScrollRef.current = now;
+
+          const progress = Math.min(sectionScrollAttemptRef.current / SCROLL_THRESHOLD, 1);
+          setSectionScrollProgress(progress);
+          setIsNearEnd(true);
+
+          if (progress >= 1) {
+            let isTransitioning = false;
+
+            if (!isTransitioning) {
+              isTransitioning = true;
+              sectionScrollAttemptRef.current = 0;
+              setSectionScrollProgress(0);
+              setIsNearEnd(false);
+
+              setTimeout(() => {
+                setCurrentSection(prev => prev + 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                isTransitioning = false;
+              }, 300);
+            }
+          }
+        } else {
+          sectionScrollAttemptRef.current = 0;
+          setSectionScrollProgress(0);
+          setIsNearEnd(false);
+          sectionLastScrollRef.current = 0;
+        }
+      }
+    };
+
+    const handleSectionTouch = (e: TouchEvent) => {
+      if (showNextComponents && isNearEnd && sectionScrollAttemptRef.current > SCROLL_THRESHOLD * 0.3) {
+        e.preventDefault();
+      }
+    };
+
+    if (showNextComponents) {
+      window.addEventListener('wheel', handleSectionWheel, { passive: false });
+      window.addEventListener('touchmove', handleSectionTouch, { passive: false });
+    }
+
+    return () => {
+      window.removeEventListener('wheel', handleSectionWheel);
+      window.removeEventListener('touchmove', handleSectionTouch);
+    };
+  }, [showNextComponents, currentSection, isNearEnd]);
+
+  const [, setShowFooter] = useState(false);
+
+  useEffect(() => {
+    const footer = document.querySelector('footer');
+    const isLastSection = showNextComponents && currentSection === sections.length - 1;
+
+    if (footer) {
+      if (isLastSection) {
+        setShowFooter(true);
+        footer.style.display = 'block';
+        footer.style.opacity = '1';
+        footer.style.transition = 'opacity 0.3s ease-in-out';
+      } else {
+        setShowFooter(false);
+        footer.style.opacity = '0';
+        setTimeout(() => {
+          if (!isLastSection) {
+            footer.style.display = 'none';
+          }
+        }, 300);
+      }
+    }
+  }, [showNextComponents, currentSection]);
+
+  const globalStyles = `
+    html, body {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      display: none;
+    }
+    footer {
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+  `;
+
+  const handleSectionClick = (index: number) => {
+    if (index === -1) {
+      setShowNextComponents(false);
+      setCurrentSection(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      setCurrentSection(index);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <AnimatePresence mode="wait">
+      {showLoading ? (
+        <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
+      ) : isLoadingComplete ? (
+        <motion.div
+          key="content"
+          className="bg-[#0F172A] text-white min-h-screen"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            filter: "brightness(1)",
+            transition: {
+              duration: 1.2,
+              ease: [0.16, 1, 0.3, 1],
+              opacity: { duration: 1.5 },
+              scale: {
+                duration: 1.8,
+                ease: [0.34, 1.56, 0.64, 1]
+              }
+            }
+          }}
+        >
+          <style jsx global>
+            {globalStyles}
+          </style>
+
+          {isMounted && !showNextComponents && (
             <>
               <ParallaxHeader onTagClick={handleTagSearch} allTags={allTags} />
-              <div className="px-4 py-8 relative z-[1]">
+              <div ref={websiteListRef} className="px-4 py-8 relative z-[1]">
                 {isLoading && !showLoading ? (
                   <SkeletonLoader />
                 ) : error ? (
@@ -203,19 +439,56 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <CombinedFeatures />
-              <AIPowered />
-              <AIPages />
-              <AIUpdates />
-              <FlutterAIApp />
             </>
           )}
 
+          {showNextComponents && (
+            <motion.div
+              className="min-h-screen"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {sections.map((Section, index) => (
+                  index === currentSection && (
+                    <motion.div
+                      key={index}
+                      ref={currentSectionRef}
+                      className="min-h-screen relative"
+                      initial={{ opacity: 0.8, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                        duration: 0.2
+                      }}
+                    >
+                      <Section.component />
+                    </motion.div>
+                  )
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
+
           <ModalPortal>
-            {!isMobile && <CustomScrollbar />}
+            {!isMobile && (
+              <CustomScrollbar
+                currentSection={currentSection}
+                totalSections={sections.length}
+                showNextComponents={showNextComponents}
+                onSectionClick={handleSectionClick}
+                scrollProgress={scrollProgress}
+                sectionScrollProgress={sectionScrollProgress}
+                isNearEnd={isNearEnd}
+              />
+            )}
           </ModalPortal>
-        </div>
-      )}
-    </>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }

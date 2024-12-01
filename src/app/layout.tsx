@@ -11,8 +11,8 @@ import VoiceCallIcon from "@/components/VoiceCallIcon";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import OpenReplayTracker from '@/components/OpenReplayTracker';
 import AIInteractionToggle from "@/components/AIInteractionToggle";
-import LoadingAnimation from "@/components/LoadingAnimation";
 import LoadingProvider from "@/components/LoadingProvider";
+import ClientPathCheck from '@/components/ClientPathCheck';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -56,7 +56,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#1A1A2E] text-gray-200`}
       >
         <LoadingProvider>
-          <LoadingAnimation />
+          <ClientPathCheck />
           <Analytics />
           <SpeedInsights />
           <OpenReplayTracker />
