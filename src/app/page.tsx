@@ -296,7 +296,7 @@ export default function Home() {
                 setCurrentSection(prev => prev + 1);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 isTransitioning = false;
-              }, 300);
+              }, 800);
             }
           }
         } else {
@@ -419,8 +419,51 @@ export default function Home() {
   // Thêm state mới để kiểm soát animation
   const [shouldShowContent, setShouldShowContent] = useState(false);
 
+  // Thêm các variants cho animation
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      scale: 0.95
+    },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.8,
+        ease: [0.4, 0, 0.2, 1]
+      }
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      transition: {
+        duration: 0.5,
+        ease: [0.4, 0, 1, 1]
+      }
+    }
+  };
+
+  const sectionVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0
+    })
+  };
+
+  const [swipeDirection,] = useState(0);
+
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" custom={swipeDirection}>
       {showLoading && !hasInitialLoad && typeof window !== 'undefined' && !sessionStorage.getItem('initialLoadComplete') ? (
         <LoadingScreen key="loading" onLoadingComplete={handleLoadingFinish} />
       ) : shouldShowContent && (
@@ -431,7 +474,7 @@ export default function Home() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{
-            duration: 0.5,
+            duration: 1.2,
             ease: "easeInOut"
           }}
         >
@@ -481,29 +524,43 @@ export default function Home() {
           {showNextComponents && (
             <motion.div
               className="min-h-screen"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
             >
-              <AnimatePresence mode="wait" initial={true}>
+              <AnimatePresence mode="wait" custom={currentSection}>
                 {sections.map((Section, index) => (
                   index === currentSection && (
                     <motion.div
                       key={index}
                       ref={currentSectionRef}
                       className="min-h-screen relative"
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -50 }}
+                      custom={currentSection}
+                      variants={sectionVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
                       transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                        duration: 0.5
+                        x: {
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 25,
+                          duration: 0.8
+                        },
+                        opacity: { duration: 0.4 }
                       }}
                     >
-                      <Section.component />
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          delay: 0.4,
+                          duration: 0.8
+                        }}
+                      >
+                        <Section.component />
+                      </motion.div>
                     </motion.div>
                   )
                 ))}
