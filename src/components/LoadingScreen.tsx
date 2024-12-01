@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext, createContext } from 'react';
+
+const ErrorContext = createContext(false);
 
 interface LoadingScreenProps {
     onLoadingComplete: () => void;
@@ -16,6 +18,7 @@ interface TechText {
 
 const GlitchText = ({ text }: { text: string }) => {
     const [displayText, setDisplayText] = useState(text);
+    const hasError = useContext(ErrorContext);
 
     useEffect(() => {
         const glitchChars = '!<>-_\\/[]{}—=+*^?#________';
@@ -41,7 +44,9 @@ const GlitchText = ({ text }: { text: string }) => {
     }, [text]);
 
     return (
-        <span className="font-mono">{displayText}</span>
+        <span className={`font-mono ${hasError ? 'text-red-500' : ''}`}>
+            {displayText}
+        </span>
     );
 };
 
@@ -49,8 +54,20 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
     const [progress, setProgress] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
     const [showCompletionEffect, setShowCompletionEffect] = useState(false);
+    const [hasError, setHasError] = useState(false);
 
     useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (!isComplete) {
+                setHasError(true);
+                setShowCompletionEffect(true);
+
+                setTimeout(() => {
+                    onLoadingComplete();
+                }, 5000);
+            }
+        }, 10000);
+
         const preloadAssets = async () => {
             const assetsToPreload = [
                 '/cursor.png',
@@ -101,9 +118,10 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
         preloadAssets();
 
         return () => {
+            clearTimeout(timeoutId);
             document.body.classList.remove('loading-complete');
         };
-    }, [onLoadingComplete]);
+    }, [onLoadingComplete, isComplete]);
 
     return (
         <motion.div
@@ -121,59 +139,90 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
         >
             {showCompletionEffect && (
                 <>
-                    <motion.div
-                        className="absolute inset-0 bg-[#00FF95]/20"
-                        initial={{ scaleY: 0 }}
-                        animate={{ scaleY: 1 }}
-                        exit={{ scaleY: 0 }}
-                        transition={{
-                            duration: 0.5,
-                            ease: "easeInOut",
-                            when: "beforeChildren"
-                        }}
-                    />
+                    {!hasError ? (
+                        <motion.div
+                            className="absolute inset-0 bg-[#00FF95]/20"
+                            initial={{ scaleY: 0 }}
+                            animate={{ scaleY: 1 }}
+                            exit={{ scaleY: 0 }}
+                            transition={{
+                                duration: 0.5,
+                                ease: "easeInOut",
+                                when: "beforeChildren"
+                            }}
+                        />
+                    ) : (
+                        <motion.div
+                            className="absolute inset-0 bg-red-500/30"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{
+                                duration: 0.5,
+                                ease: "easeInOut"
+                            }}
+                        />
+                    )}
 
-                    <motion.div
-                        className="absolute inset-0 bg-[#00FF95]/30"
-                        animate={{
-                            x: [-10, 0, 5, -5, 0],
-                            opacity: [0.5, 0.3, 0.5, 0.3, 0.5],
-                            scaleX: [1.02, 1, 1.01, 0.99, 1]
-                        }}
-                        exit={{
-                            opacity: 0,
-                            scale: 1.1,
-                            transition: { duration: 0.4 }
-                        }}
-                        transition={{
-                            duration: 0.5,
-                            repeat: Infinity,
-                            repeatType: "reverse",
-                            ease: "easeInOut",
-                            times: [0, 0.2, 0.4, 0.6, 1]
-                        }}
-                    />
+                    {!hasError && (
+                        <>
+                            <motion.div
+                                className="absolute inset-0 bg-[#00FF95]/30"
+                                animate={{
+                                    x: [-10, 0, 5, -5, 0],
+                                    opacity: [0.5, 0.3, 0.5, 0.3, 0.5],
+                                    scaleX: [1.02, 1, 1.01, 0.99, 1]
+                                }}
+                                exit={{
+                                    opacity: 0,
+                                    scale: 1.1,
+                                    transition: { duration: 0.4 }
+                                }}
+                                transition={{
+                                    duration: 0.5,
+                                    repeat: Infinity,
+                                    repeatType: "reverse",
+                                    ease: "easeInOut",
+                                    times: [0, 0.2, 0.4, 0.6, 1]
+                                }}
+                            />
 
-                    <motion.div
-                        className="absolute inset-0 bg-[#00FF95]/20"
-                        animate={{
-                            y: [-5, 0, 3, -3, 0],
-                            opacity: [0.3, 0.5, 0.3, 0.5, 0.3],
-                            scaleY: [1.01, 1, 1.02, 0.99, 1]
-                        }}
-                        exit={{
-                            opacity: 0,
-                            scale: 1.1,
-                            transition: { duration: 0.4 }
-                        }}
-                        transition={{
-                            duration: 0.35,
-                            repeat: Infinity,
-                            repeatType: "mirror",
-                            ease: "easeInOut",
-                            times: [0, 0.2, 0.4, 0.6, 1]
-                        }}
-                    />
+                            <motion.div
+                                className="absolute inset-0 bg-[#00FF95]/20"
+                                animate={{
+                                    y: [-5, 0, 3, -3, 0],
+                                    opacity: [0.3, 0.5, 0.3, 0.5, 0.3],
+                                    scaleY: [1.01, 1, 1.02, 0.99, 1]
+                                }}
+                                exit={{
+                                    opacity: 0,
+                                    scale: 1.1,
+                                    transition: { duration: 0.4 }
+                                }}
+                                transition={{
+                                    duration: 0.35,
+                                    repeat: Infinity,
+                                    repeatType: "mirror",
+                                    ease: "easeInOut",
+                                    times: [0, 0.2, 0.4, 0.6, 1]
+                                }}
+                            />
+                        </>
+                    )}
+
+                    {hasError && (
+                        <motion.div
+                            className="absolute inset-0 bg-red-500/30"
+                            animate={{
+                                opacity: [0.2, 0.4, 0.2],
+                                scale: [1, 1.02, 1]
+                            }}
+                            transition={{
+                                duration: 0.5,
+                                repeat: Infinity,
+                                repeatType: "reverse"
+                            }}
+                        />
+                    )}
 
                     <motion.div
                         className="absolute inset-0 bg-gradient-to-b from-transparent via-[#00FF95]/10 to-transparent"
@@ -197,7 +246,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                     {[...Array(5)].map((_, i) => (
                         <motion.div
                             key={i}
-                            className="absolute bg-[#00FF95]/30"
+                            className={`absolute ${hasError ? 'bg-red-500/20' : 'bg-[#00FF95]/30'}`}
                             style={{
                                 width: Math.random() * 100 + 50,
                                 height: Math.random() * 100 + 20,
@@ -274,18 +323,22 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                     {techTexts.map((item, index) => (
                         <motion.div
                             key={index}
-                            className="absolute font-mono text-sm text-[#00FF95]"
+                            className={`absolute font-mono text-sm ${hasError ? 'text-red-500' : 'text-[#00FF95]'}`}
                             style={{ top: item.position.top, left: item.position.left }}
                             initial={{ opacity: 0 }}
-                            animate={{ opacity: [0, 1, 0.8] }}
-                            exit={{
-                                opacity: 0,
-                                scale: 1.1,
-                                transition: { duration: 0.4 }
+                            animate={{
+                                opacity: [0, 1, 0.8],
+                                x: hasError ? [0, -5, 5, -2, 0] : 0,
+                                y: hasError ? [0, 2, -2, 1, 0] : 0
                             }}
-                            transition={{ delay: item.delay, duration: 1, repeat: Infinity }}
+                            transition={{
+                                delay: item.delay,
+                                duration: hasError ? 0.2 : 1,
+                                repeat: Infinity,
+                                repeatDelay: hasError ? 0.1 : 0
+                            }}
                         >
-                            <GlitchText text={item.text} />
+                            <GlitchText text={hasError ? item.text.replace(/[aeiou]/gi, 'X') : item.text} />
                         </motion.div>
                     ))}
 
@@ -293,7 +346,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                     {[...Array(10)].map((_, i) => (
                         <motion.div
                             key={i}
-                            className="absolute h-0.5 bg-[#00FF95]/30"
+                            className={`absolute h-0.5 ${hasError ? 'bg-red-500/30' : 'bg-[#00FF95]/30'}`}
                             style={{
                                 top: `${i * 10}%`,
                                 left: 0,
@@ -301,11 +354,6 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             }}
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: 1 }}
-                            exit={{
-                                opacity: 0,
-                                scale: 1.1,
-                                transition: { duration: 0.4 }
-                            }}
                             transition={{
                                 duration: 0.8,
                                 delay: i * 0.1,
@@ -318,7 +366,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                     {[...Array(10)].map((_, i) => (
                         <motion.div
                             key={`vertical-${i}`}
-                            className="absolute w-0.5 bg-[#00FF95]/30"
+                            className={`absolute w-0.5 ${hasError ? 'bg-red-500/30' : 'bg-[#00FF95]/30'}`}
                             style={{
                                 left: `${i * 10}%`,
                                 top: 0,
@@ -326,11 +374,6 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                             }}
                             initial={{ scaleY: 0 }}
                             animate={{ scaleY: 1 }}
-                            exit={{
-                                opacity: 0,
-                                scale: 1.1,
-                                transition: { duration: 0.4 }
-                            }}
                             transition={{
                                 duration: 0.8,
                                 delay: i * 0.1,
@@ -343,7 +386,8 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                     {[...Array(5)].map((_, i) => (
                         <motion.div
                             key={`cmd-${i}`}
-                            className="absolute font-mono text-xs text-[#00FF95]/70"
+                            className={`absolute font-mono text-xs ${hasError ? 'text-red-400 font-bold' : 'text-[#00FF95]/70'
+                                }`}
                             style={{
                                 left: Math.random() * 80 + 10 + '%',
                                 top: Math.random() * 80 + 10 + '%',
@@ -353,11 +397,6 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                                 opacity: [0, 1, 0],
                                 x: [-50, 0, 50],
                             }}
-                            exit={{
-                                opacity: 0,
-                                scale: 1.1,
-                                transition: { duration: 0.4 }
-                            }}
                             transition={{
                                 duration: 2,
                                 repeat: Infinity,
@@ -365,7 +404,13 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                                 repeatDelay: Math.random() * 2,
                             }}
                         >
-                            {[
+                            {hasError ? [
+                                "> SYSTEM_FAILURE_DETECTED",
+                                "$ CRITICAL_ERROR_0xF8",
+                                "< FATAL_EXCEPTION />",
+                                "# MEMORY_CORRUPTION",
+                                "> SYSTEM_HALT",
+                            ][i] : [
                                 "> accessing mainframe...",
                                 "$ decrypt sequence_0x8F",
                                 "< injecting payload />",
@@ -379,7 +424,8 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                     {[...Array(10)].map((_, i) => (
                         <motion.div
                             key={`matrix-${i}`}
-                            className="absolute font-mono text-[8px] text-[#00FF95]/30 whitespace-pre leading-none"
+                            className={`absolute font-mono text-[8px] ${hasError ? 'text-red-500/30' : 'text-[#00FF95]/30'
+                                } whitespace-pre leading-none`}
                             style={{
                                 left: `${i * 10}%`,
                                 top: 0,
@@ -433,9 +479,9 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                     <motion.div
                         className="relative border border-[#00FF95]/20 bg-black/20 backdrop-blur-sm p-6"
                         animate={isComplete ? {
-                            borderColor: "rgba(0, 255, 149, 0.8)",
-                            backgroundColor: "rgba(0, 255, 149, 0.1)",
-                            boxShadow: "0 0 30px rgba(0, 255, 149, 0.3)"
+                            borderColor: hasError ? "rgba(255, 0, 0, 1)" : "rgba(0, 255, 149, 0.8)",
+                            backgroundColor: hasError ? "rgba(255, 0, 0, 0.2)" : "rgba(0, 255, 149, 0.1)",
+                            boxShadow: hasError ? "0 0 40px rgba(255, 0, 0, 0.4)" : "0 0 30px rgba(0, 255, 149, 0.3)"
                         } : {}}
                         exit={{
                             opacity: 0,
@@ -444,34 +490,41 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                         }}
                         transition={{ duration: 0.5 }}
                     >
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0F172A] px-4 text-[#00FF95]/70 text-xs">
+                        <div className={`absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0F172A] px-4 ${hasError ? 'text-red-500/70' : 'text-[#00FF95]/70'
+                            } text-xs`}>
                             SYSTEM INITIALIZATION
                         </div>
 
                         <div className="space-y-6">
-                            <div className="flex justify-between text-xs text-[#00FF95]/70">
+                            <div className={`flex justify-between text-xs ${hasError ? 'text-red-500/70' : 'text-[#00FF95]/70'
+                                }`}>
                                 <span>
                                     {isComplete ? "STATUS: COMPLETE" : "STATUS: LOADING"}
                                 </span>
                                 <span>{new Date().toLocaleTimeString()}</span>
                             </div>
 
-                            <LoadingDots isComplete={isComplete} />
+                            <LoadingDots
+                                isComplete={isComplete}
+                                hasError={hasError}
+                            />
 
                             <div className="flex flex-col items-center space-y-2">
-                                <ProgressBar progress={progress} isComplete={isComplete} />
+                                <ProgressBar
+                                    progress={progress}
+                                    isComplete={isComplete}
+                                    hasError={hasError}
+                                />
                                 <motion.p
-                                    className="text-white/90 text-sm font-medium tracking-wider"
+                                    className={`text-sm font-medium tracking-wider ${hasError ? 'text-red-500' : 'text-white/90'
+                                        }`}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    exit={{
-                                        opacity: 0,
-                                        scale: 1.1,
-                                        transition: { duration: 0.4 }
-                                    }}
                                     transition={{ delay: 0.5 }}
                                 >
-                                    {isComplete ? (
+                                    {hasError ? (
+                                        <GlitchText text="HỆ THỐNG KHỞI ĐỘNG THẤT BẠI" />
+                                    ) : isComplete ? (
                                         "KHỞI ĐỘNG HOÀN TẤT"
                                     ) : (
                                         <GlitchText text={`ĐANG TẢI SYSTEM... ${Math.round(progress)}%`} />
@@ -479,7 +532,8 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
                                 </motion.p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 text-[10px] text-[#00FF95]/50">
+                            <div className={`grid grid-cols-2 gap-2 text-[10px] ${hasError ? 'text-red-500/50' : 'text-[#00FF95]/50'
+                                }`}>
                                 <div>MEMORY: INITIALIZING</div>
                                 <div>CPU: ACTIVE</div>
                                 <div>NETWORK: STABLE</div>
@@ -511,12 +565,15 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
     );
 };
 
-const LoadingDots = ({ isComplete }: { isComplete: boolean }) => (
+const LoadingDots = ({ isComplete, hasError }: {
+    isComplete: boolean,
+    hasError: boolean
+}) => (
     <motion.div className="flex items-center justify-center space-x-3">
         {[0, 1, 2].map((index) => (
             <motion.div
                 key={index}
-                className="w-2 h-2 bg-[#00FF95]"
+                className={`w-2 h-2 ${hasError ? 'bg-red-500' : 'bg-[#00FF95]'}`}
                 animate={isComplete ? {
                     scale: [1, 2, 0],
                     opacity: [1, 1, 0],
@@ -544,25 +601,28 @@ const LoadingDots = ({ isComplete }: { isComplete: boolean }) => (
     </motion.div>
 );
 
-const ProgressBar = ({ progress, isComplete }: { progress: number, isComplete: boolean }) => (
+const ProgressBar = ({ progress, isComplete, hasError }: {
+    progress: number,
+    isComplete: boolean,
+    hasError: boolean
+}) => (
     <div className="w-full max-w-[280px] h-1 bg-gray-700/50">
         <motion.div
             className="relative h-full"
             initial={{ width: 0 }}
             animate={{
                 width: `${progress}%`,
-                backgroundColor: isComplete ? "#00FF95" : "#00FF95",
+                backgroundColor: hasError ? "#ff0000" : "#00FF95",
             }}
             exit={{
                 opacity: 0,
                 scale: 1.1,
-                transition: { duration: 0.4 }
             }}
             transition={{ duration: 0.5 }}
         >
             {isComplete && (
                 <motion.div
-                    className="absolute inset-0 bg-white"
+                    className={`absolute inset-0 ${hasError ? 'bg-red-500' : 'bg-white'}`}
                     animate={{
                         opacity: [0, 1, 0],
                     }}
