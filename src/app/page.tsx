@@ -261,7 +261,7 @@ export default function Home() {
 
   useEffect(() => {
     const handleSectionWheel = (e: WheelEvent) => {
-      if (showNextComponents && currentSectionRef.current && currentSection < sections.length - 1) {
+      if (showNextComponents && currentSectionRef.current) {
         const scrollingUp = e.deltaY < 0;
         const element = currentSectionRef.current;
         const threshold = 50;
@@ -292,11 +292,17 @@ export default function Home() {
               setSectionScrollProgress(0);
               setIsNearEnd(false);
 
-              setTimeout(() => {
-                setCurrentSection(prev => prev + 1);
+              if (currentSection === sections.length - 1) {
+                setShowNextComponents(false);
+                setCurrentSection(0);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                isTransitioning = false;
-              }, 800);
+              } else {
+                setTimeout(() => {
+                  setCurrentSection(prev => prev + 1);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  isTransitioning = false;
+                }, 800);
+              }
             }
           }
         } else {
