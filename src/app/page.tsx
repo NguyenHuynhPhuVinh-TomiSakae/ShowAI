@@ -383,12 +383,11 @@ export default function Home() {
   };
 
   const handleLoadingFinish = () => {
-    setTimeout(() => {
-      setShowLoading(false);
-      setIsLoadingComplete(true);
-      handleLoadingComplete();
-      sessionStorage.setItem('initialLoadComplete', 'true');
-    }, 2000);
+    setShowLoading(false);
+    setIsLoadingComplete(true);
+    setShouldShowContent(true);
+    handleLoadingComplete();
+    sessionStorage.setItem('initialLoadComplete', 'true');
   };
 
   // Thêm state để theo dõi việc load lần đầu
@@ -396,16 +395,35 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Thêm event listener để xử lý reload
+      const handleBeforeUnload = () => {
+        sessionStorage.removeItem('initialLoadComplete');
+      };
+
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
+      // Kiểm tra initial load như bình thường
       const initialLoadComplete = sessionStorage.getItem('initialLoadComplete');
       setHasInitialLoad(!!initialLoadComplete);
+      if (initialLoadComplete) {
+        setShouldShowContent(true);
+      }
+
+      // Cleanup event listener
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      };
     }
   }, []);
+
+  // Thêm state mới để kiểm soát animation
+  const [shouldShowContent, setShouldShowContent] = useState(false);
 
   return (
     <AnimatePresence mode="wait">
       {showLoading && !hasInitialLoad && typeof window !== 'undefined' && !sessionStorage.getItem('initialLoadComplete') ? (
         <LoadingScreen key="loading" onLoadingComplete={handleLoadingFinish} />
-      ) : (
+      ) : shouldShowContent && (
         <motion.div
           key="content"
           className="bg-[#0F172A] text-white min-h-screen"
