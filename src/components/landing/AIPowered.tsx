@@ -1,11 +1,43 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMediaQuery } from 'react-responsive';
 
 const AIPowered = () => {
     const [activeImage, setActiveImage] = useState<number | null>(null);
+    const [videoKey, setVideoKey] = useState(0);
     const isDesktop = useMediaQuery({ minWidth: 1024 });
+    const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+    useEffect(() => {
+        videoRefs.current = features.map(() => null);
+
+        return () => {
+            videoRefs.current.forEach(videoRef => {
+                if (videoRef) {
+                    videoRef.pause();
+                    videoRef.currentTime = 0;
+                }
+            });
+        };
+    }, []);
+
+    useEffect(() => {
+        if (activeImage !== null) {
+            setVideoKey(prev => prev + 1);
+            const videoRef = videoRefs.current[activeImage];
+            if (videoRef) {
+                videoRef.load();
+                const playPromise = videoRef.play();
+
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        // Bỏ qua lỗi AbortError khi video bị gián đoạn
+                    });
+                }
+            }
+        }
+    }, [activeImage]);
 
     const features = [
         {
@@ -408,7 +440,12 @@ const AIPowered = () => {
                                         <div className="absolute inset-0 z-10">
                                             {features[activeImage]?.video && (
                                                 <video
-                                                    key={activeImage}
+                                                    key={`${activeImage}-${videoKey}`}
+                                                    ref={(el) => {
+                                                        if (el && activeImage !== null) {
+                                                            videoRefs.current[activeImage] = el;
+                                                        }
+                                                    }}
                                                     src={features[activeImage].video}
                                                     autoPlay
                                                     loop
@@ -416,8 +453,14 @@ const AIPowered = () => {
                                                     playsInline
                                                     className="w-full h-full object-cover"
                                                     style={{ display: 'block' }}
+                                                    onLoadedData={(e) => {
+                                                        const video = e.target as HTMLVideoElement;
+                                                        video.play().catch(err => {
+                                                            console.error('Lỗi khi phát video:', err);
+                                                        });
+                                                    }}
                                                     onError={(e) => {
-                                                        console.error('Video loading error:', e);
+                                                        console.error('Lỗi khi tải video:', e);
                                                     }}
                                                 />
                                             )}

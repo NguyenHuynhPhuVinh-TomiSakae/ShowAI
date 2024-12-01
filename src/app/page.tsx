@@ -324,31 +324,6 @@ export default function Home() {
     };
   }, [showNextComponents, currentSection, isNearEnd]);
 
-  useEffect(() => {
-    const footer = document.querySelector('footer');
-    const isLastSection = showNextComponents && currentSection === sections.length - 1;
-    const isHomePage = window.location.pathname === '/';
-
-    if (footer) {
-      if (isHomePage) {
-        if (isLastSection) {
-          footer.style.display = 'block';
-          footer.style.opacity = '1';
-        } else {
-          footer.style.opacity = '0';
-          setTimeout(() => {
-            if (!isLastSection) {
-              footer.style.display = 'none';
-            }
-          }, 300);
-        }
-      } else {
-        footer.style.display = 'block';
-        footer.style.opacity = '1';
-      }
-    }
-  }, [showNextComponents, currentSection]);
-
   const globalStyles = `
     html, body {
       scrollbar-width: none;
@@ -357,10 +332,6 @@ export default function Home() {
     html::-webkit-scrollbar,
     body::-webkit-scrollbar {
       display: none;
-    }
-    footer {
-      opacity: 0;
-      transition: opacity 0.3s ease-in-out;
     }
   `;
 

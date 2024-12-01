@@ -122,7 +122,7 @@ const CustomScrollbar = ({
                                 <div className="h-16 flex flex-col items-center">
                                     <div className="h-1/3" />
                                     <span className="text-xs text-blue-400/70 whitespace-nowrap rotate-180 [writing-mode:vertical-lr]">
-                                        CUỐI
+                                        TRANG CUỐI
                                     </span>
                                     <div className="h-1/3" />
                                 </div>
