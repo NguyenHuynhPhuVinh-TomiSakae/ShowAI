@@ -324,26 +324,27 @@ export default function Home() {
     };
   }, [showNextComponents, currentSection, isNearEnd]);
 
-  const [, setShowFooter] = useState(false);
-
   useEffect(() => {
     const footer = document.querySelector('footer');
     const isLastSection = showNextComponents && currentSection === sections.length - 1;
+    const isHomePage = window.location.pathname === '/';
 
     if (footer) {
-      if (isLastSection) {
-        setShowFooter(true);
+      if (isHomePage) {
+        if (isLastSection) {
+          footer.style.display = 'block';
+          footer.style.opacity = '1';
+        } else {
+          footer.style.opacity = '0';
+          setTimeout(() => {
+            if (!isLastSection) {
+              footer.style.display = 'none';
+            }
+          }, 300);
+        }
+      } else {
         footer.style.display = 'block';
         footer.style.opacity = '1';
-        footer.style.transition = 'opacity 0.3s ease-in-out';
-      } else {
-        setShowFooter(false);
-        footer.style.opacity = '0';
-        setTimeout(() => {
-          if (!isLastSection) {
-            footer.style.display = 'none';
-          }
-        }, 300);
       }
     }
   }, [showNextComponents, currentSection]);
