@@ -17,17 +17,23 @@ interface NodeVelocity {
 const ParallaxHeader: React.FC<ParallaxHeaderProps> = ({ onTagClick, allTags }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+    const sceneRef = useRef<THREE.Scene | null>(null);
+    const frameIdRef = useRef<number>(0);
 
     useEffect(() => {
-        if (!containerRef.current) return;
+        if (sceneRef.current) return;
 
         const scene = new THREE.Scene();
+        sceneRef.current = scene;
+
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0x000000, 0);
-        containerRef.current.appendChild(renderer.domElement);
+        if (containerRef.current) {
+            containerRef.current.appendChild(renderer.domElement);
+        }
         rendererRef.current = renderer;
 
         // Tạo grid plane cho hiệu ứng cyberpunk
@@ -125,7 +131,7 @@ const ParallaxHeader: React.FC<ParallaxHeaderProps> = ({ onTagClick, allTags }) 
         // Update animation
         let frameCount = 0;
         const animate = () => {
-            requestAnimationFrame(animate);
+            frameIdRef.current = requestAnimationFrame(animate);
             frameCount++;
 
             // Update nodes positions
@@ -194,11 +200,36 @@ const ParallaxHeader: React.FC<ParallaxHeaderProps> = ({ onTagClick, allTags }) 
 
         // Cleanup
         return () => {
+            // Hủy animation frame
+            if (frameIdRef.current) {
+                cancelAnimationFrame(frameIdRef.current);
+            }
+
+            // Dọn dẹp renderer
+            if (rendererRef.current) {
+                rendererRef.current.dispose();
+                rendererRef.current.forceContextLoss();
+                rendererRef.current.domElement.remove();
+                rendererRef.current = null;
+            }
+
+            // Dọn dẹp scene và các đối tượng
+            if (sceneRef.current) {
+                sceneRef.current.traverse((object) => {
+                    if (object instanceof THREE.Mesh) {
+                        object.geometry.dispose();
+                        if (object.material instanceof THREE.Material) {
+                            object.material.dispose();
+                        }
+                    }
+                });
+                sceneRef.current.clear();
+                sceneRef.current = null;
+            }
+
+            // Xóa event listeners
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('resize', handleResize);
-            if (containerRef.current) {
-                containerRef.current.removeChild(renderer.domElement);
-            }
         };
     }, []);
 
