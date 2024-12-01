@@ -395,13 +395,15 @@ export default function Home() {
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
 
   useEffect(() => {
-    const initialLoadComplete = typeof window !== 'undefined' ? sessionStorage.getItem('initialLoadComplete') : null;
-    setHasInitialLoad(!!initialLoadComplete);
+    if (typeof window !== 'undefined') {
+      const initialLoadComplete = sessionStorage.getItem('initialLoadComplete');
+      setHasInitialLoad(!!initialLoadComplete);
+    }
   }, []);
 
   return (
     <AnimatePresence mode="wait">
-      {showLoading && !hasInitialLoad && !sessionStorage.getItem('initialLoadComplete') ? (
+      {showLoading && !hasInitialLoad && typeof window !== 'undefined' && !sessionStorage.getItem('initialLoadComplete') ? (
         <LoadingScreen key="loading" onLoadingComplete={handleLoadingFinish} />
       ) : (
         <motion.div
