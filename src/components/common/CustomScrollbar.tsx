@@ -63,13 +63,30 @@ const CustomScrollbar = ({
                 {!showNextComponents && (
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: scrollProgress > 0 ? 1 : 0 }}
+                        animate={{ opacity: 1 }}
                         className="absolute left-2 top-1 z-50"
                     >
                         <div className="flex flex-col items-center gap-1.5">
-                            <span className="text-xs text-blue-400/70 whitespace-nowrap rotate-180 [writing-mode:vertical-lr] mb-1">
-                                NEXT
-                            </span>
+                            {scrollProgress === 0 && (
+                                <motion.span
+                                    className="text-xs text-blue-400/70 whitespace-nowrap rotate-180 [writing-mode:vertical-lr] mb-1"
+                                    animate={{
+                                        opacity: [0.4, 1, 0.4]
+                                    }}
+                                    transition={{
+                                        duration: 1.5,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                >
+                                    CUỘN
+                                </motion.span>
+                            )}
+                            {scrollProgress > 0 && (
+                                <span className="text-xs text-blue-400/70 whitespace-nowrap rotate-180 [writing-mode:vertical-lr] mb-1">
+                                    TIẾP
+                                </span>
+                            )}
                             <div className="h-16 w-0.5 bg-gray-800 rounded-full overflow-hidden">
                                 <motion.div
                                     className="w-full bg-blue-500/70"
@@ -94,36 +111,65 @@ const CustomScrollbar = ({
                     </motion.div>
                 )}
 
-                {showNextComponents && currentSection < totalSections - 1 && (
+                {showNextComponents && (
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: sectionScrollProgress > 0 ? 1 : 0 }}
+                        animate={{ opacity: 1 }}
                         className="absolute left-2 top-1 z-50"
                     >
                         <div className="flex flex-col items-center gap-1.5">
-                            <span className="text-xs text-blue-400/70 whitespace-nowrap rotate-180 [writing-mode:vertical-lr] mb-1">
-                                NEXT
-                            </span>
-                            <div className="h-16 w-0.5 bg-gray-800 rounded-full overflow-hidden">
-                                <motion.div
-                                    className="w-full bg-blue-500/70"
-                                    style={{ height: `${sectionScrollProgress * 100}%` }}
-                                />
-                            </div>
-                            <motion.div
-                                animate={{
-                                    y: [0, 3, 0],
-                                    opacity: [0.3, 0.8, 0.3]
-                                }}
-                                transition={{
-                                    duration: 1.5,
-                                    repeat: Infinity,
-                                    ease: "easeInOut"
-                                }}
-                                className="text-blue-400/50 rotate-90 text-sm"
-                            >
-                                →
-                            </motion.div>
+                            {currentSection === totalSections - 1 ? (
+                                <div className="h-16 flex flex-col items-center">
+                                    <div className="h-1/3" />
+                                    <span className="text-xs text-blue-400/70 whitespace-nowrap rotate-180 [writing-mode:vertical-lr]">
+                                        CUỐI
+                                    </span>
+                                    <div className="h-1/3" />
+                                </div>
+                            ) : (
+                                <>
+                                    {sectionScrollProgress === 0 && (
+                                        <motion.span
+                                            className="text-xs text-blue-400/70 whitespace-nowrap rotate-180 [writing-mode:vertical-lr] mb-1"
+                                            animate={{
+                                                opacity: [0.4, 1, 0.4]
+                                            }}
+                                            transition={{
+                                                duration: 1.5,
+                                                repeat: Infinity,
+                                                ease: "easeInOut"
+                                            }}
+                                        >
+                                            CUỘN
+                                        </motion.span>
+                                    )}
+                                    {sectionScrollProgress > 0 && (
+                                        <span className="text-xs text-blue-400/70 whitespace-nowrap rotate-180 [writing-mode:vertical-lr] mb-1">
+                                            TIẾP
+                                        </span>
+                                    )}
+                                    <div className="h-16 w-0.5 bg-gray-800 rounded-full overflow-hidden">
+                                        <motion.div
+                                            className="w-full bg-blue-500/70"
+                                            style={{ height: `${sectionScrollProgress * 100}%` }}
+                                        />
+                                    </div>
+                                    <motion.div
+                                        animate={{
+                                            y: [0, 3, 0],
+                                            opacity: [0.3, 0.8, 0.3]
+                                        }}
+                                        transition={{
+                                            duration: 1.5,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        }}
+                                        className="text-blue-400/50 rotate-90 text-sm"
+                                    >
+                                        →
+                                    </motion.div>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 )}
