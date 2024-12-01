@@ -463,23 +463,24 @@ export default function Home() {
               className="min-h-screen"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              <AnimatePresence mode="wait" initial={false}>
+              <AnimatePresence mode="wait" initial={true}>
                 {sections.map((Section, index) => (
                   index === currentSection && (
                     <motion.div
                       key={index}
                       ref={currentSectionRef}
                       className="min-h-screen relative"
-                      initial={{ opacity: 0.8, y: 20 }}
+                      initial={{ opacity: 0, y: 50 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
+                      exit={{ opacity: 0, y: -50 }}
                       transition={{
                         type: "spring",
                         stiffness: 300,
                         damping: 30,
-                        duration: 0.2
+                        duration: 0.5
                       }}
                     >
                       <Section.component />
