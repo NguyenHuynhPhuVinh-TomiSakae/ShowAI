@@ -106,7 +106,8 @@ export async function GET(request: Request) {
         if (searchKeyword) {
             query.$or = [
                 { name: { $regex: searchKeyword, $options: 'i' } },
-                { description: { $elemMatch: { $regex: searchKeyword, $options: 'i' } } }
+                { description: { $elemMatch: { $regex: searchKeyword, $options: 'i' } } },
+                { keyFeatures: { $elemMatch: { $regex: searchKeyword, $options: 'i' } } }
             ];
         }
 

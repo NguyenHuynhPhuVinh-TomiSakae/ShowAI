@@ -60,7 +60,7 @@ function SearchContent() {
         setDisplayTerm(term);
         setSearchTerm(''); // Clear the input after search
         try {
-            const response = await fetch(`/api/showai?${type}=${encodeURIComponent(term)}`);
+            const response = await fetch(`/api/showai?${type}=${encodeURIComponent(term)}&sort=view`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
